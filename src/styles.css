@@ -5,17 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Dixon Golf — Tournament Consultant Command Center
+ * Brand: deep fairway green, cream, brushed gold accents.
+ * Editorial serif headings + clean sans body.
  */
 
 @theme inline {
@@ -25,7 +17,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -46,99 +38,115 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-fairway: var(--fairway);
+  --color-fairway-deep: var(--fairway-deep);
+  --color-cream: var(--cream);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-clay: var(--clay);
+
+  --color-stage-new: var(--stage-new);
+  --color-stage-contacted: var(--stage-contacted);
+  --color-stage-vm: var(--stage-vm);
+  --color-stage-callback: var(--stage-callback);
+  --color-stage-pitch: var(--stage-pitch);
+  --color-stage-booked: var(--stage-booked);
+  --color-stage-cgt: var(--stage-cgt);
+  --color-stage-followup: var(--stage-followup);
+  --color-stage-won: var(--stage-won);
+  --color-stage-lost: var(--stage-lost);
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.5rem;
+
+  /* Dixon brand palette */
+  --fairway-deep: oklch(0.30 0.06 155);   /* deep fairway green */
+  --fairway:      oklch(0.42 0.08 155);   /* mid green */
+  --cream:        oklch(0.975 0.013 85);  /* off-white card cream */
+  --gold:         oklch(0.74 0.13 80);    /* brushed gold accent */
+  --gold-soft:    oklch(0.92 0.07 85);    /* soft gold tint */
+  --clay:         oklch(0.55 0.14 35);    /* warm accent for warnings */
+
+  /* shadcn semantic tokens mapped to brand */
+  --background: oklch(0.985 0.005 85);    /* soft cream page bg */
+  --foreground: oklch(0.20 0.03 155);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.20 0.03 155);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.20 0.03 155);
+
+  --primary: var(--fairway-deep);
+  --primary-foreground: oklch(0.98 0.01 85);
+  --secondary: oklch(0.94 0.015 130);
+  --secondary-foreground: oklch(0.25 0.04 155);
+  --muted: oklch(0.95 0.012 130);
+  --muted-foreground: oklch(0.48 0.02 155);
+  --accent: var(--gold-soft);
+  --accent-foreground: oklch(0.30 0.06 80);
+
+  --destructive: oklch(0.55 0.20 27);
+  --destructive-foreground: oklch(0.98 0.01 85);
+  --border: oklch(0.90 0.014 130);
+  --input: oklch(0.92 0.012 130);
+  --ring: var(--fairway);
+
+  /* Stage colors */
+  --stage-new: oklch(0.70 0.02 250);
+  --stage-contacted: oklch(0.65 0.10 230);
+  --stage-vm: oklch(0.62 0.08 280);
+  --stage-callback: oklch(0.70 0.14 60);
+  --stage-pitch: oklch(0.68 0.13 200);
+  --stage-booked: oklch(0.62 0.13 155);
+  --stage-cgt: oklch(0.64 0.12 175);
+  --stage-followup: oklch(0.74 0.13 80);
+  --stage-won: oklch(0.45 0.13 155);
+  --stage-lost: oklch(0.58 0.14 25);
+
+  /* Reusable gradients & shadows */
+  --gradient-fairway: linear-gradient(135deg, var(--fairway-deep), var(--fairway));
+  --gradient-cream: linear-gradient(180deg, oklch(0.99 0.005 85), oklch(0.96 0.015 85));
+  --shadow-card: 0 1px 2px oklch(0.20 0.03 155 / 0.06), 0 4px 14px oklch(0.20 0.03 155 / 0.05);
+  --shadow-elevated: 0 8px 30px oklch(0.20 0.03 155 / 0.10), 0 2px 6px oklch(0.20 0.03 155 / 0.06);
+  --shadow-fairway: 0 8px 30px oklch(0.30 0.06 155 / 0.20);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --background: oklch(0.18 0.02 155);
+  --foreground: oklch(0.96 0.01 85);
+  --card: oklch(0.22 0.025 155);
+  --card-foreground: oklch(0.96 0.01 85);
+  --popover: oklch(0.22 0.025 155);
+  --popover-foreground: oklch(0.96 0.01 85);
+  --primary: oklch(0.78 0.10 130);
+  --primary-foreground: oklch(0.18 0.02 155);
+  --secondary: oklch(0.26 0.03 155);
+  --secondary-foreground: oklch(0.96 0.01 85);
+  --muted: oklch(0.26 0.03 155);
+  --muted-foreground: oklch(0.72 0.015 85);
+  --accent: oklch(0.30 0.06 80);
+  --accent-foreground: oklch(0.92 0.07 85);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.74 0.13 80);
 }
 
 @layer base {
-  * {
-    border-color: var(--color-border);
-  }
+  * { border-color: var(--color-border); }
+  html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); }
+  body { font-feature-settings: "ss01", "cv11"; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+}
 
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-  }
+/* Stage chip helper used in cards */
+.stage-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.15rem 0.55rem; border-radius: 999px;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
