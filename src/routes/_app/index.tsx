@@ -4,9 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { StageChip } from "@/components/StageChip";
-import { Phone, Plus, KanbanSquare, CalendarClock, AlertTriangle, Flame } from "lucide-react";
+import { AddLeadDialog } from "@/components/AddLeadDialog";
+import { Phone, KanbanSquare, CalendarClock, AlertTriangle, Flame, Sparkles } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
 import { STAGES, type Stage } from "@/lib/stages";
+import { seedSampleData } from "@/lib/sampleData";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/")({
   component: Dashboard,
@@ -28,27 +31,46 @@ function Dashboard() {
   const [tasks, setTasks] = useState<TaskWithEvent[]>([]);
   const [events, setEvents] = useState<EventLite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+
+  const load = async () => {
+    const [t, e] = await Promise.all([
+      supabase
+        .from("tasks")
+        .select("id,next_action,next_action_at,priority,status,events(id,event_name,stage)")
+        .eq("status", "pending")
+        .order("next_action_at", { ascending: true })
+        .limit(50),
+      supabase
+        .from("events")
+        .select("id,event_name,stage,updated_at,hot_lead,course,event_date")
+        .order("updated_at", { ascending: false }),
+    ]);
+    setTasks((t.data ?? []) as any);
+    setEvents((e.data ?? []) as any);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
-      const [t, e] = await Promise.all([
-        supabase
-          .from("tasks")
-          .select("id,next_action,next_action_at,priority,status,events(id,event_name,stage)")
-          .eq("status", "pending")
-          .order("next_action_at", { ascending: true })
-          .limit(50),
-        supabase
-          .from("events")
-          .select("id,event_name,stage,updated_at,hot_lead,course,event_date")
-          .order("updated_at", { ascending: false }),
-      ]);
-      setTasks((t.data ?? []) as any);
-      setEvents((e.data ?? []) as any);
-      setLoading(false);
-    })();
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  const handleSeed = async () => {
+    if (!user) return;
+    setSeeding(true);
+    try {
+      const r = await seedSampleData(user.id);
+      if (r.skipped) toast.info("You already have leads — sample data skipped.");
+      else toast.success(`Loaded ${r.count} sample events.`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to seed");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const overdue = tasks.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
   const today = tasks.filter((t) => isToday(new Date(t.next_action_at)));
@@ -68,7 +90,12 @@ function Dashboard() {
           <Button asChild><Link to="/call"><Phone className="mr-2 h-4 w-4" />Start Call</Link></Button>
           <Button asChild variant="outline"><Link to="/pipeline"><KanbanSquare className="mr-2 h-4 w-4" />Pipeline</Link></Button>
           <Button asChild variant="outline"><Link to="/follow-ups"><CalendarClock className="mr-2 h-4 w-4" />Follow-Ups</Link></Button>
-          <Button asChild variant="outline"><Link to="/call"><Plus className="mr-2 h-4 w-4" />Add Lead</Link></Button>
+          <AddLeadDialog onCreated={load} />
+          {events.length === 0 && (
+            <Button variant="ghost" onClick={handleSeed} disabled={seeding}>
+              <Sparkles className="mr-2 h-4 w-4" />{seeding ? "Loading…" : "Load sample data"}
+            </Button>
+          )}
         </div>
       </header>
 
