@@ -53,6 +53,7 @@
   --color-stage-pitch: var(--stage-pitch);
   --color-stage-booked: var(--stage-booked);
   --color-stage-cgt: var(--stage-cgt);
+  --color-stage-proposal: var(--stage-proposal);
   --color-stage-followup: var(--stage-followup);
   --color-stage-won: var(--stage-won);
   --color-stage-lost: var(--stage-lost);
@@ -104,6 +105,7 @@
   --stage-pitch: oklch(0.68 0.13 200);
   --stage-booked: oklch(0.62 0.13 155);
   --stage-cgt: oklch(0.64 0.12 175);
+  --stage-proposal: oklch(0.66 0.14 320);
   --stage-followup: oklch(0.74 0.13 80);
   --stage-won: oklch(0.45 0.13 155);
   --stage-lost: oklch(0.58 0.14 25);
