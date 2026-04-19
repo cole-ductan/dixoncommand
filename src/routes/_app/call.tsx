@@ -21,6 +21,7 @@ import { applyTemplate } from "@/lib/templating";
 import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { LEAD_SOURCES } from "@/lib/leadSource";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
