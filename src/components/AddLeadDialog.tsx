@@ -176,7 +176,7 @@ export function AddLeadDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="players">ature# of Players</Label>
+              <Label htmlFor="players"># of Players</Label>
               <Input id="players" type="number" min="0" value={playerCount} onChange={(e) => setPlayerCount(e.target.value)} placeholder="Est. player count" />
             </div>
             <div className="grid gap-1.5">
