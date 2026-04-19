@@ -24,6 +24,7 @@ import { format } from "date-fns";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
+  new: z.union([z.literal("1"), z.literal(1), z.boolean()]).optional(),
 });
 
 export const Route = createFileRoute("/_app/call")({
