@@ -205,14 +205,96 @@ function LiveCallWorkspace() {
     }
   };
 
+  // No event yet → render the cockpit shell with the new-lead form in the left pane.
   if (!event) {
     return (
-      <InlineNewLead
-        userId={user?.id ?? null}
-        events={events}
-        onPickExisting={(id) => setEventId(id)}
-        onCreated={(id) => setEventId(id)}
-      />
+      <div className="flex h-screen flex-col">
+        <div className="border-b bg-card/80 backdrop-blur px-3 py-2 md:px-6 md:py-3 flex items-center gap-3">
+          <Button asChild size="sm" variant="ghost" className="md:hidden">
+            <Link to="/"><ChevronLeft className="h-4 w-4" /></Link>
+          </Button>
+          {events.length > 0 ? (
+            <Select value={eventId} onValueChange={setEventId}>
+              <SelectTrigger className="w-[220px] md:w-[320px]">
+                <SelectValue placeholder="Pick a lead…" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[400px]">
+                {events.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{e.event_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="text-sm font-medium">New Call</div>
+          )}
+          <span className="rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            New Lead
+          </span>
+          <div className="ml-auto text-xs text-muted-foreground hidden md:inline">
+            Fill the lead card on the left to start
+          </div>
+        </div>
+
+        <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[360px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
+          <ScrollArea className="min-h-0">
+            <InlineNewLead
+              userId={user?.id ?? null}
+              onCreated={(id) => setEventId(id)}
+            />
+          </ScrollArea>
+
+          <ScrollArea className="min-h-0">
+            <div className="p-4 md:p-6 max-w-2xl mx-auto">
+              <div className="rounded-xl border-2 border-dashed bg-secondary/20 p-8 text-center">
+                <Phone className="mx-auto h-8 w-8 text-muted-foreground/60" />
+                <h3 className="mt-3 font-display text-lg font-semibold">Capture starts here</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Save the lead on the left and the call cockpit — interest flags, booked/sent, follow-up scheduling, AI summary — opens up instantly.
+                </p>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <ScrollArea className="min-h-0">
+            <div className="p-4">
+              <Tabs defaultValue="script" className="w-full">
+                <TabsList className="w-full grid grid-cols-3">
+                  <TabsTrigger value="script">Script</TabsTrigger>
+                  <TabsTrigger value="offers">Offers</TabsTrigger>
+                  <TabsTrigger value="email">Email</TabsTrigger>
+                </TabsList>
+                <TabsContent value="script" className="mt-3">
+                  <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
+                    {scriptSections.map((s) => (
+                      <AccordionItem key={s.id} value={s.slug}>
+                        <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
+                        <AccordionContent>
+                          <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </TabsContent>
+                <TabsContent value="offers" className="mt-3 space-y-2">
+                  {offers.map((o) => (
+                    <details key={o.id} className="rounded-lg border bg-card p-3 text-xs">
+                      <summary className="flex cursor-pointer items-center justify-between font-medium text-sm">
+                        <span>{o.name}</span>
+                        <span className="font-mono text-muted-foreground text-[10px]">{o.cost}</span>
+                      </summary>
+                      <div className="mt-2 text-muted-foreground">{o.when_to_introduce}</div>
+                      <pre className="mt-2 whitespace-pre-wrap font-sans">{o.details}</pre>
+                    </details>
+                  ))}
+                </TabsContent>
+                <TabsContent value="email" className="mt-3 text-xs text-muted-foreground">
+                  Save a lead to personalize email templates.
+                </TabsContent>
+              </Tabs>
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
     );
   }
 
