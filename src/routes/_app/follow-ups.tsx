@@ -74,6 +74,25 @@ function FollowUpsPage() {
     return { overdue, today, upcoming };
   }, [tasks]);
 
+  // Lead-based groups (events, not tasks)
+  const leadGroups = useMemo(() => {
+    const eventIdsWithTasks = new Set(tasks.map((t) => t.events?.id).filter(Boolean));
+    const cutoff48h = subHours(new Date(), 48);
+    const cutoff3d = subDays(new Date(), 3);
+
+    const justAdded = allEvents.filter(
+      (e) => new Date(e.created_at) > cutoff48h && !eventIdsWithTasks.has(e.id),
+    );
+    const awaitingResponse = allEvents.filter(
+      (e) =>
+        (e.stage === "pitch_delivered" || e.stage === "proposal_sent") &&
+        (!e.last_contact_at || new Date(e.last_contact_at) < cutoff3d),
+    );
+    const noDateSet = allEvents.filter((e) => !eventIdsWithTasks.has(e.id));
+
+    return { justAdded, awaitingResponse, noDateSet };
+  }, [allEvents, tasks]);
+
   const tasksByDay = useMemo(() => {
     const map: Map<string, Task[]> = new Map();
     tasks.forEach((t) => {
@@ -135,6 +154,26 @@ function FollowUpsPage() {
               <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} />
               <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} />
               <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} />
+
+              <LeadGroup
+                title="Leads Just Added"
+                description="Added in the last 48 hours with no follow-up scheduled."
+                icon={<Sparkles className="h-4 w-4 text-primary" />}
+                events={leadGroups.justAdded}
+              />
+              <LeadGroup
+                title="Awaiting Response"
+                description="Pitch or proposal sent — no contact logged in the last 3 days."
+                icon={<MailQuestion className="h-4 w-4" style={{ color: "var(--stage-pitch)" }} />}
+                events={leadGroups.awaitingResponse}
+              />
+              <LeadGroup
+                title="No Date Set"
+                description="Active leads with zero follow-up date assigned."
+                icon={<CalendarX className="h-4 w-4" style={{ color: "var(--gold)" }} />}
+                events={leadGroups.noDateSet}
+                accent="warning"
+              />
             </>
           )}
         </TabsContent>
