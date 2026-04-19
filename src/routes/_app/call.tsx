@@ -324,9 +324,14 @@ function LiveCallWorkspace() {
         <Button asChild size="sm" variant="ghost" className="md:hidden">
           <Link to="/"><ChevronLeft className="h-4 w-4" /></Link>
         </Button>
-        <Select value={eventId} onValueChange={setEventId}>
+        <Select
+          value={eventId}
+          onValueChange={(v) => { if (v === "__new__") { setEventId(undefined); setForceNew(true); } else setEventId(v); }}
+        >
           <SelectTrigger className="w-[220px] md:w-[320px]"><SelectValue /></SelectTrigger>
           <SelectContent className="max-h-[400px]">
+            <SelectItem value="__new__" className="font-medium text-primary">+ Add lead</SelectItem>
+            <div className="my-1 border-t" />
             {events.map((e) => (
               <SelectItem key={e.id} value={e.id}>{e.event_name}</SelectItem>
             ))}
