@@ -56,7 +56,7 @@ export function AppShell() {
           ))}
         </nav>
         <div className="border-t p-3">
-          <div className="mb-2 px-2 text-xs text-muted-foreground truncate">{user.email}</div>
+          <div className="mb-2 px-2 text-xs text-muted-foreground truncate">{user?.email ?? "Guest (auth disabled)"}</div>
           <Button
             variant="ghost"
             size="sm"
