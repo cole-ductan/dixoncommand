@@ -3,12 +3,12 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock } from "lucide-react";
-import { format, isPast, isToday, isSameDay, startOfDay, addDays } from "date-fns";
+import { AddLeadDialog } from "@/components/AddLeadDialog";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus } from "lucide-react";
+import { format, isPast, isToday, isSameDay, startOfDay } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
 
@@ -30,6 +30,13 @@ function FollowUpsPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [addLeadDate, setAddLeadDate] = useState<string | undefined>(undefined);
+
+  const openAddLeadFor = (d?: Date) => {
+    setAddLeadDate(d ? format(d, "yyyy-MM-dd") : undefined);
+    setAddLeadOpen(true);
+  };
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -78,10 +85,23 @@ function FollowUpsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
-      <header className="mb-6">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">Follow-Ups</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Stay on top of every callback, email, and check-in.</p>
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-semibold md:text-4xl">Follow-Ups</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Stay on top of every callback, email, and check-in.</p>
+        </div>
+        <Button size="sm" onClick={() => openAddLeadFor()}>
+          <Plus className="mr-1.5 h-4 w-4" />Add Lead
+        </Button>
       </header>
+
+      <AddLeadDialog
+        trigger={null}
+        open={addLeadOpen}
+        onOpenChange={setAddLeadOpen}
+        defaultDate={addLeadDate}
+        onCreated={() => load()}
+      />
 
       <Tabs defaultValue="list" className="w-full">
         <TabsList>
@@ -117,12 +137,29 @@ function FollowUpsPage() {
               />
             </div>
             <div className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
-              <h2 className="font-display text-lg font-semibold">
-                {selectedDate ? format(selectedDate, "EEEE, MMM d") : "Pick a date"}
-              </h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-semibold">
+                  {selectedDate ? format(selectedDate, "EEEE, MMM d") : "Pick a date"}
+                </h2>
+                {selectedDate && (
+                  <Button size="sm" variant="outline" onClick={() => openAddLeadFor(selectedDate)}>
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />Add lead
+                  </Button>
+                )}
+              </div>
               {selectedTasks.length === 0 ? (
-                <div className="mt-4 rounded-md bg-secondary/50 px-3 py-4 text-sm text-muted-foreground">
-                  Nothing scheduled for this day.
+                <div className="mt-4 rounded-md bg-secondary/50 px-3 py-6 text-center text-sm text-muted-foreground">
+                  <div>Nothing scheduled for this day.</div>
+                  {selectedDate && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="mt-2"
+                      onClick={() => openAddLeadFor(selectedDate)}
+                    >
+                      <Plus className="mr-1.5 h-3.5 w-3.5" />Add a lead for this date
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <ul className="mt-4 divide-y">

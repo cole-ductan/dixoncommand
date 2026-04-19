@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,24 @@ import { toast } from "sonner";
 export function AddLeadDialog({
   trigger,
   onCreated,
+  open: openProp,
+  onOpenChange,
+  defaultDate,
 }: {
   trigger?: React.ReactNode;
   onCreated?: (eventId: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  defaultDate?: string;
 }) {
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp! : openInternal;
+  const setOpen = (v: boolean) => {
+    if (!isControlled) setOpenInternal(v);
+    onOpenChange?.(v);
+  };
   const [saving, setSaving] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [contactName, setContactName] = useState("");
@@ -33,8 +45,13 @@ export function AddLeadDialog({
   const [contactPhone, setContactPhone] = useState("");
   const [eventName, setEventName] = useState("");
   const [course, setCourse] = useState("");
-  const [eventDate, setEventDate] = useState("");
+  const [eventDate, setEventDate] = useState(defaultDate ?? "");
   const [notes, setNotes] = useState("");
+
+  // Sync defaultDate when dialog opens
+  useEffect(() => {
+    if (open && defaultDate) setEventDate(defaultDate);
+  }, [open, defaultDate]);
 
   const reset = () => {
     setOrgName(""); setContactName(""); setContactEmail(""); setContactPhone("");
@@ -99,11 +116,13 @@ export function AddLeadDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="sm"><Plus className="mr-1.5 h-4 w-4" />Add Lead</Button>
-        )}
-      </DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button size="sm"><Plus className="mr-1.5 h-4 w-4" />Add Lead</Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Add Lead</DialogTitle>

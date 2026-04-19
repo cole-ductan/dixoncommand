@@ -87,7 +87,7 @@ function Dashboard() {
           <p className="mt-1 text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild><Link to="/call"><Phone className="mr-2 h-4 w-4" />Start Call</Link></Button>
+          <Button asChild><Link to="/call" search={{ new: "1" } as any}><Phone className="mr-2 h-4 w-4" />Start Call</Link></Button>
           <Button asChild variant="outline"><Link to="/pipeline"><KanbanSquare className="mr-2 h-4 w-4" />Pipeline</Link></Button>
           <Button asChild variant="outline"><Link to="/follow-ups"><CalendarClock className="mr-2 h-4 w-4" />Follow-Ups</Link></Button>
           <AddLeadDialog onCreated={load} />
