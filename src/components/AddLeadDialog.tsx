@@ -116,11 +116,13 @@ export function AddLeadDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="sm"><Plus className="mr-1.5 h-4 w-4" />Add Lead</Button>
-        )}
-      </DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button size="sm"><Plus className="mr-1.5 h-4 w-4" />Add Lead</Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Add Lead</DialogTitle>
