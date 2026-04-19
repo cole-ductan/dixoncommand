@@ -50,7 +50,7 @@ function FollowUpsPage() {
   }, [tasks]);
 
   const tasksByDay = useMemo(() => {
-    const map = new Map<string, Task[]>();
+    const map: Map<string, Task[]> = new Map();
     tasks.forEach((t) => {
       const key = format(startOfDay(new Date(t.next_action_at)), "yyyy-MM-dd");
       if (!map.has(key)) map.set(key, []);
