@@ -95,7 +95,7 @@ function LiveCallWorkspace() {
     if (!event) return;
     setSavingField(true);
     setEvent({ ...event, ...patch });
-    const { error } = await supabase.from("events").update(patch).eq("id", event.id);
+    const { error } = await supabase.from("events").update(patch as any).eq("id", event.id);
     setSavingField(false);
     if (error) toast.error("Save failed: " + error.message);
   }, [event]);
@@ -162,23 +162,23 @@ function LiveCallWorkspace() {
   const saveCall = async () => {
     if (!event || !user) return;
     const ops: Promise<any>[] = [
-      supabase.from("calls").insert({
+      Promise.resolve(supabase.from("calls").insert({
         user_id: user.id,
         event_id: event.id,
         call_type: callType,
         outcome: outcome as any,
         summary: summary || null,
         db_note_line: dbLine || null,
-      }),
-      supabase.from("events").update({ last_contact_at: new Date().toISOString() }).eq("id", event.id),
+      })),
+      Promise.resolve(supabase.from("events").update({ last_contact_at: new Date().toISOString() }).eq("id", event.id)),
     ];
     if (followUpAt && followUpAction) {
-      ops.push(supabase.from("tasks").insert({
+      ops.push(Promise.resolve(supabase.from("tasks").insert({
         user_id: user.id,
         event_id: event.id,
         next_action: followUpAction,
         next_action_at: new Date(followUpAt).toISOString(),
-      }));
+      })));
     }
     const results = await Promise.all(ops);
     const err = results.find((r) => r.error)?.error;
