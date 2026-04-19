@@ -4,9 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { StageChip } from "@/components/StageChip";
-import { Phone, Plus, KanbanSquare, CalendarClock, AlertTriangle, Flame } from "lucide-react";
+import { AddLeadDialog } from "@/components/AddLeadDialog";
+import { Phone, KanbanSquare, CalendarClock, AlertTriangle, Flame, Sparkles } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
 import { STAGES, type Stage } from "@/lib/stages";
+import { seedSampleData } from "@/lib/sampleData";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/")({
   component: Dashboard,
@@ -28,10 +31,9 @@ function Dashboard() {
   const [tasks, setTasks] = useState<TaskWithEvent[]>([]);
   const [events, setEvents] = useState<EventLite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
+  const load = async () => {
       const [t, e] = await Promise.all([
         supabase
           .from("tasks")

@@ -94,9 +94,12 @@ export function AppShell() {
             </div>
             <span className="font-display font-semibold">Dixon</span>
           </div>
-          <Button asChild size="sm" variant="default">
-            <Link to="/call"><Phone className="mr-1 h-3.5 w-3.5" />Call</Link>
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <AddLeadDialog trigger={<Button size="sm" variant="outline"><span className="text-base leading-none">+</span></Button>} />
+            <Button asChild size="sm" variant="default">
+              <Link to="/call"><Phone className="mr-1 h-3.5 w-3.5" />Call</Link>
+            </Button>
+          </div>
         </div>
         <nav className="flex overflow-x-auto px-2 pb-2 gap-1 text-xs">
           {nav.map(({ to, label, exact }) => (
