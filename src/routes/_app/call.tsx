@@ -482,6 +482,7 @@ function LiveCallWorkspace() {
           </div>
         </ScrollArea>
       </div>
+      )}
 
       {/* Bottom action bar — DB summary + save */}
       <div className="border-t bg-card px-3 py-3 md:px-6 md:py-4 space-y-2">
