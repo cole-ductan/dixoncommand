@@ -85,10 +85,23 @@ function FollowUpsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
-      <header className="mb-6">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">Follow-Ups</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Stay on top of every callback, email, and check-in.</p>
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-semibold md:text-4xl">Follow-Ups</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Stay on top of every callback, email, and check-in.</p>
+        </div>
+        <Button size="sm" onClick={() => openAddLeadFor()}>
+          <Plus className="mr-1.5 h-4 w-4" />Add Lead
+        </Button>
       </header>
+
+      <AddLeadDialog
+        trigger={null}
+        open={addLeadOpen}
+        onOpenChange={setAddLeadOpen}
+        defaultDate={addLeadDate}
+        onCreated={() => load()}
+      />
 
       <Tabs defaultValue="list" className="w-full">
         <TabsList>
