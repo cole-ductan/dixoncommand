@@ -54,7 +54,7 @@ export type PipelineStep = {
   /** One-line subtitle for the step header. */
   subtitle?: string;
   /** Big quoted script lines — what the TC says. */
-  scriptLines: string[];
+  scriptLines?: string[];
   /** Bullet checklist (instructions / actions). */
   checklist?: string[];
   /** Field keys to nudge the TC to fill at this step. */
