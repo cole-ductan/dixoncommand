@@ -74,7 +74,6 @@ function LiveCallWorkspace() {
 
   // load all events for picker
   useEffect(() => {
-    if (!user) return;
     supabase.from("events").select("*").order("updated_at", { ascending: false }).then(({ data }) => {
       setEvents(data ?? []);
       if (!eventId && data && data.length) setEventId(data[0].id);
@@ -208,11 +207,12 @@ function LiveCallWorkspace() {
 
   if (!event) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
-        <h1 className="font-display text-3xl font-semibold">Live Call Workspace</h1>
-        <p className="mt-2 text-muted-foreground">No leads yet. Add one to start your first call.</p>
-        <div className="mt-6"><AddLeadDialog onCreated={(id) => setEventId(id)} /></div>
-      </div>
+      <InlineNewLead
+        userId={user?.id ?? null}
+        events={events}
+        onPickExisting={(id) => setEventId(id)}
+        onCreated={(id) => setEventId(id)}
+      />
     );
   }
 
@@ -570,8 +570,172 @@ function Field({
           value={v}
           onChange={(e) => setV(e.target.value)}
           onBlur={() => v !== String(value ?? "") && onSave(v)}
-        />
+         />
       </div>
+    </div>
+  );
+}
+
+function InlineNewLead({
+  userId,
+  events,
+  onPickExisting,
+  onCreated,
+}: {
+  userId: string | null;
+  events: EventRow[];
+  onPickExisting: (id: string) => void;
+  onCreated: (id: string) => void;
+}) {
+  const [orgName, setOrgName] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [eventName, setEventName] = useState("");
+  const [course, setCourse] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!userId) {
+      toast.error("Sign in required to create a lead");
+      return;
+    }
+    if (!eventName.trim() || !orgName.trim()) {
+      toast.error("Organization and Event name are required");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data: org, error: oErr } = await supabase
+        .from("organizations")
+        .insert({ user_id: userId, name: orgName.trim() })
+        .select().single();
+      if (oErr) throw oErr;
+
+      let contactId: string | null = null;
+      if (contactName.trim()) {
+        const { data: c, error: cErr } = await supabase
+          .from("contacts")
+          .insert({
+            user_id: userId,
+            organization_id: org.id,
+            name: contactName.trim(),
+            email: contactEmail.trim() || null,
+            phone: contactPhone.trim() || null,
+          })
+          .select().single();
+        if (cErr) throw cErr;
+        contactId = c.id;
+      }
+
+      const { data: ev, error: eErr } = await supabase
+        .from("events")
+        .insert({
+          user_id: userId,
+          organization_id: org.id,
+          primary_contact_id: contactId,
+          event_name: eventName.trim(),
+          course: course.trim() || null,
+          event_date: eventDate || null,
+          notes: notes.trim() || null,
+          stage: "new_lead",
+        })
+        .select().single();
+      if (eErr) throw eErr;
+
+      toast.success("Lead added — entering call");
+      onCreated(ev.id);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to add lead");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8 md:px-8 md:py-10">
+      <header className="mb-6">
+        <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Live Call Workspace</div>
+        <h1 className="font-display text-3xl font-semibold md:text-4xl mt-1">Start a call</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Pick an existing lead or capture a brand-new one — you'll land in the call cockpit immediately.
+        </p>
+      </header>
+
+      {events.length > 0 && (
+        <section className="mb-6 rounded-xl border bg-card p-4 shadow-[var(--shadow-card)]">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="font-display text-base font-semibold">Continue with an existing lead</h2>
+            <span className="text-xs text-muted-foreground">{events.length} total</span>
+          </div>
+          <Select onValueChange={onPickExisting}>
+            <SelectTrigger><SelectValue placeholder="Choose a lead…" /></SelectTrigger>
+            <SelectContent className="max-h-[360px]">
+              {events.map((e) => (
+                <SelectItem key={e.id} value={e.id}>{e.event_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </section>
+      )}
+
+      <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
+        <div className="mb-4">
+          <h2 className="font-display text-lg font-semibold">New lead</h2>
+          <p className="text-xs text-muted-foreground">Just the basics — fill in the rest while you're on the call.</p>
+        </div>
+
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-org">Organization *</Label>
+            <Input id="il-org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="il-contact">Contact name</Label>
+              <Input id="il-contact" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Sarah Mitchell" />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="il-phone">Phone</Label>
+              <Input id="il-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
+            </div>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-email">Email</Label>
+            <Input id="il-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-event">Event name *</Label>
+            <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="il-course">Golf course</Label>
+              <Input id="il-course" value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Pebble Creek GC" />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="il-date">Event date</Label>
+              <Input id="il-date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-notes">Notes</Label>
+            <Textarea id="il-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything you want to remember…" />
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <Button onClick={submit} disabled={saving} size="lg">
+              <Phone className="mr-2 h-4 w-4" />{saving ? "Creating…" : "Create & Start Call"}
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
