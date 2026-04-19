@@ -74,7 +74,6 @@ function LiveCallWorkspace() {
 
   // load all events for picker
   useEffect(() => {
-    if (!user) return;
     supabase.from("events").select("*").order("updated_at", { ascending: false }).then(({ data }) => {
       setEvents(data ?? []);
       if (!eventId && data && data.length) setEventId(data[0].id);
@@ -208,11 +207,12 @@ function LiveCallWorkspace() {
 
   if (!event) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
-        <h1 className="font-display text-3xl font-semibold">Live Call Workspace</h1>
-        <p className="mt-2 text-muted-foreground">No leads yet. Add one to start your first call.</p>
-        <div className="mt-6"><AddLeadDialog onCreated={(id) => setEventId(id)} /></div>
-      </div>
+      <InlineNewLead
+        userId={user?.id ?? null}
+        events={events}
+        onPickExisting={(id) => setEventId(id)}
+        onCreated={(id) => setEventId(id)}
+      />
     );
   }
 
