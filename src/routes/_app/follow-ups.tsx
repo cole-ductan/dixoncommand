@@ -305,3 +305,61 @@ function TaskRow({
     </li>
   );
 }
+
+function LeadGroup({
+  title, description, icon, events, accent,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  events: LeadEvent[];
+  accent?: "warning";
+}) {
+  return (
+    <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
+      <header className="flex items-start justify-between gap-3 px-5 py-3 border-b">
+        <div className="flex items-start gap-2">
+          <div className="mt-0.5">{icon}</div>
+          <div>
+            <h2 className="font-display text-lg font-semibold">{title}</h2>
+            <p className="text-xs text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <span
+          className="rounded-full px-2 py-0.5 text-xs font-mono"
+          style={{
+            backgroundColor: accent === "warning" ? "color-mix(in oklch, var(--gold) 18%, transparent)" : "var(--secondary)",
+            color: accent === "warning" ? "color-mix(in oklch, var(--gold) 50%, var(--foreground))" : "var(--muted-foreground)",
+          }}
+        >
+          {events.length}
+        </span>
+      </header>
+      {events.length === 0 ? (
+        <div className="px-5 py-6 text-sm text-muted-foreground">Nothing here.</div>
+      ) : (
+        <ul className="divide-y">
+          {events.map((e) => (
+            <li key={e.id} className="px-5 py-3 flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 text-xs">
+                  <StageChip stage={e.stage} />
+                  <span className="text-muted-foreground font-mono">
+                    Added {format(new Date(e.created_at), "MMM d")}
+                  </span>
+                </div>
+                <div className="mt-0.5 truncate font-medium">{e.event_name}</div>
+                {e.course && <div className="text-xs text-muted-foreground truncate">{e.course}</div>}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button asChild size="sm" variant="default">
+                  <Link to="/call" search={{ eventId: e.id }}><Phone className="h-3.5 w-3.5" /></Link>
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
