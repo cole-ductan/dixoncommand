@@ -57,6 +57,20 @@ function LiveCallWorkspace() {
   const [outcome, setOutcome] = useState<string>("connected");
   const [followUpAt, setFollowUpAt] = useState<string>("");
   const [followUpAction, setFollowUpAction] = useState<string>("");
+  const [mode, setMode] = useState<"free" | "guided">(() => {
+    if (typeof window === "undefined") return "free";
+    return (localStorage.getItem("callMode") as "free" | "guided") || "free";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("callMode", mode);
+  }, [mode]);
+
+  const saveContactField = useCallback(async (patch: Record<string, any>) => {
+    if (!contact) return;
+    setContact({ ...contact, ...patch } as Contact);
+    const { error } = await supabase.from("contacts").update(patch as any).eq("id", contact.id);
+    if (error) toast.error("Save failed: " + error.message);
+  }, [contact]);
 
   // load all events for picker
   useEffect(() => {
