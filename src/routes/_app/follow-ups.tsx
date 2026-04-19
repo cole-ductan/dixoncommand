@@ -7,8 +7,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus } from "lucide-react";
-import { format, isPast, isToday, isSameDay, startOfDay } from "date-fns";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX } from "lucide-react";
+import { format, isPast, isToday, isSameDay, startOfDay, subHours, subDays } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
 
@@ -25,9 +25,19 @@ type Task = {
   events: { id: string; event_name: string; stage: Stage } | null;
 };
 
+type LeadEvent = {
+  id: string;
+  event_name: string;
+  stage: Stage;
+  created_at: string;
+  last_contact_at: string | null;
+  course: string | null;
+};
+
 function FollowUpsPage() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [allEvents, setAllEvents] = useState<LeadEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [addLeadOpen, setAddLeadOpen] = useState(false);
@@ -39,12 +49,20 @@ function FollowUpsPage() {
   };
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from("tasks")
-      .select("id,next_action,next_action_at,priority,status,events(id,event_name,stage)")
-      .eq("status", "pending")
-      .order("next_action_at", { ascending: true });
-    setTasks((data ?? []) as any);
+    const [tasksRes, eventsRes] = await Promise.all([
+      supabase
+        .from("tasks")
+        .select("id,next_action,next_action_at,priority,status,event_id,events(id,event_name,stage)")
+        .eq("status", "pending")
+        .order("next_action_at", { ascending: true }),
+      supabase
+        .from("events")
+        .select("id,event_name,stage,created_at,last_contact_at,course")
+        .not("stage", "in", "(closed_won,closed_lost)")
+        .order("created_at", { ascending: false }),
+    ]);
+    setTasks((tasksRes.data ?? []) as any);
+    setAllEvents((eventsRes.data ?? []) as any);
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
