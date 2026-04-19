@@ -205,14 +205,96 @@ function LiveCallWorkspace() {
     }
   };
 
+  // No event yet → render the cockpit shell with the new-lead form in the left pane.
   if (!event) {
     return (
-      <InlineNewLead
-        userId={user?.id ?? null}
-        events={events}
-        onPickExisting={(id) => setEventId(id)}
-        onCreated={(id) => setEventId(id)}
-      />
+      <div className="flex h-screen flex-col">
+        <div className="border-b bg-card/80 backdrop-blur px-3 py-2 md:px-6 md:py-3 flex items-center gap-3">
+          <Button asChild size="sm" variant="ghost" className="md:hidden">
+            <Link to="/"><ChevronLeft className="h-4 w-4" /></Link>
+          </Button>
+          {events.length > 0 ? (
+            <Select value={eventId} onValueChange={setEventId}>
+              <SelectTrigger className="w-[220px] md:w-[320px]">
+                <SelectValue placeholder="Pick a lead…" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[400px]">
+                {events.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{e.event_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="text-sm font-medium">New Call</div>
+          )}
+          <span className="rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            New Lead
+          </span>
+          <div className="ml-auto text-xs text-muted-foreground hidden md:inline">
+            Fill the lead card on the left to start
+          </div>
+        </div>
+
+        <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[360px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
+          <ScrollArea className="min-h-0">
+            <InlineNewLead
+              userId={user?.id ?? null}
+              onCreated={(id) => setEventId(id)}
+            />
+          </ScrollArea>
+
+          <ScrollArea className="min-h-0">
+            <div className="p-4 md:p-6 max-w-2xl mx-auto">
+              <div className="rounded-xl border-2 border-dashed bg-secondary/20 p-8 text-center">
+                <Phone className="mx-auto h-8 w-8 text-muted-foreground/60" />
+                <h3 className="mt-3 font-display text-lg font-semibold">Capture starts here</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Save the lead on the left and the call cockpit — interest flags, booked/sent, follow-up scheduling, AI summary — opens up instantly.
+                </p>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <ScrollArea className="min-h-0">
+            <div className="p-4">
+              <Tabs defaultValue="script" className="w-full">
+                <TabsList className="w-full grid grid-cols-3">
+                  <TabsTrigger value="script">Script</TabsTrigger>
+                  <TabsTrigger value="offers">Offers</TabsTrigger>
+                  <TabsTrigger value="email">Email</TabsTrigger>
+                </TabsList>
+                <TabsContent value="script" className="mt-3">
+                  <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
+                    {scriptSections.map((s) => (
+                      <AccordionItem key={s.id} value={s.slug}>
+                        <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
+                        <AccordionContent>
+                          <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </TabsContent>
+                <TabsContent value="offers" className="mt-3 space-y-2">
+                  {offers.map((o) => (
+                    <details key={o.id} className="rounded-lg border bg-card p-3 text-xs">
+                      <summary className="flex cursor-pointer items-center justify-between font-medium text-sm">
+                        <span>{o.name}</span>
+                        <span className="font-mono text-muted-foreground text-[10px]">{o.cost}</span>
+                      </summary>
+                      <div className="mt-2 text-muted-foreground">{o.when_to_introduce}</div>
+                      <pre className="mt-2 whitespace-pre-wrap font-sans">{o.details}</pre>
+                    </details>
+                  ))}
+                </TabsContent>
+                <TabsContent value="email" className="mt-3 text-xs text-muted-foreground">
+                  Save a lead to personalize email templates.
+                </TabsContent>
+              </Tabs>
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
     );
   }
 
@@ -578,13 +660,9 @@ function Field({
 
 function InlineNewLead({
   userId,
-  events,
-  onPickExisting,
   onCreated,
 }: {
   userId: string | null;
-  events: EventRow[];
-  onPickExisting: (id: string) => void;
   onCreated: (id: string) => void;
 }) {
   const [orgName, setOrgName] = useState("");
@@ -599,7 +677,7 @@ function InlineNewLead({
 
   const submit = async () => {
     if (!userId) {
-      toast.error("Sign in required to create a lead");
+      toast.error("Still connecting — try again in a second");
       return;
     }
     if (!eventName.trim() || !orgName.trim()) {
@@ -655,87 +733,61 @@ function InlineNewLead({
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 md:px-8 md:py-10">
-      <header className="mb-6">
-        <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Live Call Workspace</div>
-        <h1 className="font-display text-3xl font-semibold md:text-4xl mt-1">Start a call</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          Pick an existing lead or capture a brand-new one — you'll land in the call cockpit immediately.
+    <div className="p-4 space-y-4">
+      <div>
+        <h2 className="font-display text-lg font-semibold">New lead</h2>
+        <p className="text-xs text-muted-foreground">
+          Save to unlock the full cockpit. You can fill the rest while on the call.
         </p>
-      </header>
+      </div>
 
-      {events.length > 0 && (
-        <section className="mb-6 rounded-xl border bg-card p-4 shadow-[var(--shadow-card)]">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-display text-base font-semibold">Continue with an existing lead</h2>
-            <span className="text-xs text-muted-foreground">{events.length} total</span>
-          </div>
-          <Select onValueChange={onPickExisting}>
-            <SelectTrigger><SelectValue placeholder="Choose a lead…" /></SelectTrigger>
-            <SelectContent className="max-h-[360px]">
-              {events.map((e) => (
-                <SelectItem key={e.id} value={e.id}>{e.event_name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </section>
-      )}
-
-      <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
-        <div className="mb-4">
-          <h2 className="font-display text-lg font-semibold">New lead</h2>
-          <p className="text-xs text-muted-foreground">Just the basics — fill in the rest while you're on the call.</p>
+      <div className="grid gap-3">
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-org" className="text-xs">Organization *</Label>
+          <Input id="il-org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid grid-cols-2 gap-2">
           <div className="grid gap-1.5">
-            <Label htmlFor="il-org">Organization *</Label>
-            <Input id="il-org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="il-contact">Contact name</Label>
-              <Input id="il-contact" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Sarah Mitchell" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="il-phone">Phone</Label>
-              <Input id="il-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
-            </div>
+            <Label htmlFor="il-contact" className="text-xs">Contact name</Label>
+            <Input id="il-contact" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Sarah Mitchell" />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="il-email">Email</Label>
-            <Input id="il-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="il-event">Event name *</Label>
-            <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="il-course">Golf course</Label>
-              <Input id="il-course" value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Pebble Creek GC" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="il-date">Event date</Label>
-              <Input id="il-date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="il-notes">Notes</Label>
-            <Textarea id="il-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything you want to remember…" />
-          </div>
-
-          <div className="flex justify-end pt-1">
-            <Button onClick={submit} disabled={saving} size="lg">
-              <Phone className="mr-2 h-4 w-4" />{saving ? "Creating…" : "Create & Start Call"}
-            </Button>
+            <Label htmlFor="il-phone" className="text-xs">Phone</Label>
+            <Input id="il-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
           </div>
         </div>
-      </section>
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-email" className="text-xs">Email</Label>
+          <Input id="il-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-event" className="text-xs">Event name *</Label>
+          <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-course" className="text-xs">Golf course</Label>
+            <Input id="il-course" value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Pebble Creek GC" />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-date" className="text-xs">Event date</Label>
+            <Input id="il-date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-notes" className="text-xs">Notes</Label>
+          <Textarea id="il-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything you want to remember…" />
+        </div>
+
+        <Button onClick={submit} disabled={saving} className="w-full mt-1">
+          <Phone className="mr-2 h-4 w-4" />{saving ? "Creating…" : "Save & Start Call"}
+        </Button>
+      </div>
     </div>
   );
 }
+
