@@ -44,7 +44,8 @@ function LiveCallWorkspace() {
   const search = Route.useSearch();
 
   const [events, setEvents] = useState<EventRow[]>([]);
-  const [eventId, setEventId] = useState<string | undefined>(search.eventId);
+  const [forceNew, setForceNew] = useState<boolean>(!!search.new);
+  const [eventId, setEventId] = useState<string | undefined>(search.new ? undefined : search.eventId);
   const [event, setEvent] = useState<EventRow | null>(null);
   const [contact, setContact] = useState<Contact | null>(null);
   const [scriptSections, setScriptSections] = useState<ScriptSection[]>([]);
@@ -77,7 +78,8 @@ function LiveCallWorkspace() {
   useEffect(() => {
     supabase.from("events").select("*").order("updated_at", { ascending: false }).then(({ data }) => {
       setEvents(data ?? []);
-      if (!eventId && data && data.length) setEventId(data[0].id);
+      // Only auto-select first event if not explicitly starting a new lead
+      if (!eventId && !forceNew && data && data.length) setEventId(data[0].id);
     });
     supabase.from("script_sections").select("*").order("sort_order").then(({ data }) => setScriptSections((data ?? []) as any));
     supabase.from("offers").select("*").order("sort_order").then(({ data }) => setOffers((data ?? []) as any));
