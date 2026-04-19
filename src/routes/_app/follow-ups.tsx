@@ -3,12 +3,12 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock } from "lucide-react";
-import { format, isPast, isToday, isSameDay, startOfDay, addDays } from "date-fns";
+import { AddLeadDialog } from "@/components/AddLeadDialog";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus } from "lucide-react";
+import { format, isPast, isToday, isSameDay, startOfDay } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
 
