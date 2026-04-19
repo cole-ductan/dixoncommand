@@ -90,7 +90,12 @@ function Dashboard() {
           <Button asChild><Link to="/call"><Phone className="mr-2 h-4 w-4" />Start Call</Link></Button>
           <Button asChild variant="outline"><Link to="/pipeline"><KanbanSquare className="mr-2 h-4 w-4" />Pipeline</Link></Button>
           <Button asChild variant="outline"><Link to="/follow-ups"><CalendarClock className="mr-2 h-4 w-4" />Follow-Ups</Link></Button>
-          <Button asChild variant="outline"><Link to="/call"><Plus className="mr-2 h-4 w-4" />Add Lead</Link></Button>
+          <AddLeadDialog onCreated={load} />
+          {events.length === 0 && (
+            <Button variant="ghost" onClick={handleSeed} disabled={seeding}>
+              <Sparkles className="mr-2 h-4 w-4" />{seeding ? "Loading…" : "Load sample data"}
+            </Button>
+          )}
         </div>
       </header>
 
