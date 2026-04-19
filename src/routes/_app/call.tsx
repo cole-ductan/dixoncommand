@@ -14,10 +14,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
+import { CallCockpit } from "@/components/CallCockpit";
 import { STAGES, type Stage, stageLabel } from "@/lib/stages";
 import { generateDbNoteLine } from "@/lib/dbNote";
 import { applyTemplate } from "@/lib/templating";
-import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2 } from "lucide-react";
+import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -56,6 +57,20 @@ function LiveCallWorkspace() {
   const [outcome, setOutcome] = useState<string>("connected");
   const [followUpAt, setFollowUpAt] = useState<string>("");
   const [followUpAction, setFollowUpAction] = useState<string>("");
+  const [mode, setMode] = useState<"free" | "guided">(() => {
+    if (typeof window === "undefined") return "free";
+    return (localStorage.getItem("callMode") as "free" | "guided") || "free";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("callMode", mode);
+  }, [mode]);
+
+  const saveContactField = useCallback(async (patch: Record<string, any>) => {
+    if (!contact) return;
+    setContact({ ...contact, ...patch } as Contact);
+    const { error } = await supabase.from("contacts").update(patch as any).eq("id", contact.id);
+    if (error) toast.error("Save failed: " + error.message);
+  }, [contact]);
 
   // load all events for picker
   useEffect(() => {
@@ -228,11 +243,31 @@ function LiveCallWorkspace() {
         </Select>
         <StageChip stage={event.stage as Stage} />
         <div className="ml-auto flex items-center gap-2">
+          {/* Free / Guided mode toggle */}
+          <div className="hidden sm:flex items-center rounded-md border bg-background p-0.5">
+            <button
+              onClick={() => setMode("free")}
+              className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition ${
+                mode === "free" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-pressed={mode === "free"}
+            >
+              <ListChecks className="h-3 w-3" /> Free
+            </button>
+            <button
+              onClick={() => setMode("guided")}
+              className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition ${
+                mode === "guided" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-pressed={mode === "guided"}
+            >
+              <Map className="h-3 w-3" /> Guided
+            </button>
+          </div>
           <Button
             size="sm"
             variant={event.hot_lead ? "default" : "outline"}
             onClick={() => saveEventField({ hot_lead: !event.hot_lead })}
-            className={event.hot_lead ? "" : ""}
           >
             <Flame className="mr-1.5 h-3.5 w-3.5" />{event.hot_lead ? "Hot" : "Mark hot"}
           </Button>
@@ -240,7 +275,17 @@ function LiveCallWorkspace() {
         </div>
       </div>
 
-      {/* 3-pane body */}
+      {mode === "guided" ? (
+        <div className="flex-1 min-h-0">
+          <CallCockpit
+            event={event}
+            contact={contact}
+            onSaveEvent={saveEventField}
+            onSaveContact={saveContactField}
+          />
+        </div>
+      ) : (
+      /* 3-pane body */
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
         {/* LEFT: contact / event */}
         <ScrollArea className="lg:col-span-1 max-h-[40vh] lg:max-h-none">
@@ -437,6 +482,7 @@ function LiveCallWorkspace() {
           </div>
         </ScrollArea>
       </div>
+      )}
 
       {/* Bottom action bar — DB summary + save */}
       <div className="border-t bg-card px-3 py-3 md:px-6 md:py-4 space-y-2">
