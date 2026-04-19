@@ -98,6 +98,7 @@ function LiveCallWorkspace() {
         setContact(null);
       }
     });
+    setForceNew(false);
     // sync URL
     navigate({ to: "/call", search: { eventId }, replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
