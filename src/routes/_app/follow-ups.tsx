@@ -30,6 +30,13 @@ function FollowUpsPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [addLeadDate, setAddLeadDate] = useState<string | undefined>(undefined);
+
+  const openAddLeadFor = (d?: Date) => {
+    setAddLeadDate(d ? format(d, "yyyy-MM-dd") : undefined);
+    setAddLeadOpen(true);
+  };
 
   const load = useCallback(async () => {
     const { data } = await supabase
