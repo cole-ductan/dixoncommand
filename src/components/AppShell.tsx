@@ -7,21 +7,11 @@ import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, 
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 
 export function AppShell() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { location } = useRouterState();
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", replace: true });
-  }, [loading, user, navigate]);
-
-  if (loading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        Loading…
-      </div>
-    );
-  }
+  // Auth gate temporarily disabled for testing.
 
   const nav = [
     { to: "/", label: "Dashboard", Icon: LayoutDashboard, exact: true },
