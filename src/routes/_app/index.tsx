@@ -34,23 +34,43 @@ function Dashboard() {
   const [seeding, setSeeding] = useState(false);
 
   const load = async () => {
-      const [t, e] = await Promise.all([
-        supabase
-          .from("tasks")
-          .select("id,next_action,next_action_at,priority,status,events(id,event_name,stage)")
-          .eq("status", "pending")
-          .order("next_action_at", { ascending: true })
-          .limit(50),
-        supabase
-          .from("events")
-          .select("id,event_name,stage,updated_at,hot_lead,course,event_date")
-          .order("updated_at", { ascending: false }),
-      ]);
-      setTasks((t.data ?? []) as any);
-      setEvents((e.data ?? []) as any);
-      setLoading(false);
-    })();
+    const [t, e] = await Promise.all([
+      supabase
+        .from("tasks")
+        .select("id,next_action,next_action_at,priority,status,events(id,event_name,stage)")
+        .eq("status", "pending")
+        .order("next_action_at", { ascending: true })
+        .limit(50),
+      supabase
+        .from("events")
+        .select("id,event_name,stage,updated_at,hot_lead,course,event_date")
+        .order("updated_at", { ascending: false }),
+    ]);
+    setTasks((t.data ?? []) as any);
+    setEvents((e.data ?? []) as any);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  const handleSeed = async () => {
+    if (!user) return;
+    setSeeding(true);
+    try {
+      const r = await seedSampleData(user.id);
+      if (r.skipped) toast.info("You already have leads — sample data skipped.");
+      else toast.success(`Loaded ${r.count} sample events.`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to seed");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const overdue = tasks.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
   const today = tasks.filter((t) => isToday(new Date(t.next_action_at)));
