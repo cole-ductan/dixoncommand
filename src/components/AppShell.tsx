@@ -87,7 +87,7 @@ export function AppShell() {
           <div className="flex items-center gap-1.5">
             <AddLeadDialog trigger={<Button size="sm" variant="outline"><span className="text-base leading-none">+</span></Button>} />
             <Button asChild size="sm" variant="default">
-              <Link to="/call"><Phone className="mr-1 h-3.5 w-3.5" />Call</Link>
+              <Link to="/call" search={{ new: "1" } as any}><Phone className="mr-1 h-3.5 w-3.5" />Call</Link>
             </Button>
           </div>
         </div>
