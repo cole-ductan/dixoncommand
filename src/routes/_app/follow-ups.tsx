@@ -137,12 +137,29 @@ function FollowUpsPage() {
               />
             </div>
             <div className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
-              <h2 className="font-display text-lg font-semibold">
-                {selectedDate ? format(selectedDate, "EEEE, MMM d") : "Pick a date"}
-              </h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-semibold">
+                  {selectedDate ? format(selectedDate, "EEEE, MMM d") : "Pick a date"}
+                </h2>
+                {selectedDate && (
+                  <Button size="sm" variant="outline" onClick={() => openAddLeadFor(selectedDate)}>
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />Add lead
+                  </Button>
+                )}
+              </div>
               {selectedTasks.length === 0 ? (
-                <div className="mt-4 rounded-md bg-secondary/50 px-3 py-4 text-sm text-muted-foreground">
-                  Nothing scheduled for this day.
+                <div className="mt-4 rounded-md bg-secondary/50 px-3 py-6 text-center text-sm text-muted-foreground">
+                  <div>Nothing scheduled for this day.</div>
+                  {selectedDate && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="mt-2"
+                      onClick={() => openAddLeadFor(selectedDate)}
+                    >
+                      <Plus className="mr-1.5 h-3.5 w-3.5" />Add a lead for this date
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <ul className="mt-4 divide-y">
