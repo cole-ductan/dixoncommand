@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag } from "lucide-react";
+import { AddLeadDialog } from "@/components/AddLeadDialog";
 
 export function AppShell() {
   const { user, loading } = useAuth();
