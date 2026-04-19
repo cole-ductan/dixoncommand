@@ -21,6 +21,7 @@ import { applyTemplate } from "@/lib/templating";
 import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { LEAD_SOURCES } from "@/lib/leadSource";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -686,6 +687,8 @@ function InlineNewLead({
   const [eventName, setEventName] = useState("");
   const [course, setCourse] = useState("");
   const [eventDate, setEventDate] = useState("");
+  const [playerCount, setPlayerCount] = useState("");
+  const [leadSource, setLeadSource] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -731,6 +734,8 @@ function InlineNewLead({
           event_name: eventName.trim(),
           course: course.trim() || null,
           event_date: eventDate || null,
+          player_count: playerCount.trim() ? Number(playerCount) : null,
+          lead_source: leadSource || null,
           notes: notes.trim() || null,
           stage: "new_lead",
         })
@@ -789,6 +794,22 @@ function InlineNewLead({
           <div className="grid gap-1.5">
             <Label htmlFor="il-date" className="text-xs">Event date</Label>
             <Input id="il-date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-players" className="text-xs"># of Players</Label>
+            <Input id="il-players" type="number" min="0" value={playerCount} onChange={(e) => setPlayerCount(e.target.value)} placeholder="Est. player count" />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="il-source" className="text-xs">Lead Source</Label>
+            <Select value={leadSource} onValueChange={setLeadSource}>
+              <SelectTrigger id="il-source"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                {LEAD_SOURCES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

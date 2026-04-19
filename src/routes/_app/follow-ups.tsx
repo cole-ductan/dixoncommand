@@ -7,8 +7,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus } from "lucide-react";
-import { format, isPast, isToday, isSameDay, startOfDay } from "date-fns";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX } from "lucide-react";
+import { format, isPast, isToday, isSameDay, startOfDay, subHours, subDays } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
 
@@ -25,9 +25,19 @@ type Task = {
   events: { id: string; event_name: string; stage: Stage } | null;
 };
 
+type LeadEvent = {
+  id: string;
+  event_name: string;
+  stage: Stage;
+  created_at: string;
+  last_contact_at: string | null;
+  course: string | null;
+};
+
 function FollowUpsPage() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [allEvents, setAllEvents] = useState<LeadEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [addLeadOpen, setAddLeadOpen] = useState(false);
@@ -39,12 +49,20 @@ function FollowUpsPage() {
   };
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from("tasks")
-      .select("id,next_action,next_action_at,priority,status,events(id,event_name,stage)")
-      .eq("status", "pending")
-      .order("next_action_at", { ascending: true });
-    setTasks((data ?? []) as any);
+    const [tasksRes, eventsRes] = await Promise.all([
+      supabase
+        .from("tasks")
+        .select("id,next_action,next_action_at,priority,status,event_id,events(id,event_name,stage)")
+        .eq("status", "pending")
+        .order("next_action_at", { ascending: true }),
+      supabase
+        .from("events")
+        .select("id,event_name,stage,created_at,last_contact_at,course")
+        .not("stage", "in", "(closed_won,closed_lost)")
+        .order("created_at", { ascending: false }),
+    ]);
+    setTasks((tasksRes.data ?? []) as any);
+    setAllEvents((eventsRes.data ?? []) as any);
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -55,6 +73,25 @@ function FollowUpsPage() {
     const upcoming = tasks.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
     return { overdue, today, upcoming };
   }, [tasks]);
+
+  // Lead-based groups (events, not tasks)
+  const leadGroups = useMemo(() => {
+    const eventIdsWithTasks = new Set(tasks.map((t) => t.events?.id).filter(Boolean));
+    const cutoff48h = subHours(new Date(), 48);
+    const cutoff3d = subDays(new Date(), 3);
+
+    const justAdded = allEvents.filter(
+      (e) => new Date(e.created_at) > cutoff48h && !eventIdsWithTasks.has(e.id),
+    );
+    const awaitingResponse = allEvents.filter(
+      (e) =>
+        (e.stage === "pitch_delivered" || e.stage === "proposal_sent") &&
+        (!e.last_contact_at || new Date(e.last_contact_at) < cutoff3d),
+    );
+    const noDateSet = allEvents.filter((e) => !eventIdsWithTasks.has(e.id));
+
+    return { justAdded, awaitingResponse, noDateSet };
+  }, [allEvents, tasks]);
 
   const tasksByDay = useMemo(() => {
     const map: Map<string, Task[]> = new Map();
@@ -117,6 +154,26 @@ function FollowUpsPage() {
               <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} />
               <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} />
               <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} />
+
+              <LeadGroup
+                title="Leads Just Added"
+                description="Added in the last 48 hours with no follow-up scheduled."
+                icon={<Sparkles className="h-4 w-4 text-primary" />}
+                events={leadGroups.justAdded}
+              />
+              <LeadGroup
+                title="Awaiting Response"
+                description="Pitch or proposal sent — no contact logged in the last 3 days."
+                icon={<MailQuestion className="h-4 w-4" style={{ color: "var(--stage-pitch)" }} />}
+                events={leadGroups.awaitingResponse}
+              />
+              <LeadGroup
+                title="No Date Set"
+                description="Active leads with zero follow-up date assigned."
+                icon={<CalendarX className="h-4 w-4" style={{ color: "var(--gold)" }} />}
+                events={leadGroups.noDateSet}
+                accent="warning"
+              />
             </>
           )}
         </TabsContent>
@@ -246,5 +303,63 @@ function TaskRow({
         </div>
       </div>
     </li>
+  );
+}
+
+function LeadGroup({
+  title, description, icon, events, accent,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  events: LeadEvent[];
+  accent?: "warning";
+}) {
+  return (
+    <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
+      <header className="flex items-start justify-between gap-3 px-5 py-3 border-b">
+        <div className="flex items-start gap-2">
+          <div className="mt-0.5">{icon}</div>
+          <div>
+            <h2 className="font-display text-lg font-semibold">{title}</h2>
+            <p className="text-xs text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <span
+          className="rounded-full px-2 py-0.5 text-xs font-mono"
+          style={{
+            backgroundColor: accent === "warning" ? "color-mix(in oklch, var(--gold) 18%, transparent)" : "var(--secondary)",
+            color: accent === "warning" ? "color-mix(in oklch, var(--gold) 50%, var(--foreground))" : "var(--muted-foreground)",
+          }}
+        >
+          {events.length}
+        </span>
+      </header>
+      {events.length === 0 ? (
+        <div className="px-5 py-6 text-sm text-muted-foreground">Nothing here.</div>
+      ) : (
+        <ul className="divide-y">
+          {events.map((e) => (
+            <li key={e.id} className="px-5 py-3 flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 text-xs">
+                  <StageChip stage={e.stage} />
+                  <span className="text-muted-foreground font-mono">
+                    Added {format(new Date(e.created_at), "MMM d")}
+                  </span>
+                </div>
+                <div className="mt-0.5 truncate font-medium">{e.event_name}</div>
+                {e.course && <div className="text-xs text-muted-foreground truncate">{e.course}</div>}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button asChild size="sm" variant="default">
+                  <Link to="/call" search={{ eventId: e.id }}><Phone className="h-3.5 w-3.5" /></Link>
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

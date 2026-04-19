@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { LEAD_SOURCES } from "@/lib/leadSource";
 
 export function AddLeadDialog({
   trigger,
@@ -46,6 +48,8 @@ export function AddLeadDialog({
   const [eventName, setEventName] = useState("");
   const [course, setCourse] = useState("");
   const [eventDate, setEventDate] = useState(defaultDate ?? "");
+  const [playerCount, setPlayerCount] = useState("");
+  const [leadSource, setLeadSource] = useState<string>("");
   const [notes, setNotes] = useState("");
 
   // Sync defaultDate when dialog opens
@@ -55,7 +59,7 @@ export function AddLeadDialog({
 
   const reset = () => {
     setOrgName(""); setContactName(""); setContactEmail(""); setContactPhone("");
-    setEventName(""); setCourse(""); setEventDate(""); setNotes("");
+    setEventName(""); setCourse(""); setEventDate(""); setPlayerCount(""); setLeadSource(""); setNotes("");
   };
 
   const submit = async () => {
@@ -97,6 +101,8 @@ export function AddLeadDialog({
           event_name: eventName.trim(),
           course: course.trim() || null,
           event_date: eventDate || null,
+          player_count: playerCount.trim() ? Number(playerCount) : null,
+          lead_source: leadSource || null,
           notes: notes.trim() || null,
           stage: "new_lead",
         })
@@ -165,6 +171,22 @@ export function AddLeadDialog({
             <div className="grid gap-1.5">
               <Label htmlFor="date">Event date</Label>
               <Input id="date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="players"># of Players</Label>
+              <Input id="players" type="number" min="0" value={playerCount} onChange={(e) => setPlayerCount(e.target.value)} placeholder="Est. player count" />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="source">Lead Source</Label>
+              <Select value={leadSource} onValueChange={setLeadSource}>
+                <SelectTrigger id="source"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  {LEAD_SOURCES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

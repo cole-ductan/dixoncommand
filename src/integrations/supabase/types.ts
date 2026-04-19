@@ -61,6 +61,45 @@ export type Database = {
           },
         ]
       }
+      cm_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          id: string
+          shift1_end: string | null
+          shift1_start: string | null
+          shift2_end: string | null
+          shift2_start: string | null
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          id?: string
+          shift1_end?: string | null
+          shift1_start?: string | null
+          shift2_end?: string | null
+          shift2_start?: string | null
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          shift1_end?: string | null
+          shift1_start?: string | null
+          shift2_end?: string | null
+          shift2_start?: string | null
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           created_at: string
@@ -210,6 +249,7 @@ export type Database = {
           interest_par3: boolean
           interest_par5: boolean
           last_contact_at: string | null
+          lead_source: string | null
           notes: string | null
           organization_id: string | null
           pain_points: string | null
@@ -253,6 +293,7 @@ export type Database = {
           interest_par3?: boolean
           interest_par5?: boolean
           last_contact_at?: string | null
+          lead_source?: string | null
           notes?: string | null
           organization_id?: string | null
           pain_points?: string | null
@@ -296,6 +337,7 @@ export type Database = {
           interest_par3?: boolean
           interest_par5?: boolean
           last_contact_at?: string | null
+          lead_source?: string | null
           notes?: string | null
           organization_id?: string | null
           pain_points?: string | null
@@ -401,6 +443,50 @@ export type Database = {
         }
         Relationships: []
       }
+      point_logs: {
+        Row: {
+          activity: Database["public"]["Enums"]["point_activity"]
+          created_at: string
+          event_id: string | null
+          id: string
+          log_date: string
+          notes: string | null
+          points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity: Database["public"]["Enums"]["point_activity"]
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          log_date?: string
+          notes?: string | null
+          points: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity?: Database["public"]["Enums"]["point_activity"]
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          log_date?: string
+          notes?: string | null
+          points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       script_sections: {
         Row: {
           body: string
@@ -478,6 +564,33 @@ export type Database = {
           },
         ]
       }
+      weekly_goals: {
+        Row: {
+          created_at: string
+          goal: number
+          id: string
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          goal?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          goal?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -502,9 +615,18 @@ export type Database = {
         | "pitch_delivered"
         | "challenges_booked"
         | "cgt_created"
+        | "proposal_sent"
         | "follow_up_scheduled"
         | "closed_won"
         | "closed_lost"
+      point_activity:
+        | "par3_booked_with_poc"
+        | "poc_watched_sponsorship_video"
+        | "poc_watched_pricing_video"
+        | "poc_watched_swag_video"
+        | "cgt_ta_appointment_booked"
+        | "auction_referred"
+        | "event_worked_as_rep"
       task_priority: "low" | "normal" | "high" | "urgent"
       task_status: "pending" | "done" | "snoozed"
     }
@@ -651,9 +773,19 @@ export const Constants = {
         "pitch_delivered",
         "challenges_booked",
         "cgt_created",
+        "proposal_sent",
         "follow_up_scheduled",
         "closed_won",
         "closed_lost",
+      ],
+      point_activity: [
+        "par3_booked_with_poc",
+        "poc_watched_sponsorship_video",
+        "poc_watched_pricing_video",
+        "poc_watched_swag_video",
+        "cgt_ta_appointment_booked",
+        "auction_referred",
+        "event_worked_as_rep",
       ],
       task_priority: ["low", "normal", "high", "urgent"],
       task_status: ["pending", "done", "snoozed"],
