@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-route
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag } from "lucide-react";
+import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 
 export function AppShell() {
@@ -18,6 +18,7 @@ export function AppShell() {
     { to: "/call", label: "Live Call", Icon: Phone },
     { to: "/pipeline", label: "Pipeline", Icon: KanbanSquare },
     { to: "/follow-ups", label: "Follow-Ups", Icon: CalendarClock },
+    { to: "/my-week", label: "My Week", Icon: CalendarRange },
     { to: "/playbook", label: "Playbook", Icon: BookOpen },
   ];
 
