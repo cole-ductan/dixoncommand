@@ -287,17 +287,8 @@ function LiveCallWorkspace() {
                     ))}
                   </Accordion>
                 </TabsContent>
-                <TabsContent value="offers" className="mt-3 space-y-2">
-                  {offers.map((o) => (
-                    <details key={o.id} className="rounded-lg border bg-card p-3 text-xs">
-                      <summary className="flex cursor-pointer items-center justify-between font-medium text-sm">
-                        <span>{o.name}</span>
-                        <span className="font-mono text-muted-foreground text-[10px]">{o.cost}</span>
-                      </summary>
-                      <div className="mt-2 text-muted-foreground">{o.when_to_introduce}</div>
-                      <pre className="mt-2 whitespace-pre-wrap font-sans">{o.details}</pre>
-                    </details>
-                  ))}
+                <TabsContent value="offers" className="mt-3">
+                  <OffersPanel variant="rail" />
                 </TabsContent>
                 <TabsContent value="email" className="mt-3 text-xs text-muted-foreground">
                   Save a lead to personalize email templates.
