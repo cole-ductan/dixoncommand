@@ -70,21 +70,37 @@ export function OffersPanel({ variant = "full" }: Props) {
 
   return (
     <div className={isRail ? "space-y-2" : "space-y-4"}>
-      <div className={isRail ? "space-y-2" : "grid gap-4 md:grid-cols-2"}>
+      <div className={isRail ? "space-y-1.5" : "grid gap-4 md:grid-cols-2"}>
         {offers.map((o) => {
           const offerPdfs = LOCAL_OFFER_PDFS[o.slug] ?? [];
           const detail = o.expanded_details || OFFER_EXPANDED[o.slug] || o.details || "";
+          if (isRail) {
+            return (
+              <RailOfferCard
+                key={o.id}
+                offer={o}
+                detail={detail}
+                offerPdfs={offerPdfs}
+                onPreview={setPreviewing}
+                onAddOffer={() => {
+                  add({ kind: "offer", id: o.id, name: o.name, details: stripInternalSections(detail) });
+                  toast.success(`Added "${o.name}" to email tray`);
+                }}
+                onAddPdf={(p) => {
+                  const absoluteUrl = typeof window !== "undefined" ? new URL(p.file, window.location.origin).toString() : p.file;
+                  add({ kind: "pdf", id: p.id, name: p.name, driveFileId: "", driveUrl: absoluteUrl });
+                  toast.success(`Added "${p.name}" to email tray`);
+                }}
+              />
+            );
+          }
           return (
             <article
               key={o.id}
-              className={
-                isRail
-                  ? "rounded-lg border bg-card p-3"
-                  : "rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]"
-              }
+              className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]"
             >
               <div className="flex items-baseline justify-between gap-2">
-                <h3 className={isRail ? "font-display text-sm font-semibold" : "font-display text-lg font-semibold"}>
+                <h3 className="font-display text-lg font-semibold">
                   {o.name}
                 </h3>
                 <span className="whitespace-nowrap text-[10px] font-mono text-muted-foreground">{o.cost}</span>
@@ -94,28 +110,16 @@ export function OffersPanel({ variant = "full" }: Props) {
                 <p className="mt-1 text-[11px] italic text-muted-foreground">When: {o.when_to_introduce}</p>
               )}
 
-              {isRail ? (
-                <details className="mt-2 text-xs">
-                  <summary className="cursor-pointer font-medium text-primary">Details</summary>
-                  <pre className="mt-2 whitespace-pre-wrap font-sans text-[11px] leading-relaxed text-foreground/85">
-                    {detail}
-                  </pre>
-                </details>
-              ) : (
-                <>
-                  {/* Mobile: collapsed by default */}
-                  <details className="mt-3 md:hidden text-sm">
-                    <summary className="cursor-pointer font-medium text-primary">Show full pitch details</summary>
-                    <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
-                      {detail}
-                    </pre>
-                  </details>
-                  {/* Desktop: always expanded */}
-                  <pre className="mt-3 hidden md:block whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
-                    {detail}
-                  </pre>
-                </>
-              )}
+              {/* Mobile: collapsed by default */}
+              <details className="mt-3 md:hidden text-sm">
+                <summary className="cursor-pointer font-medium text-primary">Show full pitch details</summary>
+                <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
+                  {detail}
+                </pre>
+              </details>
+              <pre className="mt-3 hidden md:block whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
+                {detail}
+              </pre>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <Button
