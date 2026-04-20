@@ -401,7 +401,7 @@ function LiveCallWorkspace() {
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
         {/* LEFT: contact / event */}
         <ScrollArea className="lg:col-span-1 lg:max-h-none">
-          <div className="p-4 space-y-4">
+          <div className="p-4 lg:pl-6 space-y-4">
             <div>
               <h2 className="font-display text-lg font-semibold">{event.event_name}</h2>
               <div className="mt-1 text-xs text-muted-foreground">
