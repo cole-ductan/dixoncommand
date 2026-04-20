@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
@@ -23,6 +22,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { LEAD_SOURCES } from "@/lib/leadSource";
 import { OffersPanel } from "@/components/OffersPanel";
+import { ScriptPanel } from "@/components/ScriptPanel";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
@@ -295,16 +295,10 @@ function LiveCallWorkspace() {
                   <TabsTrigger value="email">Email</TabsTrigger>
                 </TabsList>
                 <TabsContent value="script" className="mt-3">
-                  <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
-                    {scriptSections.map((s) => (
-                      <AccordionItem key={s.id} value={s.slug}>
-                        <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
-                        <AccordionContent>
-                          <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
+                  <ScriptPanel
+                    sections={scriptSections}
+                    onUpdated={(u) => setScriptSections((arr) => arr.map((s) => (s.id === u.id ? u : s)))}
+                  />
                 </TabsContent>
                 <TabsContent value="offers" className="mt-3">
                   <OffersPanel variant="rail" />
@@ -578,16 +572,10 @@ function LiveCallWorkspace() {
                 <TabsTrigger value="email">Email</TabsTrigger>
               </TabsList>
               <TabsContent value="script" className="mt-3">
-                <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
-                  {scriptSections.map((s) => (
-                    <AccordionItem key={s.id} value={s.slug}>
-                      <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
-                      <AccordionContent>
-                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                <ScriptPanel
+                  sections={scriptSections}
+                  onUpdated={(u) => setScriptSections((arr) => arr.map((s) => (s.id === u.id ? u : s)))}
+                />
               </TabsContent>
               <TabsContent value="offers" className="mt-3">
                 <OffersPanel variant="rail" />
@@ -921,16 +909,7 @@ function GuidedWithSidePanes({
                 <TabsTrigger value="email">Email</TabsTrigger>
               </TabsList>
               <TabsContent value="script" className="mt-3">
-                <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
-                  {scriptSections.map((s) => (
-                    <AccordionItem key={s.id} value={s.slug}>
-                      <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
-                      <AccordionContent>
-                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                <ScriptPanel sections={scriptSections} />
               </TabsContent>
               <TabsContent value="offers" className="mt-3">
                 <OffersPanel variant="rail" />
