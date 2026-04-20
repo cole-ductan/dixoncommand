@@ -127,7 +127,7 @@ function PipelinePage() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex h-[calc(100vh-1px)] flex-col">
+      <div className="flex min-h-[calc(100vh-88px)] md:h-[calc(100vh-1px)] flex-col">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 md:px-8 md:py-4">
           <div>
             <h1 className="font-display text-2xl md:text-3xl font-semibold">Pipeline</h1>
@@ -317,7 +317,7 @@ function Column({ stage, count, children }: { stage: Stage; count: number; child
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const tooltip = STAGE_TOOLTIPS[stage];
   return (
-    <div className="flex w-72 shrink-0 flex-col rounded-xl border bg-card">
+    <div className="flex w-[78vw] sm:w-72 shrink-0 flex-col rounded-xl border bg-card">
       <div className="flex items-center justify-between border-b px-3 py-2">
         <div className="flex items-center gap-1.5">
           <StageChip stage={stage} />

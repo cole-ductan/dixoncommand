@@ -67,10 +67,10 @@ export function PendingEmailTray() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg px-4 py-2.5 hover:opacity-90"
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg px-3 py-2 sm:px-4 sm:py-2.5 hover:opacity-90"
       >
         <Mail className="h-4 w-4" />
-        <span className="text-sm font-medium">Pending Email</span>
+        <span className="hidden sm:inline text-sm font-medium">Pending Email</span>
         <span className="rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-mono">
           {count}
         </span>
@@ -79,7 +79,7 @@ export function PendingEmailTray() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-[min(420px,calc(100vw-2rem))] rounded-xl border bg-card shadow-2xl flex flex-col max-h-[80vh]">
+    <div className="fixed inset-x-2 bottom-2 z-50 sm:left-auto sm:right-4 sm:bottom-4 sm:inset-x-auto sm:w-[420px] rounded-xl border bg-card shadow-2xl flex flex-col max-h-[80vh]">
       <div className="flex items-center justify-between border-b px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 text-primary" />

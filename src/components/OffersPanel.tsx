@@ -102,9 +102,19 @@ export function OffersPanel({ variant = "full" }: Props) {
                   </pre>
                 </details>
               ) : (
-                <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
-                  {detail}
-                </pre>
+                <>
+                  {/* Mobile: collapsed by default */}
+                  <details className="mt-3 md:hidden text-sm">
+                    <summary className="cursor-pointer font-medium text-primary">Show full pitch details</summary>
+                    <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
+                      {detail}
+                    </pre>
+                  </details>
+                  {/* Desktop: always expanded */}
+                  <pre className="mt-3 hidden md:block whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
+                    {detail}
+                  </pre>
+                </>
               )}
 
               <div className="mt-3 flex flex-wrap gap-1.5">

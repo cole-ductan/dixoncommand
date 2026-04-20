@@ -236,7 +236,45 @@ function MyWeekPage() {
             {scheduleSaving ? "Saving…" : "Save Schedule"}
           </Button>
         </header>
-        <div className="overflow-x-auto p-3">
+        {/* Mobile: stacked card per day. Desktop: table. */}
+        <div className="md:hidden divide-y">
+          {DAYS_OF_WEEK.map((label, idx) => {
+            const row = schedule[idx];
+            const hrs = shiftHours(row.shift1_start, row.shift1_end) + shiftHours(row.shift2_start, row.shift2_end);
+            return (
+              <div key={label} className="px-3 py-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium text-sm">{label}</div>
+                  <div className="text-xs font-mono text-muted-foreground">{hrs > 0 ? `${hrs.toFixed(1)} hrs` : "—"}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-1">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Shift 1 start</Label>
+                    <Input type="time" value={row.shift1_start ?? ""} onChange={(e) => updateCell(idx, "shift1_start", e.target.value)} className="h-9 text-sm" />
+                  </div>
+                  <div className="grid gap-1">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Shift 1 end</Label>
+                    <Input type="time" value={row.shift1_end ?? ""} onChange={(e) => updateCell(idx, "shift1_end", e.target.value)} className="h-9 text-sm" />
+                  </div>
+                  <div className="grid gap-1">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Shift 2 start</Label>
+                    <Input type="time" value={row.shift2_start ?? ""} onChange={(e) => updateCell(idx, "shift2_start", e.target.value)} className="h-9 text-sm" />
+                  </div>
+                  <div className="grid gap-1">
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Shift 2 end</Label>
+                    <Input type="time" value={row.shift2_end ?? ""} onChange={(e) => updateCell(idx, "shift2_end", e.target.value)} className="h-9 text-sm" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div className="flex items-center justify-between px-3 py-3 font-semibold text-sm">
+            <span>Total CM Hours</span>
+            <span className="font-mono">{totalHours.toFixed(1)}</span>
+          </div>
+        </div>
+
+        <div className="hidden md:block overflow-x-auto p-3">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -276,6 +314,9 @@ function MyWeekPage() {
             <em>Note: CM hours alone do not earn SurePay points — log your activity points below.</em>
           </p>
         </div>
+        <p className="md:hidden px-3 pb-3 text-xs text-muted-foreground">
+          Dixon recommends 20+ hours/week in Calling Mode. CM hours alone do not earn SurePay points — log activity points below.
+        </p>
       </section>
 
       {/* Section B — Points Tracker */}

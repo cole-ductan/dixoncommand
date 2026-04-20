@@ -315,17 +315,17 @@ function LiveCallWorkspace() {
   };
 
   return (
-    <div className="flex h-screen flex-col md:h-[calc(100vh)]">
+    <div className="flex min-h-[calc(100vh-88px)] md:h-screen flex-col">
       {/* Top bar */}
-      <div className="border-b bg-card/80 backdrop-blur px-3 py-2 md:px-6 md:py-3 flex items-center gap-3">
-        <Button asChild size="sm" variant="ghost" className="md:hidden">
+      <div className="border-b bg-card/80 backdrop-blur px-3 py-2 md:px-6 md:py-3 flex flex-wrap items-center gap-2 md:gap-3">
+        <Button asChild size="sm" variant="ghost" className="md:hidden h-8 w-8 p-0">
           <Link to="/"><ChevronLeft className="h-4 w-4" /></Link>
         </Button>
         <Select
           value={eventId}
           onValueChange={(v) => { if (v === "__new__") { setEventId(undefined); setForceNew(true); } else setEventId(v); }}
         >
-          <SelectTrigger className="w-[220px] md:w-[320px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[160px] md:w-[320px] h-8 md:h-10 text-xs md:text-sm"><SelectValue /></SelectTrigger>
           <SelectContent className="max-h-[400px]">
             <SelectItem value="__new__" className="font-medium text-primary">+ Add lead</SelectItem>
             <div className="my-1 border-t" />
@@ -361,8 +361,10 @@ function LiveCallWorkspace() {
             size="sm"
             variant={event.hot_lead ? "default" : "outline"}
             onClick={() => saveEventField({ hot_lead: !event.hot_lead })}
+            className="h-8 px-2 md:h-9 md:px-3"
           >
-            <Flame className="mr-1.5 h-3.5 w-3.5" />{event.hot_lead ? "Hot" : "Mark hot"}
+            <Flame className="h-3.5 w-3.5 md:mr-1.5" />
+            <span className="hidden md:inline">{event.hot_lead ? "Hot" : "Mark hot"}</span>
           </Button>
           <span className="hidden md:inline text-xs text-muted-foreground">{savingField ? "Saving…" : "Saved"}</span>
         </div>
@@ -379,10 +381,10 @@ function LiveCallWorkspace() {
           tmplVars={tmplVars}
         />
       ) : (
-      /* 3-pane body */
+      /* 3-pane body — on mobile we stack naturally so each pane shows in full */
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
         {/* LEFT: contact / event */}
-        <ScrollArea className="lg:col-span-1 max-h-[40vh] lg:max-h-none">
+        <ScrollArea className="lg:col-span-1 lg:max-h-none">
           <div className="p-4 space-y-4">
             <div>
               <h2 className="font-display text-lg font-semibold">{event.event_name}</h2>
@@ -539,7 +541,7 @@ function LiveCallWorkspace() {
         </ScrollArea>
 
         {/* RIGHT: dynamic script + offers + templates */}
-        <ScrollArea className="lg:col-span-1 max-h-[45vh] lg:max-h-none">
+        <ScrollArea className="lg:col-span-1 lg:max-h-none">
           <div className="p-4">
             <Tabs defaultValue="script" className="w-full">
               <TabsList className="w-full grid grid-cols-3">
@@ -608,22 +610,24 @@ function LiveCallWorkspace() {
 
       {/* Bottom action bar — DB summary + save */}
       <div className="border-t bg-card px-3 py-3 md:px-6 md:py-4 space-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">DB Note Line</span>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={useTemplate}>Template</Button>
-            <Button size="sm" variant="outline" onClick={generateAiSummary} disabled={generatingSummary}>
-              <Sparkles className="mr-1.5 h-3.5 w-3.5" />{generatingSummary ? "Generating…" : "Generate w/ AI"}
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">DB Note</span>
+          <div className="ml-auto flex flex-wrap gap-1.5">
+            <Button size="sm" variant="outline" className="h-8" onClick={useTemplate}>Template</Button>
+            <Button size="sm" variant="outline" className="h-8" onClick={generateAiSummary} disabled={generatingSummary}>
+              <Sparkles className="mr-1 h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{generatingSummary ? "Generating…" : "Generate w/ AI"}</span>
+              <span className="sm:hidden">{generatingSummary ? "…" : "AI"}</span>
             </Button>
-            <Button size="sm" variant="default" onClick={copyDbLine}>
-              <Copy className="mr-1.5 h-3.5 w-3.5" />Copy
+            <Button size="sm" variant="default" className="h-8" onClick={copyDbLine}>
+              <Copy className="mr-1 h-3.5 w-3.5" />Copy
             </Button>
           </div>
         </div>
         <Textarea value={dbLine} onChange={(e) => setDbLine(e.target.value)} rows={2} className="font-mono text-xs" />
         <div className="flex justify-end">
-          <Button onClick={saveCall}>
+          <Button size="sm" onClick={saveCall}>
             <CheckCircle2 className="mr-1.5 h-4 w-4" />Log Call
           </Button>
         </div>
