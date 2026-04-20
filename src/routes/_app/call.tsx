@@ -423,7 +423,8 @@ function LiveCallWorkspace() {
         </div>
         <ResizablePanelGroup
           orientation="horizontal"
-          defaultLayout={useDefaultLayout({
+          {...useDefaultLayout({
+            id: "call-3pane-v1",
             panelIds: ["call-left", "call-center", "call-right"],
             storage: typeof window !== "undefined" ? window.localStorage : undefined,
           })}
