@@ -297,6 +297,21 @@ function TaskRow({
         <Button asChild size="sm" variant="default">
           <Link to="/call" search={{ eventId: t.events?.id }}><Phone className="h-3.5 w-3.5" /></Link>
         </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          title="Add to Google Calendar"
+          onClick={() =>
+            openGCal({
+              title: `${t.next_action}${t.events ? ` — ${t.events.event_name}` : ""}`,
+              details: t.events?.event_name ?? "",
+              start: new Date(t.next_action_at),
+            })
+          }
+        >
+          <CalendarPlus className="h-3.5 w-3.5" />
+        </Button>
         <div className="hidden sm:flex gap-1">
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 1)}>+1h</Button>
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 24)}>+1d</Button>
