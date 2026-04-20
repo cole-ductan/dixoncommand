@@ -24,6 +24,8 @@ import { format } from "date-fns";
 import { LEAD_SOURCES } from "@/lib/leadSource";
 import { OffersPanel } from "@/components/OffersPanel";
 import { usePendingTray } from "@/lib/pendingTrayStore";
+import { DateTimePicker } from "@/components/DateTimePicker";
+import { NextActionPicker } from "@/components/NextActionPicker";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -509,8 +511,8 @@ function LiveCallWorkspace() {
               <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5"><Calendar className="h-3 w-3" />Schedule follow-up</span>
               </legend>
-              <Input value={followUpAction} onChange={(e) => setFollowUpAction(e.target.value)} placeholder="Next action — e.g. 'Send CGT walkthrough'" />
-              <Input type="datetime-local" value={followUpAt} onChange={(e) => setFollowUpAt(e.target.value)} />
+              <NextActionPicker value={followUpAction} onChange={setFollowUpAction} />
+              <DateTimePicker value={followUpAt} onChange={setFollowUpAt} placeholder="Pick follow-up date" />
             </fieldset>
           </div>
         </ScrollArea>
