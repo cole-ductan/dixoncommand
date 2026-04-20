@@ -21,7 +21,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle, Trash2 } from "lucide-react";
+import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -40,6 +40,7 @@ type EventCard = {
   entry_fee: number | null;
   where_left_off: string | null;
   notes: string | null;
+  archived: boolean;
 };
 
 // Stage groups
@@ -79,13 +80,14 @@ function PipelinePage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeGroup, setActiveGroup] = useState<GroupId>("active");
+  const [showArchived, setShowArchived] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("events")
-      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes")
+      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes,archived")
       .order("updated_at", { ascending: false });
     setEvents((data ?? []) as any);
     setLoading(false);
@@ -128,6 +130,18 @@ function PipelinePage() {
     }
   };
 
+  const archiveOpen = async () => {
+    if (!openId) return;
+    const card = events.find((c) => c.id === openId);
+    if (!card) return;
+    const newArchived = !card.archived;
+    setEvents((prev) => prev.map((c) => c.id === openId ? { ...c, archived: newArchived } : c));
+    const patch: any = { archived: newArchived, archived_at: newArchived ? new Date().toISOString() : null };
+    const { error } = await supabase.from("events").update(patch).eq("id", openId);
+    if (error) { toast.error("Archive failed: " + error.message); load(); }
+    else toast.success(newArchived ? "Archived" : "Restored");
+  };
+
   const active = activeId ? events.find((c) => c.id === activeId) : null;
   const open = openId ? events.find((c) => c.id === openId) : null;
 
@@ -135,12 +149,13 @@ function PipelinePage() {
   const groupCounts = useMemo(() => {
     const m: Record<GroupId, number> = { active: 0, in_progress: 0, closed: 0 };
     for (const e of events) {
+      if (!showArchived && e.archived) continue;
       for (const g of GROUPS) {
         if (g.stages.includes(e.stage)) { m[g.id]++; break; }
       }
     }
     return m;
-  }, [events]);
+  }, [events, showArchived]);
 
   const visibleStages = GROUPS.find((g) => g.id === activeGroup)!.stages;
 
@@ -165,6 +180,15 @@ function PipelinePage() {
                 ))}
               </TabsList>
             </Tabs>
+            <Button
+              size="sm"
+              variant={showArchived ? "default" : "outline"}
+              onClick={() => setShowArchived((v) => !v)}
+              title={showArchived ? "Hide archived" : "Show archived"}
+            >
+              <Archive className="mr-1.5 h-3.5 w-3.5" />
+              {showArchived ? "Hiding archived" : "Show archived"}
+            </Button>
             <AddLeadDialog onCreated={load} />
           </div>
         </header>
@@ -176,7 +200,7 @@ function PipelinePage() {
             <div className="flex-1 min-h-0 overflow-x-auto">
               <div className="flex h-full gap-3 px-4 md:px-8 py-4 min-w-max">
                 {visibleStages.map((s) => {
-                  const items = events.filter((e) => e.stage === s);
+                  const items = events.filter((e) => e.stage === s && (showArchived || !e.archived));
                   return (
                     <Column key={s} stage={s} count={items.length}>
                       {items.map((card) => (
@@ -271,6 +295,9 @@ function PipelinePage() {
                   <div className="pt-4 flex flex-wrap gap-2">
                     <Button asChild>
                       <Link to="/call" search={{ eventId: open.id }}><Phone className="mr-1.5 h-4 w-4" />Open in Call Workspace<ExternalLink className="ml-1 h-3 w-3" /></Link>
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={archiveOpen}>
+                      {open.archived ? (<><ArchiveRestore className="mr-1.5 h-4 w-4" />Restore</>) : (<><Archive className="mr-1.5 h-4 w-4" />Archive</>)}
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -407,10 +434,13 @@ function DraggableCard({ card, onOpen }: { card: EventCard; onOpen: () => void }
 function PipelineCard({ card, dragging }: { card: EventCard; dragging?: boolean }) {
   const value = cardValue(card);
   return (
-    <div className={`rounded-lg border bg-background p-3 text-sm shadow-[var(--shadow-card)] ${dragging ? "rotate-1 shadow-[var(--shadow-elevated)]" : ""}`}>
+    <div className={`rounded-lg border bg-background p-3 text-sm shadow-[var(--shadow-card)] ${dragging ? "rotate-1 shadow-[var(--shadow-elevated)]" : ""} ${card.archived ? "opacity-60" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium leading-tight">{card.event_name}</div>
-        {card.hot_lead && <Flame className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--clay)" }} />}
+        <div className="flex items-center gap-1 shrink-0">
+          {card.archived && <Archive className="h-3 w-3 text-muted-foreground" />}
+          {card.hot_lead && <Flame className="h-3.5 w-3.5" style={{ color: "var(--clay)" }} />}
+        </div>
       </div>
       {card.course && <div className="mt-1 text-xs text-muted-foreground truncate">{card.course}</div>}
       <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">

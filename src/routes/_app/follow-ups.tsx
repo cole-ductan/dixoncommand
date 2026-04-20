@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus, Trash2 } from "lucide-react";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ type Task = {
   next_action_at: string;
   priority: "low" | "normal" | "high" | "urgent";
   status: "pending" | "done" | "snoozed";
-  events: { id: string; event_name: string; stage: Stage } | null;
+  events: { id: string; event_name: string; stage: Stage; archived?: boolean } | null;
 };
 
 type LeadEvent = {
@@ -44,6 +44,7 @@ type LeadEvent = {
   created_at: string;
   last_contact_at: string | null;
   course: string | null;
+  archived?: boolean;
 };
 
 function FollowUpsPage() {
@@ -54,6 +55,7 @@ function FollowUpsPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [addLeadDate, setAddLeadDate] = useState<string | undefined>(undefined);
+  const [showArchived, setShowArchived] = useState(false);
 
   const openAddLeadFor = (d?: Date) => {
     setAddLeadDate(d ? format(d, "yyyy-MM-dd") : undefined);
@@ -64,12 +66,12 @@ function FollowUpsPage() {
     const [tasksRes, eventsRes] = await Promise.all([
       supabase
         .from("tasks")
-        .select("id,next_action,next_action_at,priority,status,event_id,events(id,event_name,stage)")
+        .select("id,next_action,next_action_at,priority,status,event_id,events(id,event_name,stage,archived)")
         .eq("status", "pending")
         .order("next_action_at", { ascending: true }),
       supabase
         .from("events")
-        .select("id,event_name,stage,created_at,last_contact_at,course")
+        .select("id,event_name,stage,created_at,last_contact_at,course,archived")
         .not("stage", "in", "(closed_won,closed_lost)")
         .order("created_at", { ascending: false }),
     ]);
@@ -80,30 +82,32 @@ function FollowUpsPage() {
   useEffect(() => { load(); }, [load]);
 
   const groups = useMemo(() => {
-    const overdue = tasks.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
-    const today = tasks.filter((t) => isToday(new Date(t.next_action_at)));
-    const upcoming = tasks.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
+    const visible = tasks.filter((t) => showArchived || !t.events?.archived);
+    const overdue = visible.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
+    const today = visible.filter((t) => isToday(new Date(t.next_action_at)));
+    const upcoming = visible.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
     return { overdue, today, upcoming };
-  }, [tasks]);
+  }, [tasks, showArchived]);
 
   // Lead-based groups (events, not tasks)
   const leadGroups = useMemo(() => {
+    const visibleEvents = allEvents.filter((e) => showArchived || !e.archived);
     const eventIdsWithTasks = new Set(tasks.map((t) => t.events?.id).filter(Boolean));
     const cutoff48h = subHours(new Date(), 48);
     const cutoff3d = subDays(new Date(), 3);
 
-    const justAdded = allEvents.filter(
+    const justAdded = visibleEvents.filter(
       (e) => new Date(e.created_at) > cutoff48h && !eventIdsWithTasks.has(e.id),
     );
-    const awaitingResponse = allEvents.filter(
+    const awaitingResponse = visibleEvents.filter(
       (e) =>
         (e.stage === "pitch_delivered" || e.stage === "proposal_sent") &&
         (!e.last_contact_at || new Date(e.last_contact_at) < cutoff3d),
     );
-    const noDateSet = allEvents.filter((e) => !eventIdsWithTasks.has(e.id));
+    const noDateSet = visibleEvents.filter((e) => !eventIdsWithTasks.has(e.id));
 
     return { justAdded, awaitingResponse, noDateSet };
-  }, [allEvents, tasks]);
+  }, [allEvents, tasks, showArchived]);
 
   const tasksByDay = useMemo(() => {
     const map: Map<string, Task[]> = new Map();
@@ -140,6 +144,15 @@ function FollowUpsPage() {
     else toast.success("Event deleted");
   };
 
+  const archiveEvent = async (eventId: string, archived: boolean) => {
+    setAllEvents((prev) => prev.map((e) => e.id === eventId ? { ...e, archived } : e));
+    setTasks((prev) => prev.map((t) => t.events?.id === eventId ? { ...t, events: { ...t.events!, archived } } : t));
+    const patch: any = { archived, archived_at: archived ? new Date().toISOString() : null };
+    const { error } = await supabase.from("events").update(patch).eq("id", eventId);
+    if (error) { toast.error("Archive failed: " + error.message); load(); }
+    else toast.success(archived ? "Event archived" : "Event restored");
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -147,9 +160,19 @@ function FollowUpsPage() {
           <h1 className="font-display text-3xl font-semibold md:text-4xl">Follow-Ups</h1>
           <p className="mt-1 text-sm text-muted-foreground">Stay on top of every callback, email, and check-in.</p>
         </div>
-        <Button size="sm" onClick={() => openAddLeadFor()}>
-          <Plus className="mr-1.5 h-4 w-4" />Add Lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={showArchived ? "default" : "outline"}
+            onClick={() => setShowArchived((v) => !v)}
+          >
+            <Archive className="mr-1.5 h-4 w-4" />
+            {showArchived ? "Hiding archived" : "Show archived"}
+          </Button>
+          <Button size="sm" onClick={() => openAddLeadFor()}>
+            <Plus className="mr-1.5 h-4 w-4" />Add Lead
+          </Button>
+        </div>
       </header>
 
       <AddLeadDialog
@@ -171,9 +194,9 @@ function FollowUpsPage() {
             <div className="text-muted-foreground">Loading…</div>
           ) : (
             <>
-              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
-              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
-              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
+              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
+              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
 
               <LeadGroup
                 title="Leads Just Added"
@@ -181,6 +204,7 @@ function FollowUpsPage() {
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
                 events={leadGroups.justAdded}
                 onDelete={deleteEvent}
+                onArchive={archiveEvent}
               />
               <LeadGroup
                 title="Awaiting Response"
@@ -188,6 +212,7 @@ function FollowUpsPage() {
                 icon={<MailQuestion className="h-4 w-4" style={{ color: "var(--stage-pitch)" }} />}
                 events={leadGroups.awaitingResponse}
                 onDelete={deleteEvent}
+                onArchive={archiveEvent}
               />
               <LeadGroup
                 title="No Date Set"
@@ -196,6 +221,7 @@ function FollowUpsPage() {
                 events={leadGroups.noDateSet}
                 accent="warning"
                 onDelete={deleteEvent}
+                onArchive={archiveEvent}
               />
             </>
           )}
@@ -244,7 +270,7 @@ function FollowUpsPage() {
               ) : (
                 <ul className="mt-4 divide-y">
                   {selectedTasks.map((t) => (
-                    <TaskRow key={t.id} t={t} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+                    <TaskRow key={t.id} t={t} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
                   ))}
                 </ul>
               )}
@@ -257,7 +283,7 @@ function FollowUpsPage() {
 }
 
 function Group({
-  title, icon, tasks, accent, onComplete, onSnooze, onDelete,
+  title, icon, tasks, accent, onComplete, onSnooze, onDelete, onArchive,
 }: {
   title: string;
   icon?: React.ReactNode;
@@ -266,6 +292,7 @@ function Group({
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
   onDelete: (eventId: string) => void;
+  onArchive: (eventId: string, archived: boolean) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -280,7 +307,7 @@ function Group({
         <div className="px-5 py-6 text-sm text-muted-foreground">Nothing here.</div>
       ) : (
         <ul className="divide-y">
-          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} onDelete={onDelete} />)}
+          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} onDelete={onDelete} onArchive={onArchive} />)}
         </ul>
       )}
     </section>
@@ -288,16 +315,17 @@ function Group({
 }
 
 function TaskRow({
-  t, accent, onComplete, onSnooze, onDelete,
+  t, accent, onComplete, onSnooze, onDelete, onArchive,
 }: {
   t: Task;
   accent?: "destructive";
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
   onDelete: (eventId: string) => void;
+  onArchive: (eventId: string, archived: boolean) => void;
 }) {
   return (
-    <li className="px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3">
+    <li className={`px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3 ${t.events?.archived ? "opacity-60" : ""}`}>
       <Button size="icon" variant="outline" className="h-7 w-7 shrink-0" onClick={() => onComplete(t.id)} aria-label="Complete">
         <Check className="h-3.5 w-3.5" />
       </Button>
@@ -307,6 +335,11 @@ function TaskRow({
             {format(new Date(t.next_action_at), "MMM d · h:mm a")}
           </span>
           {t.events && <StageChip stage={t.events.stage} />}
+          {t.events?.archived && (
+            <span className="rounded-full border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              Archived
+            </span>
+          )}
           {t.priority !== "normal" && (
             <span className="rounded-full px-1.5 py-0.5 text-[10px] uppercase font-semibold tracking-wider"
               style={{
@@ -341,6 +374,17 @@ function TaskRow({
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 1)}>+1h</Button>
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 24)}>+1d</Button>
         </div>
+        {t.events?.id && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            title={t.events.archived ? "Restore from archive" : "Archive event"}
+            onClick={() => onArchive(t.events!.id, !t.events!.archived)}
+          >
+            {t.events.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+          </Button>
+        )}
         {t.events?.id && (
           <DeleteEventButton
             eventName={t.events.event_name}
@@ -388,7 +432,7 @@ function DeleteEventButton({ eventName, onConfirm }: { eventName: string; onConf
 }
 
 function LeadGroup({
-  title, description, icon, events, accent, onDelete,
+  title, description, icon, events, accent, onDelete, onArchive,
 }: {
   title: string;
   description: string;
@@ -396,6 +440,7 @@ function LeadGroup({
   events: LeadEvent[];
   accent?: "warning";
   onDelete: (eventId: string) => void;
+  onArchive: (eventId: string, archived: boolean) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -422,10 +467,15 @@ function LeadGroup({
       ) : (
         <ul className="divide-y">
           {events.map((e) => (
-            <li key={e.id} className="px-5 py-3 flex items-center gap-3">
+            <li key={e.id} className={`px-5 py-3 flex items-center gap-3 ${e.archived ? "opacity-60" : ""}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-xs">
                   <StageChip stage={e.stage} />
+                  {e.archived && (
+                    <span className="rounded-full border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Archived
+                    </span>
+                  )}
                   <span className="text-muted-foreground font-mono">
                     Added {format(new Date(e.created_at), "MMM d")}
                   </span>
@@ -436,6 +486,15 @@ function LeadGroup({
               <div className="flex items-center gap-1 shrink-0">
                 <Button asChild size="sm" variant="default">
                   <Link to="/call" search={{ eventId: e.id }}><Phone className="h-3.5 w-3.5" /></Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                  title={e.archived ? "Restore from archive" : "Archive event"}
+                  onClick={() => onArchive(e.id, !e.archived)}
+                >
+                  {e.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
                 </Button>
                 <DeleteEventButton eventName={e.event_name} onConfirm={() => onDelete(e.id)} />
               </div>

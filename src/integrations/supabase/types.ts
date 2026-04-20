@@ -224,6 +224,8 @@ export type Database = {
       events: {
         Row: {
           amateur_endorsement_sent: boolean
+          archived: boolean
+          archived_at: string | null
           auction_referred: boolean
           cgt_created: boolean
           cgt_url: string | null
@@ -268,6 +270,8 @@ export type Database = {
         }
         Insert: {
           amateur_endorsement_sent?: boolean
+          archived?: boolean
+          archived_at?: string | null
           auction_referred?: boolean
           cgt_created?: boolean
           cgt_url?: string | null
@@ -312,6 +316,8 @@ export type Database = {
         }
         Update: {
           amateur_endorsement_sent?: boolean
+          archived?: boolean
+          archived_at?: string | null
           auction_referred?: boolean
           cgt_created?: boolean
           cgt_url?: string | null

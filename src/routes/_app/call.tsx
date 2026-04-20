@@ -44,6 +44,22 @@ type Offer = { id: string; slug: string; name: string; cost: string | null; when
 type Tmpl = { id: string; slug: string; name: string; subject: string; body: string };
 type Contact = { id: string; name: string; email: string | null; phone: string | null };
 
+const INTEREST_LABELS: Record<string, string> = {
+  interest_amateur_endorsement: "Amateur Endorsement",
+  interest_par3: "Par 3 (Dixon Challenge)",
+  interest_par5: "Par 5 (Aurelius Challenge)",
+  interest_cgt: "CGT Platform",
+  interest_custom_products: "Custom Products",
+  interest_auction: "Auction Referral",
+};
+
+function appendInterestNote(existing: string | null | undefined, label: string): string {
+  const line = `Interested in ${label} — needs follow-up`;
+  const current = existing ?? "";
+  if (current.includes(line)) return current;
+  return current.trim().length === 0 ? line : `${current.trimEnd()}\n${line}`;
+}
+
 function LiveCallWorkspace() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -464,7 +480,19 @@ function LiveCallWorkspace() {
                   ["interest_custom_products", "Custom Products"],
                   ["interest_auction", "Auction Referral"],
                 ].map(([k, l]) => (
-                  <CheckRow key={k} label={l} checked={!!event[k]} onChange={(v) => saveEventField({ [k]: v })} />
+                  <CheckRow
+                    key={k}
+                    label={l}
+                    checked={!!event[k]}
+                    onChange={(v) => {
+                      const patch: Record<string, any> = { [k]: v };
+                      // When toggling ON, append an "Interested in ... — needs follow-up" line to notes (deduped)
+                      if (v && INTEREST_LABELS[k] && !event[k]) {
+                        patch.notes = appendInterestNote(event.notes, INTEREST_LABELS[k]);
+                      }
+                      saveEventField(patch);
+                    }}
+                  />
                 ))}
               </div>
             </fieldset>
