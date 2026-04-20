@@ -371,6 +371,77 @@ export type Database = {
           },
         ]
       }
+      next_action_presets: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          pinned: boolean
+          reminder_at: string | null
+          task_id: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          reminder_at?: string | null
+          task_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          reminder_at?: string | null
+          task_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_pdfs: {
         Row: {
           created_at: string
@@ -379,7 +450,9 @@ export type Database = {
           id: string
           name: string
           offer_slug: string
+          public_url: string | null
           sort_order: number
+          storage_path: string | null
           updated_at: string
           user_id: string
         }
@@ -390,7 +463,9 @@ export type Database = {
           id?: string
           name: string
           offer_slug: string
+          public_url?: string | null
           sort_order?: number
+          storage_path?: string | null
           updated_at?: string
           user_id: string
         }
@@ -401,7 +476,9 @@ export type Database = {
           id?: string
           name?: string
           offer_slug?: string
+          public_url?: string | null
           sort_order?: number
+          storage_path?: string | null
           updated_at?: string
           user_id?: string
         }
