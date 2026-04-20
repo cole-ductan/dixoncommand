@@ -421,15 +421,37 @@ function LiveCallWorkspace() {
             contact={contact}
           />
         </div>
-        <ResizablePanelGroup
-          orientation="horizontal"
-          {...useDefaultLayout({
-            id: "call-3pane-v1",
-            panelIds: ["call-left", "call-center", "call-right"],
-            storage: typeof window !== "undefined" ? window.localStorage : undefined,
-          })}
-          className="hidden lg:flex h-full"
-        >
+        <ResizablePanels3
+          left={<CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />}
+          center={
+            <CallCenterPane
+              event={event}
+              setEvent={setEvent}
+              saveEventField={saveEventField}
+              callType={callType}
+              setCallType={setCallType}
+              outcome={outcome}
+              setOutcome={setOutcome}
+              summary={summary}
+              setSummary={setSummary}
+              followUpAction={followUpAction}
+              setFollowUpAction={setFollowUpAction}
+              followUpAt={followUpAt}
+              setFollowUpAt={setFollowUpAt}
+            />
+          }
+          right={
+            <CallRightPane
+              scriptSections={scriptSections}
+              setScriptSections={setScriptSections}
+              templates={templates}
+              tmplVars={tmplVars}
+              contact={contact}
+            />
+          }
+        />
+        {false && (
+        <ResizablePanelGroup orientation="horizontal" className="hidden">
           <ResizablePanel id="call-left" defaultSize="22%" minSize="200px" maxSize="40%">
             <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
           </ResizablePanel>
