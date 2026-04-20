@@ -194,9 +194,9 @@ function FollowUpsPage() {
             <div className="text-muted-foreground">Loading…</div>
           ) : (
             <>
-              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
-              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
-              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
+              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
+              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} onArchive={archiveEvent} />
 
               <LeadGroup
                 title="Leads Just Added"
@@ -204,6 +204,7 @@ function FollowUpsPage() {
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
                 events={leadGroups.justAdded}
                 onDelete={deleteEvent}
+                onArchive={archiveEvent}
               />
               <LeadGroup
                 title="Awaiting Response"
@@ -211,6 +212,7 @@ function FollowUpsPage() {
                 icon={<MailQuestion className="h-4 w-4" style={{ color: "var(--stage-pitch)" }} />}
                 events={leadGroups.awaitingResponse}
                 onDelete={deleteEvent}
+                onArchive={archiveEvent}
               />
               <LeadGroup
                 title="No Date Set"
@@ -219,6 +221,7 @@ function FollowUpsPage() {
                 events={leadGroups.noDateSet}
                 accent="warning"
                 onDelete={deleteEvent}
+                onArchive={archiveEvent}
               />
             </>
           )}
