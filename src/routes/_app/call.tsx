@@ -315,17 +315,17 @@ function LiveCallWorkspace() {
   };
 
   return (
-    <div className="flex h-screen flex-col md:h-[calc(100vh)]">
+    <div className="flex min-h-[calc(100vh-88px)] md:h-screen flex-col">
       {/* Top bar */}
-      <div className="border-b bg-card/80 backdrop-blur px-3 py-2 md:px-6 md:py-3 flex items-center gap-3">
-        <Button asChild size="sm" variant="ghost" className="md:hidden">
+      <div className="border-b bg-card/80 backdrop-blur px-3 py-2 md:px-6 md:py-3 flex flex-wrap items-center gap-2 md:gap-3">
+        <Button asChild size="sm" variant="ghost" className="md:hidden h-8 w-8 p-0">
           <Link to="/"><ChevronLeft className="h-4 w-4" /></Link>
         </Button>
         <Select
           value={eventId}
           onValueChange={(v) => { if (v === "__new__") { setEventId(undefined); setForceNew(true); } else setEventId(v); }}
         >
-          <SelectTrigger className="w-[220px] md:w-[320px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[160px] md:w-[320px] h-8 md:h-10 text-xs md:text-sm"><SelectValue /></SelectTrigger>
           <SelectContent className="max-h-[400px]">
             <SelectItem value="__new__" className="font-medium text-primary">+ Add lead</SelectItem>
             <div className="my-1 border-t" />
@@ -361,8 +361,10 @@ function LiveCallWorkspace() {
             size="sm"
             variant={event.hot_lead ? "default" : "outline"}
             onClick={() => saveEventField({ hot_lead: !event.hot_lead })}
+            className="h-8 px-2 md:h-9 md:px-3"
           >
-            <Flame className="mr-1.5 h-3.5 w-3.5" />{event.hot_lead ? "Hot" : "Mark hot"}
+            <Flame className="h-3.5 w-3.5 md:mr-1.5" />
+            <span className="hidden md:inline">{event.hot_lead ? "Hot" : "Mark hot"}</span>
           </Button>
           <span className="hidden md:inline text-xs text-muted-foreground">{savingField ? "Saving…" : "Saved"}</span>
         </div>
