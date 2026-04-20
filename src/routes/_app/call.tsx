@@ -381,10 +381,10 @@ function LiveCallWorkspace() {
           tmplVars={tmplVars}
         />
       ) : (
-      /* 3-pane body */
+      /* 3-pane body — on mobile we stack naturally so each pane shows in full */
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
         {/* LEFT: contact / event */}
-        <ScrollArea className="lg:col-span-1 max-h-[40vh] lg:max-h-none">
+        <ScrollArea className="lg:col-span-1 lg:max-h-none">
           <div className="p-4 space-y-4">
             <div>
               <h2 className="font-display text-lg font-semibold">{event.event_name}</h2>
@@ -541,7 +541,7 @@ function LiveCallWorkspace() {
         </ScrollArea>
 
         {/* RIGHT: dynamic script + offers + templates */}
-        <ScrollArea className="lg:col-span-1 max-h-[45vh] lg:max-h-none">
+        <ScrollArea className="lg:col-span-1 lg:max-h-none">
           <div className="p-4">
             <Tabs defaultValue="script" className="w-full">
               <TabsList className="w-full grid grid-cols-3">
