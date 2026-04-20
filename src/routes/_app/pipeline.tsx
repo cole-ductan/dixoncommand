@@ -113,6 +113,21 @@ function PipelinePage() {
     if (error) toast.error("Save failed: " + error.message);
   };
 
+  const deleteOpen = async () => {
+    if (!openId) return;
+    const id = openId;
+    const name = events.find((c) => c.id === id)?.event_name ?? "Event";
+    setOpenId(null);
+    setEvents((prev) => prev.filter((c) => c.id !== id));
+    const { error } = await supabase.from("events").delete().eq("id", id);
+    if (error) {
+      toast.error("Delete failed: " + error.message);
+      load();
+    } else {
+      toast.success(`Deleted "${name}"`);
+    }
+  };
+
   const active = activeId ? events.find((c) => c.id === activeId) : null;
   const open = openId ? events.find((c) => c.id === openId) : null;
 
