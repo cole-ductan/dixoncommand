@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { LEAD_SOURCES } from "@/lib/leadSource";
 import { OffersPanel } from "@/components/OffersPanel";
+import { ScriptPanel } from "@/components/ScriptPanel";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
