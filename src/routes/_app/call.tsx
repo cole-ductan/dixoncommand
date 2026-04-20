@@ -27,6 +27,7 @@ import { usePendingTray } from "@/lib/pendingTrayStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
