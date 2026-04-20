@@ -467,10 +467,15 @@ function LeadGroup({
       ) : (
         <ul className="divide-y">
           {events.map((e) => (
-            <li key={e.id} className="px-5 py-3 flex items-center gap-3">
+            <li key={e.id} className={`px-5 py-3 flex items-center gap-3 ${e.archived ? "opacity-60" : ""}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-xs">
                   <StageChip stage={e.stage} />
+                  {e.archived && (
+                    <span className="rounded-full border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Archived
+                    </span>
+                  )}
                   <span className="text-muted-foreground font-mono">
                     Added {format(new Date(e.created_at), "MMM d")}
                   </span>
@@ -481,6 +486,15 @@ function LeadGroup({
               <div className="flex items-center gap-1 shrink-0">
                 <Button asChild size="sm" variant="default">
                   <Link to="/call" search={{ eventId: e.id }}><Phone className="h-3.5 w-3.5" /></Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                  title={e.archived ? "Restore from archive" : "Archive event"}
+                  onClick={() => onArchive(e.id, !e.archived)}
+                >
+                  {e.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
                 </Button>
                 <DeleteEventButton eventName={e.event_name} onConfirm={() => onDelete(e.id)} />
               </div>
