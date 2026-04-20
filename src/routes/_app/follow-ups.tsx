@@ -144,6 +144,15 @@ function FollowUpsPage() {
     else toast.success("Event deleted");
   };
 
+  const archiveEvent = async (eventId: string, archived: boolean) => {
+    setAllEvents((prev) => prev.map((e) => e.id === eventId ? { ...e, archived } : e));
+    setTasks((prev) => prev.map((t) => t.events?.id === eventId ? { ...t, events: { ...t.events!, archived } } : t));
+    const patch: any = { archived, archived_at: archived ? new Date().toISOString() : null };
+    const { error } = await supabase.from("events").update(patch).eq("id", eventId);
+    if (error) { toast.error("Archive failed: " + error.message); load(); }
+    else toast.success(archived ? "Event archived" : "Event restored");
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -151,9 +160,19 @@ function FollowUpsPage() {
           <h1 className="font-display text-3xl font-semibold md:text-4xl">Follow-Ups</h1>
           <p className="mt-1 text-sm text-muted-foreground">Stay on top of every callback, email, and check-in.</p>
         </div>
-        <Button size="sm" onClick={() => openAddLeadFor()}>
-          <Plus className="mr-1.5 h-4 w-4" />Add Lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={showArchived ? "default" : "outline"}
+            onClick={() => setShowArchived((v) => !v)}
+          >
+            <Archive className="mr-1.5 h-4 w-4" />
+            {showArchived ? "Hiding archived" : "Show archived"}
+          </Button>
+          <Button size="sm" onClick={() => openAddLeadFor()}>
+            <Plus className="mr-1.5 h-4 w-4" />Add Lead
+          </Button>
+        </div>
       </header>
 
       <AddLeadDialog
