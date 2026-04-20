@@ -686,14 +686,16 @@ function CallRightPane({ scriptSections, setScriptSections, templates, tmplVars,
               <TabsContent value="script" className="mt-3">
                 <ScriptPanel
                   sections={scriptSections}
-                  onUpdated={(u) => setScriptSections((arr) => arr.map((s) => (s.id === u.id ? u : s)))}
+                  onUpdated={(u: ScriptSection) =>
+                    setScriptSections((arr: ScriptSection[]) => arr.map((s) => (s.id === u.id ? u : s)))
+                  }
                 />
               </TabsContent>
               <TabsContent value="offers" className="mt-3">
                 <OffersPanel variant="rail" />
               </TabsContent>
               <TabsContent value="email" className="mt-3 space-y-3">
-                {templates.map((t) => {
+                {templates.map((t: Tmpl) => {
                   const subj = applyTemplate(t.subject, tmplVars);
                   const body = applyTemplate(t.body, tmplVars);
                   return (
