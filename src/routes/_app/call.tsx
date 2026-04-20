@@ -480,7 +480,19 @@ function LiveCallWorkspace() {
                   ["interest_custom_products", "Custom Products"],
                   ["interest_auction", "Auction Referral"],
                 ].map(([k, l]) => (
-                  <CheckRow key={k} label={l} checked={!!event[k]} onChange={(v) => saveEventField({ [k]: v })} />
+                  <CheckRow
+                    key={k}
+                    label={l}
+                    checked={!!event[k]}
+                    onChange={(v) => {
+                      const patch: Record<string, any> = { [k]: v };
+                      // When toggling ON, append an "Interested in ... — needs follow-up" line to notes (deduped)
+                      if (v && INTEREST_LABELS[k] && !event[k]) {
+                        patch.notes = appendInterestNote(event.notes, INTEREST_LABELS[k]);
+                      }
+                      saveEventField(patch);
+                    }}
+                  />
                 ))}
               </div>
             </fieldset>
