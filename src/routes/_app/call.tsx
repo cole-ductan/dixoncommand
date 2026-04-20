@@ -535,33 +535,41 @@ function LiveCallWorkspace() {
                   ))}
                 </Accordion>
               </TabsContent>
-              <TabsContent value="offers" className="mt-3 space-y-2">
-                {offers.map((o) => (
-                  <details key={o.id} className="rounded-lg border bg-card p-3 text-xs">
-                    <summary className="flex cursor-pointer items-center justify-between font-medium text-sm">
-                      <span>{o.name}</span>
-                      <span className="font-mono text-muted-foreground text-[10px]">{o.cost}</span>
-                    </summary>
-                    <div className="mt-2 text-muted-foreground">{o.when_to_introduce}</div>
-                    <pre className="mt-2 whitespace-pre-wrap font-sans">{o.details}</pre>
-                  </details>
-                ))}
+              <TabsContent value="offers" className="mt-3">
+                <OffersPanel variant="rail" />
               </TabsContent>
               <TabsContent value="email" className="mt-3 space-y-3">
                 {templates.map((t) => {
                   const subj = applyTemplate(t.subject, tmplVars);
                   const body = applyTemplate(t.body, tmplVars);
-                  const mailto = `mailto:${contact?.email ?? ""}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
                   return (
                     <article key={t.id} className="rounded-lg border bg-card p-3">
                       <div className="font-medium text-sm">{t.name}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">Subject: {subj}</div>
-                      <div className="mt-2 flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(body).then(() => toast.success("Body copied"))}>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigator.clipboard.writeText(body).then(() => toast.success("Body copied"))}
+                        >
                           <Copy className="mr-1.5 h-3 w-3" />Copy
                         </Button>
-                        <Button asChild size="sm" variant="default" disabled={!contact?.email}>
-                          <a href={mailto}><Mail className="mr-1.5 h-3 w-3" />Open</a>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            usePendingTray.getState().setTo(contact?.email ?? "");
+                            usePendingTray.getState().add({
+                              kind: "template",
+                              id: t.id,
+                              name: t.name,
+                              subject: subj,
+                              body,
+                            });
+                            toast.success(`Added "${t.name}" to email tray`);
+                          }}
+                        >
+                          <Mail className="mr-1.5 h-3 w-3" />Add to tray
                         </Button>
                       </div>
                     </article>
