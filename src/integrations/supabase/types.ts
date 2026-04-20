@@ -371,11 +371,48 @@ export type Database = {
           },
         ]
       }
+      offer_pdfs: {
+        Row: {
+          created_at: string
+          drive_file_id: string | null
+          drive_url: string | null
+          id: string
+          name: string
+          offer_slug: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          drive_file_id?: string | null
+          drive_url?: string | null
+          id?: string
+          name: string
+          offer_slug: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          drive_file_id?: string | null
+          drive_url?: string | null
+          id?: string
+          name?: string
+          offer_slug?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           cost: string | null
           created_at: string
           details: string | null
+          expanded_details: string | null
           id: string
           name: string
           slug: string
@@ -389,6 +426,7 @@ export type Database = {
           cost?: string | null
           created_at?: string
           details?: string | null
+          expanded_details?: string | null
           id?: string
           name: string
           slug: string
@@ -402,6 +440,7 @@ export type Database = {
           cost?: string | null
           created_at?: string
           details?: string | null
+          expanded_details?: string | null
           id?: string
           name?: string
           slug?: string
