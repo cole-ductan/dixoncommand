@@ -1,0 +1,258 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Eye, Mail, FileText, RefreshCw } from "lucide-react";
+import { usePendingTray } from "@/lib/pendingTrayStore";
+import { useServerFn } from "@tanstack/react-start";
+import { seedOfferContent } from "@/lib/driveOffers.functions";
+import { toast } from "sonner";
+
+type Offer = {
+  id: string;
+  slug: string;
+  name: string;
+  type: string | null;
+  cost: string | null;
+  when_to_introduce: string | null;
+  details: string | null;
+  expanded_details: string | null;
+};
+
+type OfferPdf = {
+  id: string;
+  offer_slug: string;
+  name: string;
+  drive_file_id: string | null;
+  drive_url: string | null;
+};
+
+interface Props {
+  /** "full" = expanded cards for /offers page. "rail" = compact for live-call rail. */
+  variant?: "full" | "rail";
+}
+
+export function OffersPanel({ variant = "full" }: Props) {
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [pdfs, setPdfs] = useState<OfferPdf[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const [previewing, setPreviewing] = useState<OfferPdf | null>(null);
+  const add = usePendingTray((s) => s.add);
+  const seedFn = useServerFn(seedOfferContent);
+
+  const load = async () => {
+    setLoading(true);
+    const [o, p] = await Promise.all([
+      supabase.from("offers").select("*").order("sort_order"),
+      supabase.from("offer_pdfs").select("*").order("sort_order"),
+    ]);
+    setOffers((o.data ?? []) as any);
+    setPdfs((p.data ?? []) as any);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  // Auto-seed once if nothing in offer_pdfs
+  useEffect(() => {
+    if (loading) return;
+    if (pdfs.length === 0 && !seeding) {
+      setSeeding(true);
+      seedFn({} as any)
+        .then((res: any) => {
+          if (res?.ok) {
+            toast.success(`Linked ${res.inserted} PDFs from Drive`);
+            load();
+          } else if (res?.error) {
+            toast.error("Drive sync failed: " + res.error);
+          }
+        })
+        .catch((e: any) => toast.error("Drive sync failed: " + (e?.message ?? "unknown")))
+        .finally(() => setSeeding(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  const resync = async () => {
+    setSeeding(true);
+    try {
+      const res: any = await seedFn({} as any);
+      if (res?.ok) {
+        toast.success(`Synced ${res.inserted} PDFs`);
+        await load();
+      } else {
+        toast.error("Sync failed: " + (res?.error ?? "unknown"));
+      }
+    } catch (e: any) {
+      toast.error("Sync failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const pdfsFor = (slug: string) => pdfs.filter((p) => p.offer_slug === slug);
+
+  if (loading) {
+    return <div className="p-4 text-sm text-muted-foreground">Loading offers…</div>;
+  }
+
+  const isRail = variant === "rail";
+
+  return (
+    <div className={isRail ? "space-y-2" : "space-y-4"}>
+      {!isRail && (
+        <div className="flex items-center justify-end">
+          <Button size="sm" variant="ghost" onClick={resync} disabled={seeding}>
+            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${seeding ? "animate-spin" : ""}`} />
+            {seeding ? "Syncing…" : "Resync PDFs"}
+          </Button>
+        </div>
+      )}
+
+      <div className={isRail ? "space-y-2" : "grid gap-4 md:grid-cols-2"}>
+        {offers.map((o) => {
+          const offerPdfs = pdfsFor(o.slug);
+          const detail = o.expanded_details || o.details || "";
+          return (
+            <article
+              key={o.id}
+              className={
+                isRail
+                  ? "rounded-lg border bg-card p-3"
+                  : "rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]"
+              }
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <h3 className={isRail ? "font-display text-sm font-semibold" : "font-display text-lg font-semibold"}>
+                  {o.name}
+                </h3>
+                <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">{o.cost}</span>
+              </div>
+              <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{o.type}</div>
+              {o.when_to_introduce && (
+                <p className="mt-1 text-[11px] italic text-muted-foreground">When: {o.when_to_introduce}</p>
+              )}
+
+              {isRail ? (
+                <details className="mt-2 text-xs">
+                  <summary className="cursor-pointer text-primary font-medium">Details</summary>
+                  <pre className="mt-2 whitespace-pre-wrap font-sans text-[11px] leading-relaxed text-foreground/85">
+                    {detail}
+                  </pre>
+                </details>
+              ) : (
+                <pre className="mt-3 whitespace-pre-wrap font-sans text-sm text-foreground/90 leading-relaxed">
+                  {detail}
+                </pre>
+              )}
+
+              {/* Add-offer-text-to-tray button */}
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    add({ kind: "offer", id: o.id, name: o.name, details: detail });
+                    toast.success(`Added "${o.name}" to email tray`);
+                  }}
+                >
+                  <Mail className="mr-1.5 h-3 w-3" />
+                  Add to email
+                </Button>
+              </div>
+
+              {/* PDFs */}
+              {offerPdfs.length > 0 && (
+                <div className="mt-3 space-y-1.5 border-t pt-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    PDFs
+                  </div>
+                  {offerPdfs.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 rounded-md border bg-secondary/30 px-2 py-1.5"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-xs flex-1 truncate" title={p.name}>
+                        {p.name}
+                      </span>
+                      <button
+                        onClick={() => setPreviewing(p)}
+                        className="rounded p-1 hover:bg-background"
+                        title="Preview"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          add({
+                            kind: "pdf",
+                            id: p.id,
+                            name: p.name,
+                            driveFileId: p.drive_file_id ?? "",
+                            driveUrl: p.drive_url ?? "",
+                          });
+                          toast.success(`Added "${p.name}" to email tray`);
+                        }}
+                        className="rounded p-1 hover:bg-background"
+                        title="Add to email"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      {/* PDF preview modal */}
+      <Dialog open={!!previewing} onOpenChange={(v) => !v && setPreviewing(null)}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-4 py-3 border-b">
+            <DialogTitle className="text-sm font-medium">{previewing?.name}</DialogTitle>
+          </DialogHeader>
+          {previewing?.drive_file_id && (
+            <iframe
+              src={`https://drive.google.com/file/d/${previewing.drive_file_id}/preview`}
+              className="flex-1 w-full"
+              allow="autoplay"
+              title={previewing.name}
+            />
+          )}
+          <div className="border-t p-3 flex gap-2 justify-end">
+            {previewing?.drive_url && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={previewing.drive_url} target="_blank" rel="noreferrer">
+                  Open in Drive
+                </a>
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={() => {
+                if (!previewing) return;
+                add({
+                  kind: "pdf",
+                  id: previewing.id,
+                  name: previewing.name,
+                  driveFileId: previewing.drive_file_id ?? "",
+                  driveUrl: previewing.drive_url ?? "",
+                });
+                toast.success("Added to email tray");
+                setPreviewing(null);
+              }}
+            >
+              <Mail className="mr-1.5 h-3.5 w-3.5" /> Add to email
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

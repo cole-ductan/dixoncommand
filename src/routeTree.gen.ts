@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppPlaybookRouteImport } from './routes/_app/playbook'
 import { Route as AppPipelineRouteImport } from './routes/_app/pipeline'
+import { Route as AppOffersRouteImport } from './routes/_app/offers'
 import { Route as AppMyWeekRouteImport } from './routes/_app/my-week'
 import { Route as AppFollowUpsRouteImport } from './routes/_app/follow-ups'
 import { Route as AppCallRouteImport } from './routes/_app/call'
@@ -42,6 +43,11 @@ const AppPipelineRoute = AppPipelineRouteImport.update({
   path: '/pipeline',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOffersRoute = AppOffersRouteImport.update({
+  id: '/offers',
+  path: '/offers',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMyWeekRoute = AppMyWeekRouteImport.update({
   id: '/my-week',
   path: '/my-week',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/call': typeof AppCallRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/my-week': typeof AppMyWeekRoute
+  '/offers': typeof AppOffersRoute
   '/pipeline': typeof AppPipelineRoute
   '/playbook': typeof AppPlaybookRoute
 }
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/call': typeof AppCallRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/my-week': typeof AppMyWeekRoute
+  '/offers': typeof AppOffersRoute
   '/pipeline': typeof AppPipelineRoute
   '/playbook': typeof AppPlaybookRoute
   '/': typeof AppIndexRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/_app/call': typeof AppCallRoute
   '/_app/follow-ups': typeof AppFollowUpsRoute
   '/_app/my-week': typeof AppMyWeekRoute
+  '/_app/offers': typeof AppOffersRoute
   '/_app/pipeline': typeof AppPipelineRoute
   '/_app/playbook': typeof AppPlaybookRoute
   '/_app/': typeof AppIndexRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/call'
     | '/follow-ups'
     | '/my-week'
+    | '/offers'
     | '/pipeline'
     | '/playbook'
   fileRoutesByTo: FileRoutesByTo
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/call'
     | '/follow-ups'
     | '/my-week'
+    | '/offers'
     | '/pipeline'
     | '/playbook'
     | '/'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/_app/call'
     | '/_app/follow-ups'
     | '/_app/my-week'
+    | '/_app/offers'
     | '/_app/pipeline'
     | '/_app/playbook'
     | '/_app/'
@@ -160,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPipelineRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/offers': {
+      id: '/_app/offers'
+      path: '/offers'
+      fullPath: '/offers'
+      preLoaderRoute: typeof AppOffersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/my-week': {
       id: '/_app/my-week'
       path: '/my-week'
@@ -188,6 +207,7 @@ interface AppRouteChildren {
   AppCallRoute: typeof AppCallRoute
   AppFollowUpsRoute: typeof AppFollowUpsRoute
   AppMyWeekRoute: typeof AppMyWeekRoute
+  AppOffersRoute: typeof AppOffersRoute
   AppPipelineRoute: typeof AppPipelineRoute
   AppPlaybookRoute: typeof AppPlaybookRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -197,6 +217,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCallRoute: AppCallRoute,
   AppFollowUpsRoute: AppFollowUpsRoute,
   AppMyWeekRoute: AppMyWeekRoute,
+  AppOffersRoute: AppOffersRoute,
   AppPipelineRoute: AppPipelineRoute,
   AppPlaybookRoute: AppPlaybookRoute,
   AppIndexRoute: AppIndexRoute,
@@ -211,3 +232,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
