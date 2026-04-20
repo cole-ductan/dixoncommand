@@ -257,7 +257,7 @@ function FollowUpsPage() {
 }
 
 function Group({
-  title, icon, tasks, accent, onComplete, onSnooze,
+  title, icon, tasks, accent, onComplete, onSnooze, onDelete,
 }: {
   title: string;
   icon?: React.ReactNode;
@@ -265,6 +265,7 @@ function Group({
   accent?: "destructive";
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
+  onDelete: (eventId: string) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -279,7 +280,7 @@ function Group({
         <div className="px-5 py-6 text-sm text-muted-foreground">Nothing here.</div>
       ) : (
         <ul className="divide-y">
-          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} />)}
+          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} onDelete={onDelete} />)}
         </ul>
       )}
     </section>
