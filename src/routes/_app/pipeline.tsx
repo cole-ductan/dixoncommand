@@ -17,7 +17,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
