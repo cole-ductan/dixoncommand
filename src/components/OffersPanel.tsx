@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, Mail, FileText, Download } from "lucide-react";
+import { Eye, Mail, FileText, Download, ChevronRight } from "lucide-react";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { OFFER_EXPANDED } from "@/lib/offerExpanded";
 import { LOCAL_OFFER_PDFS, type LocalOfferPdf } from "@/lib/localOfferPdfs";
