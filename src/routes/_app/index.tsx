@@ -75,7 +75,7 @@ function Dashboard() {
   };
 
   const overdue = tasks.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
-  const today = tasks.filter((t) => isToday(new Date(t.next_action_at)));
+  const todayItems = tasks.filter((t) => isToday(new Date(t.next_action_at)));
   const upcoming = tasks.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
   const hot = events.filter((e) => e.hot_lead || e.stage === "pitch_delivered" || e.stage === "challenges_booked").slice(0, 6);
 
@@ -109,8 +109,8 @@ function Dashboard() {
             <Card title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} count={overdue.length}>
               {overdue.length === 0 ? <Empty>Nothing overdue. Nice.</Empty> : <TaskList items={overdue} accent="destructive" />}
             </Card>
-            <Card title="Today's Follow-Ups" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} count={today.length}>
-              {today.length === 0 ? <Empty>No follow-ups scheduled today.</Empty> : <TaskList items={today} />}
+            <Card title="Today's Follow-Ups" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} count={todayItems.length}>
+              {todayItems.length === 0 ? <Empty>No follow-ups scheduled today.</Empty> : <TaskList items={todayItems} />}
             </Card>
             <Card title="Upcoming" count={upcoming.length}>
               {upcoming.length === 0 ? <Empty>Schedule something next.</Empty> : <TaskList items={upcoming.slice(0, 8)} />}
