@@ -366,14 +366,15 @@ function LiveCallWorkspace() {
       </div>
 
       {mode === "guided" ? (
-        <div className="flex-1 min-h-0">
-          <CallCockpit
-            event={event}
-            contact={contact}
-            onSaveEvent={saveEventField}
-            onSaveContact={saveContactField}
-          />
-        </div>
+        <GuidedWithSidePanes
+          event={event}
+          contact={contact}
+          saveEventField={saveEventField}
+          saveContactField={saveContactField}
+          scriptSections={scriptSections}
+          templates={templates}
+          tmplVars={tmplVars}
+        />
       ) : (
       /* 3-pane body */
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
