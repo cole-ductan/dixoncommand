@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { PendingEmailTray } from "@/components/PendingEmailTray";
+import { NotesTray } from "@/components/NotesTray";
 
 export function AppShell() {
   const { user } = useAuth();
@@ -114,6 +115,7 @@ export function AppShell() {
       </main>
 
       <PendingEmailTray />
+      <NotesTray />
     </div>
   );
 }

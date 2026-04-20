@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, Mail, FileText, RefreshCw } from "lucide-react";
+import { Eye, Mail, FileText, Download, CloudDownload } from "lucide-react";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { useServerFn } from "@tanstack/react-start";
-import { seedOfferContent } from "@/lib/driveOffers.functions";
+import { mirrorOfferPdfsToStorage } from "@/lib/driveOffers.functions";
 import { toast } from "sonner";
 
 type Offer = {
@@ -25,6 +25,8 @@ type OfferPdf = {
   name: string;
   drive_file_id: string | null;
   drive_url: string | null;
+  storage_path: string | null;
+  public_url: string | null;
 };
 
 interface Props {
@@ -39,7 +41,7 @@ export function OffersPanel({ variant = "full" }: Props) {
   const [seeding, setSeeding] = useState(false);
   const [previewing, setPreviewing] = useState<OfferPdf | null>(null);
   const add = usePendingTray((s) => s.add);
-  const seedFn = useServerFn(seedOfferContent);
+  const seedFn = useServerFn(mirrorOfferPdfsToStorage);
 
   const load = async () => {
     setLoading(true);
@@ -56,38 +58,18 @@ export function OffersPanel({ variant = "full" }: Props) {
     load();
   }, []);
 
-  // Auto-seed once if nothing in offer_pdfs
-  useEffect(() => {
-    if (loading) return;
-    if (pdfs.length === 0 && !seeding) {
-      setSeeding(true);
-      seedFn({} as any)
-        .then((res: any) => {
-          if (res?.ok) {
-            toast.success(`Linked ${res.inserted} PDFs from Drive`);
-            load();
-          } else if (res?.error) {
-            toast.error("Drive sync failed: " + res.error);
-          }
-        })
-        .catch((e: any) => toast.error("Drive sync failed: " + (e?.message ?? "unknown")))
-        .finally(() => setSeeding(false));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  const resync = async () => {
+  const importFromDrive = async () => {
     setSeeding(true);
     try {
       const res: any = await seedFn({} as any);
       if (res?.ok) {
-        toast.success(`Synced ${res.inserted} PDFs`);
+        toast.success(`Imported ${res.inserted} PDFs to your app (uploaded ${res.uploaded ?? res.inserted})`);
         await load();
       } else {
-        toast.error("Sync failed: " + (res?.error ?? "unknown"));
+        toast.error("Import failed: " + (res?.error ?? "unknown"));
       }
     } catch (e: any) {
-      toast.error("Sync failed: " + (e?.message ?? "unknown"));
+      toast.error("Import failed: " + (e?.message ?? "unknown"));
     } finally {
       setSeeding(false);
     }
@@ -95,19 +77,38 @@ export function OffersPanel({ variant = "full" }: Props) {
 
   const pdfsFor = (slug: string) => pdfs.filter((p) => p.offer_slug === slug);
 
+  // Helper: get the URL we should preview/link to (storage first, drive fallback)
+  const fileUrl = (p: OfferPdf) => p.public_url || p.drive_url || "";
+  const isStored = (p: OfferPdf) => !!p.public_url;
+
   if (loading) {
     return <div className="p-4 text-sm text-muted-foreground">Loading offers…</div>;
   }
 
   const isRail = variant === "rail";
+  const hasStoredPdfs = pdfs.some((p) => p.public_url);
+  const needsImport = pdfs.length === 0 || !hasStoredPdfs;
 
   return (
     <div className={isRail ? "space-y-2" : "space-y-4"}>
       {!isRail && (
-        <div className="flex items-center justify-end">
-          <Button size="sm" variant="ghost" onClick={resync} disabled={seeding}>
-            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${seeding ? "animate-spin" : ""}`} />
-            {seeding ? "Syncing…" : "Resync PDFs"}
+        <div className="flex items-center justify-between gap-2">
+          {needsImport ? (
+            <div className="flex-1 rounded-lg border border-dashed bg-secondary/30 p-3 text-xs">
+              <div className="font-medium text-foreground">PDFs not imported yet</div>
+              <div className="text-muted-foreground mt-0.5">
+                Click <strong>Import PDFs</strong> below — this is a one-time copy from Drive into your app.
+                After this, PDFs live inside Dixon Command and never need to sync again.
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground">
+              {pdfs.filter((p) => p.public_url).length} PDFs hosted in your app
+            </div>
+          )}
+          <Button size="sm" variant={needsImport ? "default" : "outline"} onClick={importFromDrive} disabled={seeding}>
+            <CloudDownload className={`mr-1.5 h-3.5 w-3.5 ${seeding ? "animate-pulse" : ""}`} />
+            {seeding ? "Importing…" : needsImport ? "Import PDFs" : "Re-import"}
           </Button>
         </div>
       )}
@@ -175,7 +176,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                       key={p.id}
                       className="flex items-center gap-2 rounded-md border bg-secondary/30 px-2 py-1.5"
                     >
-                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <FileText className={`h-3.5 w-3.5 shrink-0 ${isStored(p) ? "text-primary" : "text-muted-foreground"}`} />
                       <span className="text-xs flex-1 truncate" title={p.name}>
                         {p.name}
                       </span>
@@ -186,6 +187,18 @@ export function OffersPanel({ variant = "full" }: Props) {
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </button>
+                      {fileUrl(p) && (
+                        <a
+                          href={fileUrl(p)}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="rounded p-1 hover:bg-background"
+                          title="Download"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                      )}
                       <button
                         onClick={() => {
                           add({
@@ -193,7 +206,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                             id: p.id,
                             name: p.name,
                             driveFileId: p.drive_file_id ?? "",
-                            driveUrl: p.drive_url ?? "",
+                            driveUrl: fileUrl(p),
                           });
                           toast.success(`Added "${p.name}" to email tray`);
                         }}
@@ -217,19 +230,18 @@ export function OffersPanel({ variant = "full" }: Props) {
           <DialogHeader className="px-4 py-3 border-b">
             <DialogTitle className="text-sm font-medium">{previewing?.name}</DialogTitle>
           </DialogHeader>
-          {previewing?.drive_file_id && (
+          {previewing && fileUrl(previewing) && (
             <iframe
-              src={`https://drive.google.com/file/d/${previewing.drive_file_id}/preview`}
+              src={fileUrl(previewing)}
               className="flex-1 w-full"
-              allow="autoplay"
               title={previewing.name}
             />
           )}
           <div className="border-t p-3 flex gap-2 justify-end">
-            {previewing?.drive_url && (
+            {previewing && fileUrl(previewing) && (
               <Button size="sm" variant="outline" asChild>
-                <a href={previewing.drive_url} target="_blank" rel="noreferrer">
-                  Open in Drive
+                <a href={fileUrl(previewing)} target="_blank" rel="noreferrer" download>
+                  <Download className="mr-1.5 h-3.5 w-3.5" /> Download
                 </a>
               </Button>
             )}
@@ -242,7 +254,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                   id: previewing.id,
                   name: previewing.name,
                   driveFileId: previewing.drive_file_id ?? "",
-                  driveUrl: previewing.drive_url ?? "",
+                  driveUrl: fileUrl(previewing),
                 });
                 toast.success("Added to email tray");
                 setPreviewing(null);

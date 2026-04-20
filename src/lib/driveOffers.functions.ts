@@ -1,9 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { OFFER_PDF_MAP, DRIVE_FOLDER_IDS } from "@/lib/offerPdfMap";
 import { OFFER_EXPANDED } from "@/lib/offerExpanded";
 
 type DriveFile = { id: string; name: string; mimeType: string };
+
+const BUCKET = "offer-pdfs";
 
 async function fetchFolder(folderId: string, apiKey: string): Promise<DriveFile[]> {
   const url = new URL("https://www.googleapis.com/drive/v3/files");
@@ -20,39 +23,32 @@ async function fetchFolder(folderId: string, apiKey: string): Promise<DriveFile[
   return json.files ?? [];
 }
 
-/**
- * Lists all PDFs across the configured Drive folders.
- */
-export const listDrivePdfs = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const apiKey = process.env.GOOGLE_DRIVE_API_KEY;
-    if (!apiKey) {
-      return { ok: false as const, error: "GOOGLE_DRIVE_API_KEY not configured", files: [] };
-    }
-    try {
-      const all: DriveFile[] = [];
-      for (const fid of DRIVE_FOLDER_IDS) {
-        const files = await fetchFolder(fid, apiKey);
-        all.push(...files);
-      }
-      return { ok: true as const, files: all };
-    } catch (e: any) {
-      return { ok: false as const, error: String(e?.message ?? e), files: [] };
-    }
-  });
+async function downloadDrivePdf(fileId: string, apiKey: string): Promise<ArrayBuffer> {
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Drive download ${res.status} for ${fileId}`);
+  }
+  return await res.arrayBuffer();
+}
+
+function safeName(name: string) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
 
 /**
- * Seeds offer_pdfs for the current user by mapping Drive PDFs to offer slugs.
- * Idempotent: deletes existing rows for this user first, then inserts fresh.
- * Also backfills offers.expanded_details from OFFER_EXPANDED if missing.
+ * Mirrors all PDFs from Drive into Lovable Cloud Storage (one-time).
+ * After this runs successfully the app no longer depends on Drive.
+ * Idempotent: re-uploading the same file overwrites it; rebuilds offer_pdfs rows.
  */
-export const seedOfferContent = createServerFn({ method: "POST" })
+export const mirrorOfferPdfsToStorage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const apiKey = process.env.GOOGLE_DRIVE_API_KEY;
-    if (!apiKey) return { ok: false as const, error: "Drive key missing", inserted: 0 };
+    if (!apiKey) {
+      return { ok: false as const, error: "GOOGLE_DRIVE_API_KEY not configured", inserted: 0, uploaded: 0 };
+    }
 
     // 1. Backfill expanded_details on offers
     const { data: existingOffers } = await supabase
@@ -74,21 +70,27 @@ export const seedOfferContent = createServerFn({ method: "POST" })
         allFiles.push(...(await fetchFolder(fid, apiKey)));
       }
     } catch (e: any) {
-      return { ok: false as const, error: String(e?.message ?? e), inserted: 0 };
+      return { ok: false as const, error: String(e?.message ?? e), inserted: 0, uploaded: 0 };
     }
 
-    // 3. Wipe existing for this user
+    // 3. Wipe existing rows for this user
     await supabase.from("offer_pdfs").delete().eq("user_id", userId);
 
-    // 4. Map files → rows
-    const rows: Array<{
+    // 4. For each mapped file: download from Drive, upload to Storage, insert row
+    type Row = {
       user_id: string;
       offer_slug: string;
       name: string;
       drive_file_id: string;
       drive_url: string;
+      storage_path: string;
+      public_url: string;
       sort_order: number;
-    }> = [];
+    };
+    const rows: Row[] = [];
+    let uploaded = 0;
+    const seenForSlug = new Set<string>();
+
     for (const [slug, patterns] of Object.entries(OFFER_PDF_MAP)) {
       let order = 0;
       for (const pat of patterns) {
@@ -96,14 +98,39 @@ export const seedOfferContent = createServerFn({ method: "POST" })
           f.name.toLowerCase().includes(pat.toLowerCase()),
         );
         for (const f of matches) {
-          // dedupe by file id within this slug
-          if (rows.some((r) => r.offer_slug === slug && r.drive_file_id === f.id)) continue;
+          const dedupe = `${slug}::${f.id}`;
+          if (seenForSlug.has(dedupe)) continue;
+          seenForSlug.add(dedupe);
+
+          const storagePath = `${userId}/${slug}/${safeName(f.name)}`;
+
+          // Download from Drive then upload to bucket via admin client (bypass RLS for path).
+          try {
+            const buf = await downloadDrivePdf(f.id, apiKey);
+            const { error: upErr } = await supabaseAdmin.storage
+              .from(BUCKET)
+              .upload(storagePath, new Uint8Array(buf), {
+                contentType: "application/pdf",
+                upsert: true,
+              });
+            if (upErr) throw upErr;
+            uploaded++;
+          } catch (e: any) {
+            // Skip this one but keep going.
+            console.error("Upload failed for", f.name, e?.message ?? e);
+            continue;
+          }
+
+          const { data: urlData } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(storagePath);
+
           rows.push({
             user_id: userId,
             offer_slug: slug,
             name: f.name.replace(/\.pdf$/i, ""),
             drive_file_id: f.id,
             drive_url: `https://drive.google.com/file/d/${f.id}/view`,
+            storage_path: storagePath,
+            public_url: urlData.publicUrl,
             sort_order: order++,
           });
         }
@@ -112,7 +139,10 @@ export const seedOfferContent = createServerFn({ method: "POST" })
 
     if (rows.length > 0) {
       const { error } = await supabase.from("offer_pdfs").insert(rows);
-      if (error) return { ok: false as const, error: error.message, inserted: 0 };
+      if (error) return { ok: false as const, error: error.message, inserted: 0, uploaded };
     }
-    return { ok: true as const, inserted: rows.length };
+    return { ok: true as const, inserted: rows.length, uploaded };
   });
+
+// Backwards-compat alias kept for existing callers
+export const seedOfferContent = mirrorOfferPdfsToStorage;

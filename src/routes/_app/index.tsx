@@ -32,6 +32,8 @@ function Dashboard() {
   const [events, setEvents] = useState<EventLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
+  const [todayLabel, setTodayLabel] = useState<string>("");
+  useEffect(() => { setTodayLabel(format(new Date(), "EEEE, MMMM d")); }, []);
 
   const load = async () => {
     const [t, e] = await Promise.all([
@@ -84,7 +86,7 @@ function Dashboard() {
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold md:text-4xl">Today's Cockpit</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{todayLabel}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild><Link to="/call" search={{ new: "1" } as any}><Phone className="mr-2 h-4 w-4" />Start Call</Link></Button>
