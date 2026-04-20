@@ -542,7 +542,7 @@ function LiveCallWorkspace() {
 
         {/* RIGHT: dynamic script + offers + templates */}
         <ScrollArea className="lg:col-span-1 lg:max-h-none">
-          <div className="p-4">
+          <div className="p-4 pr-6">
             <Tabs defaultValue="script" className="w-full">
               <TabsList className="w-full grid grid-cols-3">
                 <TabsTrigger value="script">Script</TabsTrigger>
