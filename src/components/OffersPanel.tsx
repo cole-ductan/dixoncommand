@@ -230,19 +230,18 @@ export function OffersPanel({ variant = "full" }: Props) {
           <DialogHeader className="px-4 py-3 border-b">
             <DialogTitle className="text-sm font-medium">{previewing?.name}</DialogTitle>
           </DialogHeader>
-          {previewing?.drive_file_id && (
+          {previewing && fileUrl(previewing) && (
             <iframe
-              src={`https://drive.google.com/file/d/${previewing.drive_file_id}/preview`}
+              src={fileUrl(previewing)}
               className="flex-1 w-full"
-              allow="autoplay"
               title={previewing.name}
             />
           )}
           <div className="border-t p-3 flex gap-2 justify-end">
-            {previewing?.drive_url && (
+            {previewing && fileUrl(previewing) && (
               <Button size="sm" variant="outline" asChild>
-                <a href={previewing.drive_url} target="_blank" rel="noreferrer">
-                  Open in Drive
+                <a href={fileUrl(previewing)} target="_blank" rel="noreferrer" download>
+                  <Download className="mr-1.5 h-3.5 w-3.5" /> Download
                 </a>
               </Button>
             )}
@@ -255,7 +254,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                   id: previewing.id,
                   name: previewing.name,
                   driveFileId: previewing.drive_file_id ?? "",
-                  driveUrl: previewing.drive_url ?? "",
+                  driveUrl: fileUrl(previewing),
                 });
                 toast.success("Added to email tray");
                 setPreviewing(null);
