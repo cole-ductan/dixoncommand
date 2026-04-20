@@ -273,12 +273,12 @@ function TaskRow({
   onSnooze: (id: string, h: number) => void;
 }) {
   return (
-    <li className="px-5 py-3 flex items-center gap-3">
+    <li className="px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3">
       <Button size="icon" variant="outline" className="h-7 w-7 shrink-0" onClick={() => onComplete(t.id)} aria-label="Complete">
         <Check className="h-3.5 w-3.5" />
       </Button>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <span className={`font-mono ${accent === "destructive" ? "text-destructive" : "text-muted-foreground"}`}>
             {format(new Date(t.next_action_at), "MMM d · h:mm a")}
           </span>
@@ -291,11 +291,11 @@ function TaskRow({
               }}>{t.priority}</span>
           )}
         </div>
-        <div className="mt-0.5 truncate font-medium">{t.events?.event_name ?? "—"}</div>
+        <div className="mt-0.5 truncate font-medium text-sm">{t.events?.event_name ?? "—"}</div>
         <div className="text-xs text-muted-foreground truncate">{t.next_action}</div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <Button asChild size="sm" variant="default">
+        <Button asChild size="sm" variant="default" className="h-8 w-8 p-0">
           <Link to="/call" search={{ eventId: t.events?.id }}><Phone className="h-3.5 w-3.5" /></Link>
         </Button>
         <Button

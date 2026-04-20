@@ -13,12 +13,12 @@ export const Route = createFileRoute("/_app/offers")({
 
 function OffersPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 md:px-8 space-y-6">
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10 space-y-4 md:space-y-6">
       <header>
-        <h1 className="font-display text-3xl font-semibold">Offers & Products</h1>
-        <p className="mt-1 text-muted-foreground">
-          Every Dixon offer expanded with full pitch details. Click 📧 to drop the offer text or any PDF
-          into your pending email tray.
+        <h1 className="font-display text-2xl md:text-3xl font-semibold">Offers & Products</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Every Dixon offer expanded with full pitch details. Tap an offer&rsquo;s &ldquo;Add to email&rdquo;
+          to drop it into your pending email tray.
         </p>
       </header>
       <OffersPanel variant="full" />
