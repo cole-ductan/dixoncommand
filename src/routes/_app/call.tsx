@@ -27,8 +27,7 @@ import { usePendingTray } from "@/lib/pendingTrayStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { useDefaultLayout } from "react-resizable-panels";
+import { ResizablePanels3 } from "@/components/ResizablePanels3";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -421,20 +420,9 @@ function LiveCallWorkspace() {
             contact={contact}
           />
         </div>
-        <ResizablePanelGroup
-          orientation="horizontal"
-          {...useDefaultLayout({
-            id: "call-3pane-v1",
-            panelIds: ["call-left", "call-center", "call-right"],
-            storage: typeof window !== "undefined" ? window.localStorage : undefined,
-          })}
-          className="hidden lg:flex h-full"
-        >
-          <ResizablePanel id="call-left" defaultSize="22%" minSize="200px" maxSize="40%">
-            <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel id="call-center" defaultSize="53%" minSize="30%">
+        <ResizablePanels3
+          left={<CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />}
+          center={
             <CallCenterPane
               event={event}
               setEvent={setEvent}
@@ -450,9 +438,8 @@ function LiveCallWorkspace() {
               followUpAt={followUpAt}
               setFollowUpAt={setFollowUpAt}
             />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel id="call-right" defaultSize="25%" minSize="220px" maxSize="45%">
+          }
+          right={
             <CallRightPane
               scriptSections={scriptSections}
               setScriptSections={setScriptSections}
@@ -460,8 +447,8 @@ function LiveCallWorkspace() {
               tmplVars={tmplVars}
               contact={contact}
             />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          }
+        />
       </div>
       )}
 
