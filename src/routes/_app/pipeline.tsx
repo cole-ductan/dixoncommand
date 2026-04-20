@@ -21,7 +21,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle, Trash2 } from "lucide-react";
+import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -40,6 +40,7 @@ type EventCard = {
   entry_fee: number | null;
   where_left_off: string | null;
   notes: string | null;
+  archived: boolean;
 };
 
 // Stage groups
@@ -79,13 +80,14 @@ function PipelinePage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeGroup, setActiveGroup] = useState<GroupId>("active");
+  const [showArchived, setShowArchived] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("events")
-      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes")
+      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes,archived")
       .order("updated_at", { ascending: false });
     setEvents((data ?? []) as any);
     setLoading(false);
@@ -126,6 +128,18 @@ function PipelinePage() {
     } else {
       toast.success(`Deleted "${name}"`);
     }
+  };
+
+  const archiveOpen = async () => {
+    if (!openId) return;
+    const card = events.find((c) => c.id === openId);
+    if (!card) return;
+    const newArchived = !card.archived;
+    setEvents((prev) => prev.map((c) => c.id === openId ? { ...c, archived: newArchived } : c));
+    const patch: any = { archived: newArchived, archived_at: newArchived ? new Date().toISOString() : null };
+    const { error } = await supabase.from("events").update(patch).eq("id", openId);
+    if (error) { toast.error("Archive failed: " + error.message); load(); }
+    else toast.success(newArchived ? "Archived" : "Restored");
   };
 
   const active = activeId ? events.find((c) => c.id === activeId) : null;
