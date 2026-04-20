@@ -17,7 +17,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Phone, Calendar, Flame, MapPin, Users, ExternalLink, DollarSign, HelpCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -107,6 +111,21 @@ function PipelinePage() {
     setEvents((prev) => prev.map((c) => c.id === openId ? { ...c, ...patch } as EventCard : c));
     const { error } = await supabase.from("events").update(patch as any).eq("id", openId);
     if (error) toast.error("Save failed: " + error.message);
+  };
+
+  const deleteOpen = async () => {
+    if (!openId) return;
+    const id = openId;
+    const name = events.find((c) => c.id === id)?.event_name ?? "Event";
+    setOpenId(null);
+    setEvents((prev) => prev.filter((c) => c.id !== id));
+    const { error } = await supabase.from("events").delete().eq("id", id);
+    if (error) {
+      toast.error("Delete failed: " + error.message);
+      load();
+    } else {
+      toast.success(`Deleted "${name}"`);
+    }
   };
 
   const active = activeId ? events.find((c) => c.id === activeId) : null;
@@ -253,6 +272,30 @@ function PipelinePage() {
                     <Button asChild>
                       <Link to="/call" search={{ eventId: open.id }}><Phone className="mr-1.5 h-4 w-4" />Open in Call Workspace<ExternalLink className="ml-1 h-3 w-3" /></Link>
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="mr-1.5 h-4 w-4" />Delete event
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete "{open.event_name}"?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This permanently removes the event and any related calls, emails, tasks, and notes linked to it. This cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={deleteOpen}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </>
