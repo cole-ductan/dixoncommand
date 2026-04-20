@@ -18,10 +18,12 @@ import { CallCockpit } from "@/components/CallCockpit";
 import { STAGES, type Stage, stageLabel } from "@/lib/stages";
 import { generateDbNoteLine } from "@/lib/dbNote";
 import { applyTemplate } from "@/lib/templating";
-import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map } from "lucide-react";
+import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { LEAD_SOURCES } from "@/lib/leadSource";
+import { OffersPanel } from "@/components/OffersPanel";
+import { usePendingTray } from "@/lib/pendingTrayStore";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
