@@ -149,12 +149,13 @@ function PipelinePage() {
   const groupCounts = useMemo(() => {
     const m: Record<GroupId, number> = { active: 0, in_progress: 0, closed: 0 };
     for (const e of events) {
+      if (!showArchived && e.archived) continue;
       for (const g of GROUPS) {
         if (g.stages.includes(e.stage)) { m[g.id]++; break; }
       }
     }
     return m;
-  }, [events]);
+  }, [events, showArchived]);
 
   const visibleStages = GROUPS.find((g) => g.id === activeGroup)!.stages;
 
@@ -179,6 +180,15 @@ function PipelinePage() {
                 ))}
               </TabsList>
             </Tabs>
+            <Button
+              size="sm"
+              variant={showArchived ? "default" : "outline"}
+              onClick={() => setShowArchived((v) => !v)}
+              title={showArchived ? "Hide archived" : "Show archived"}
+            >
+              <Archive className="mr-1.5 h-3.5 w-3.5" />
+              {showArchived ? "Hiding archived" : "Show archived"}
+            </Button>
             <AddLeadDialog onCreated={load} />
           </div>
         </header>
@@ -190,7 +200,7 @@ function PipelinePage() {
             <div className="flex-1 min-h-0 overflow-x-auto">
               <div className="flex h-full gap-3 px-4 md:px-8 py-4 min-w-max">
                 {visibleStages.map((s) => {
-                  const items = events.filter((e) => e.stage === s);
+                  const items = events.filter((e) => e.stage === s && (showArchived || !e.archived));
                   return (
                     <Column key={s} stage={s} count={items.length}>
                       {items.map((card) => (
@@ -285,6 +295,9 @@ function PipelinePage() {
                   <div className="pt-4 flex flex-wrap gap-2">
                     <Button asChild>
                       <Link to="/call" search={{ eventId: open.id }}><Phone className="mr-1.5 h-4 w-4" />Open in Call Workspace<ExternalLink className="ml-1 h-3 w-3" /></Link>
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={archiveOpen}>
+                      {open.archived ? (<><ArchiveRestore className="mr-1.5 h-4 w-4" />Restore</>) : (<><Archive className="mr-1.5 h-4 w-4" />Archive</>)}
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
