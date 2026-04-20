@@ -244,7 +244,7 @@ function FollowUpsPage() {
               ) : (
                 <ul className="mt-4 divide-y">
                   {selectedTasks.map((t) => (
-                    <TaskRow key={t.id} t={t} onComplete={completeTask} onSnooze={snoozeTask} />
+                    <TaskRow key={t.id} t={t} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
                   ))}
                 </ul>
               )}
