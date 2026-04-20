@@ -288,12 +288,13 @@ function Group({
 }
 
 function TaskRow({
-  t, accent, onComplete, onSnooze,
+  t, accent, onComplete, onSnooze, onDelete,
 }: {
   t: Task;
   accent?: "destructive";
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
+  onDelete: (eventId: string) => void;
 }) {
   return (
     <li className="px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3">
@@ -340,8 +341,49 @@ function TaskRow({
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 1)}>+1h</Button>
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 24)}>+1d</Button>
         </div>
+        {t.events?.id && (
+          <DeleteEventButton
+            eventName={t.events.event_name}
+            onConfirm={() => onDelete(t.events!.id)}
+          />
+        )}
       </div>
     </li>
+  );
+}
+
+function DeleteEventButton({ eventName, onConfirm }: { eventName: string; onConfirm: () => void }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+          title="Delete event"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this event?</AlertDialogTitle>
+          <AlertDialogDescription>
+            "{eventName}" and all its tasks, calls, and notes will be permanently deleted. This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
