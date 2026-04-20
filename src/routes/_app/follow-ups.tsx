@@ -34,7 +34,7 @@ type Task = {
   next_action_at: string;
   priority: "low" | "normal" | "high" | "urgent";
   status: "pending" | "done" | "snoozed";
-  events: { id: string; event_name: string; stage: Stage } | null;
+  events: { id: string; event_name: string; stage: Stage; archived?: boolean } | null;
 };
 
 type LeadEvent = {
