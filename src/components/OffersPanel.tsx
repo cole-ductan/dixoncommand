@@ -9,6 +9,31 @@ import { mirrorOfferPdfsToStorage } from "@/lib/driveOffers.functions";
 import { OFFER_EXPANDED } from "@/lib/offerExpanded";
 import { toast } from "sonner";
 
+/**
+ * Strip internal-only sections (HOW TO DELIVER IT ON THE CALL, TC NOTES)
+ * from offer copy before sending to a client via email.
+ */
+function stripInternalSections(text: string): string {
+  if (!text) return text;
+  const internalHeaders = /^(HOW TO DELIVER IT ON THE CALL|TC NOTES)\s*:?\s*$/im;
+  const lines = text.split("\n");
+  const out: string[] = [];
+  let skipping = false;
+  for (const line of lines) {
+    if (internalHeaders.test(line.trim())) {
+      skipping = true;
+      continue;
+    }
+    // A new ALL-CAPS header (e.g. "VALUE:", "REDEMPTION:") ends the skipped block
+    if (skipping && /^[A-Z][A-Z0-9 &/+\-]{2,}:\s*$/.test(line.trim())) {
+      skipping = false;
+    }
+    if (!skipping) out.push(line);
+  }
+  // Trim trailing blank lines
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
+}
+
 type Offer = {
   id: string;
   slug: string;
@@ -154,7 +179,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    add({ kind: "offer", id: o.id, name: o.name, details: detail });
+                    add({ kind: "offer", id: o.id, name: o.name, details: stripInternalSections(detail) });
                     toast.success(`Added "${o.name}" to email tray`);
                   }}
                 >
