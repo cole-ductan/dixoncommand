@@ -7,10 +7,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX } from "lucide-react";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus } from "lucide-react";
 import { format, isPast, isToday, isSameDay, startOfDay, subHours, subDays } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
+import { openGCal } from "@/lib/gcal";
 
 export const Route = createFileRoute("/_app/follow-ups")({
   component: FollowUpsPage,
