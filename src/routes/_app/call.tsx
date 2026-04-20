@@ -393,10 +393,107 @@ function LiveCallWorkspace() {
         />
       ) : (
       /* 3-pane body — on mobile we stack naturally so each pane shows in full */
-      <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
-        {/* LEFT: contact / event */}
-        <ScrollArea className="lg:col-span-1 lg:max-h-none">
-          <div className="p-4 lg:pl-6 space-y-4">
+      <div className="flex-1 min-h-0 px-4 lg:px-6">
+        {/* Mobile: stacked. Desktop: resizable */}
+        <div className="lg:hidden grid grid-cols-1 divide-y h-full">
+          <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
+          <CallCenterPane
+            event={event}
+            setEvent={setEvent}
+            saveEventField={saveEventField}
+            callType={callType}
+            setCallType={setCallType}
+            outcome={outcome}
+            setOutcome={setOutcome}
+            summary={summary}
+            setSummary={setSummary}
+            followUpAction={followUpAction}
+            setFollowUpAction={setFollowUpAction}
+            followUpAt={followUpAt}
+            setFollowUpAt={setFollowUpAt}
+          />
+          <CallRightPane
+            scriptSections={scriptSections}
+            setScriptSections={setScriptSections}
+            templates={templates}
+            tmplVars={tmplVars}
+            contact={contact}
+          />
+        </div>
+        <ResizablePanelGroup
+          direction="horizontal"
+          autoSaveId="call-3pane-v1"
+          className="hidden lg:flex h-full"
+        >
+          <ResizablePanel defaultSize={22} minSize={15} maxSize={40}>
+            <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={53} minSize={30}>
+            <CallCenterPane
+              event={event}
+              setEvent={setEvent}
+              saveEventField={saveEventField}
+              callType={callType}
+              setCallType={setCallType}
+              outcome={outcome}
+              setOutcome={setOutcome}
+              summary={summary}
+              setSummary={setSummary}
+              followUpAction={followUpAction}
+              setFollowUpAction={setFollowUpAction}
+              followUpAt={followUpAt}
+              setFollowUpAt={setFollowUpAt}
+            />
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={25} minSize={18} maxSize={45}>
+            <CallRightPane
+              scriptSections={scriptSections}
+              setScriptSections={setScriptSections}
+              templates={templates}
+              tmplVars={tmplVars}
+              contact={contact}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+      )}
+
+      {/* Bottom action bar — DB summary + save */}
+      <div className="border-t bg-card px-3 py-3 md:px-6 md:py-4 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">DB Note</span>
+          <div className="ml-auto flex flex-wrap gap-1.5">
+            <Button size="sm" variant="outline" className="h-8" onClick={useTemplate}>Template</Button>
+            <Button size="sm" variant="outline" className="h-8" onClick={generateAiSummary} disabled={generatingSummary}>
+              <Sparkles className="mr-1 h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{generatingSummary ? "Generating…" : "Generate w/ AI"}</span>
+              <span className="sm:hidden">{generatingSummary ? "…" : "AI"}</span>
+            </Button>
+            <Button size="sm" variant="default" className="h-8" onClick={copyDbLine}>
+              <Copy className="mr-1 h-3.5 w-3.5" />Copy
+            </Button>
+          </div>
+        </div>
+        <Textarea value={dbLine} onChange={(e) => setDbLine(e.target.value)} rows={2} className="font-mono text-xs" />
+        <div className="flex justify-end">
+          <Button size="sm" onClick={saveCall}>
+            <CheckCircle2 className="mr-1.5 h-4 w-4" />Log Call
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Pane components (extracted for reuse on mobile + resizable desktop) ---------- */
+
+function CallLeftPane({ event, contact, saveEventField }: any) {
+  return (
+    <ScrollArea className="h-full">
+      <div className="p-4 lg:pr-4 space-y-4">
             <div>
               <h2 className="font-display text-lg font-semibold">{event.event_name}</h2>
               <div className="mt-1 text-xs text-muted-foreground">
@@ -430,9 +527,15 @@ function LiveCallWorkspace() {
             <Field label="Funds use" value={event.funds_use} onSave={(v) => saveEventField({ funds_use: v })} />
           </div>
         </ScrollArea>
+  );
+}
 
-        {/* CENTER: structured note capture */}
-        <ScrollArea className="min-h-0">
+function CallCenterPane({
+  event, setEvent, saveEventField, callType, setCallType, outcome, setOutcome,
+  summary, setSummary, followUpAction, setFollowUpAction, followUpAt, setFollowUpAt,
+}: any) {
+  return (
+    <ScrollArea className="h-full">
           <div className="p-4 md:p-6 space-y-5 max-w-3xl mx-auto">
             <header>
               <h2 className="font-display text-xl font-semibold">Call Capture</h2>
