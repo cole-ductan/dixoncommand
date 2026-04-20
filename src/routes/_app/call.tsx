@@ -450,40 +450,6 @@ function LiveCallWorkspace() {
             />
           }
         />
-        {false && (
-        <ResizablePanelGroup orientation="horizontal" className="hidden">
-          <ResizablePanel id="call-left" defaultSize="22%" minSize="200px" maxSize="40%">
-            <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel id="call-center" defaultSize="53%" minSize="30%">
-            <CallCenterPane
-              event={event}
-              setEvent={setEvent}
-              saveEventField={saveEventField}
-              callType={callType}
-              setCallType={setCallType}
-              outcome={outcome}
-              setOutcome={setOutcome}
-              summary={summary}
-              setSummary={setSummary}
-              followUpAction={followUpAction}
-              setFollowUpAction={setFollowUpAction}
-              followUpAt={followUpAt}
-              setFollowUpAt={setFollowUpAt}
-            />
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel id="call-right" defaultSize="25%" minSize="220px" maxSize="45%">
-            <CallRightPane
-              scriptSections={scriptSections}
-              setScriptSections={setScriptSections}
-              templates={templates}
-              tmplVars={tmplVars}
-              contact={contact}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
       </div>
       )}
 
