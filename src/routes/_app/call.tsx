@@ -28,6 +28,7 @@ import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { useDefaultLayout } from "react-resizable-panels";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
