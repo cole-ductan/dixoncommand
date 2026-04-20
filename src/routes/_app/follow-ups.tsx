@@ -7,10 +7,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX } from "lucide-react";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus } from "lucide-react";
 import { format, isPast, isToday, isSameDay, startOfDay, subHours, subDays } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
+import { openGCal } from "@/lib/gcal";
 
 export const Route = createFileRoute("/_app/follow-ups")({
   component: FollowUpsPage,
@@ -296,6 +297,21 @@ function TaskRow({
       <div className="flex items-center gap-1 shrink-0">
         <Button asChild size="sm" variant="default">
           <Link to="/call" search={{ eventId: t.events?.id }}><Phone className="h-3.5 w-3.5" /></Link>
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          title="Add to Google Calendar"
+          onClick={() =>
+            openGCal({
+              title: `${t.next_action}${t.events ? ` — ${t.events.event_name}` : ""}`,
+              details: t.events?.event_name ?? "",
+              start: new Date(t.next_action_at),
+            })
+          }
+        >
+          <CalendarPlus className="h-3.5 w-3.5" />
         </Button>
         <div className="hidden sm:flex gap-1">
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 1)}>+1h</Button>

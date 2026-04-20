@@ -11,20 +11,11 @@ export function useAuth() {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      setLoading(false);
     });
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
-      if (s) {
-        setSession(s);
-        setUser(s.user);
-        setLoading(false);
-        return;
-      }
-      // Guest mode: sign in anonymously so RLS-protected writes work.
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (!error && data.session) {
-        setSession(data.session);
-        setUser(data.user);
-      }
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ?? null);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();

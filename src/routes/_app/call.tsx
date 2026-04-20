@@ -26,6 +26,7 @@ import { OffersPanel } from "@/components/OffersPanel";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
+import { openGCal } from "@/lib/gcal";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -513,6 +514,26 @@ function LiveCallWorkspace() {
               </legend>
               <NextActionPicker value={followUpAction} onChange={setFollowUpAction} />
               <DateTimePicker value={followUpAt} onChange={setFollowUpAt} placeholder="Pick follow-up date" />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-full"
+                disabled={!followUpAt || !followUpAction}
+                onClick={() => {
+                  openGCal({
+                    title: `${followUpAction}${event ? ` — ${event.event_name}` : ""}`,
+                    details: [
+                      event?.event_name && `Lead: ${event.event_name}`,
+                      event?.course && `Course: ${event.course}`,
+                      summary && `\nNotes:\n${summary}`,
+                    ].filter(Boolean).join("\n"),
+                    start: new Date(followUpAt),
+                  });
+                }}
+              >
+                <Calendar className="mr-1.5 h-3.5 w-3.5" /> Add to Google Calendar
+              </Button>
             </fieldset>
           </div>
         </ScrollArea>

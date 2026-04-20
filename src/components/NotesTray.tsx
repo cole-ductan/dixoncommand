@@ -15,6 +15,7 @@ import { NextActionPicker } from "@/components/NextActionPicker";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { openGCal } from "@/lib/gcal";
 
 type Note = {
   id: string;
@@ -228,6 +229,22 @@ export function NotesTray() {
                 <div className="space-y-2 pt-1">
                   <NextActionPicker value={reminderAction} onChange={setReminderAction} />
                   <DateTimePicker value={reminderAt} onChange={setReminderAt} />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="w-full h-7 text-xs"
+                    disabled={!reminderAt || !reminderAction}
+                    onClick={() =>
+                      openGCal({
+                        title: reminderAction || draftTitle || "Note reminder",
+                        details: [draftTitle, draftBody].filter(Boolean).join("\n\n"),
+                        start: new Date(reminderAt),
+                      })
+                    }
+                  >
+                    <CalIcon className="mr-1 h-3 w-3" /> Add to Google Calendar
+                  </Button>
                 </div>
               )}
             </div>
@@ -274,13 +291,26 @@ export function NotesTray() {
                     >
                       {n.pinned ? <Pin className="h-3.5 w-3.5 text-primary" /> : <PinOff className="h-3.5 w-3.5 text-muted-foreground" />}
                     </button>
+                    <button
+                      onClick={() =>
+                        openGCal({
+                          title: n.title || n.body.split("\n")[0]?.slice(0, 80) || "Note reminder",
+                          details: n.body,
+                          start: n.reminder_at ? new Date(n.reminder_at) : (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9, 0, 0, 0); return d; })(),
+                        })
+                      }
+                      className="rounded p-1 hover:bg-secondary"
+                      title="Add to Google Calendar"
+                    >
+                      <CalIcon className="h-3.5 w-3.5 text-primary" />
+                    </button>
                     {!n.task_id && (
                       <button
                         onClick={() => addExistingToCalendar(n)}
                         className="rounded p-1 hover:bg-secondary"
-                        title="Add to calendar"
+                        title="Save as in-app follow-up (tomorrow 9am)"
                       >
-                        <CalIcon className="h-3.5 w-3.5" />
+                        <Plus className="h-3.5 w-3.5" />
                       </button>
                     )}
                     <button

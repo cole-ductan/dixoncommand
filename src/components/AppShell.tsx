@@ -1,19 +1,32 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package } from "lucide-react";
+import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2 } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { PendingEmailTray } from "@/components/PendingEmailTray";
 import { NotesTray } from "@/components/NotesTray";
 
 export function AppShell() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { location } = useRouterState();
 
-  // Auth gate temporarily disabled for testing.
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/auth", replace: true });
+    }
+  }, [loading, user, navigate]);
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading…
+      </div>
+    );
+  }
 
   const nav = [
     { to: "/", label: "Dashboard", Icon: LayoutDashboard, exact: true },
@@ -60,7 +73,7 @@ export function AppShell() {
           ))}
         </nav>
         <div className="border-t p-3">
-          <div className="mb-2 px-2 text-xs text-muted-foreground truncate">{user?.email ?? "Guest (auth disabled)"}</div>
+          <div className="mb-2 px-2 text-xs text-muted-foreground truncate">{user.email}</div>
           <Button
             variant="ghost"
             size="sm"
