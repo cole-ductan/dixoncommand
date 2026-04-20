@@ -179,7 +179,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    add({ kind: "offer", id: o.id, name: o.name, details: detail });
+                    add({ kind: "offer", id: o.id, name: o.name, details: stripInternalSections(detail) });
                     toast.success(`Added "${o.name}" to email tray`);
                   }}
                 >
