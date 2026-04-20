@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus, Trash2 } from "lucide-react";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +44,7 @@ type LeadEvent = {
   created_at: string;
   last_contact_at: string | null;
   course: string | null;
+  archived?: boolean;
 };
 
 function FollowUpsPage() {
@@ -54,6 +55,7 @@ function FollowUpsPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [addLeadDate, setAddLeadDate] = useState<string | undefined>(undefined);
+  const [showArchived, setShowArchived] = useState(false);
 
   const openAddLeadFor = (d?: Date) => {
     setAddLeadDate(d ? format(d, "yyyy-MM-dd") : undefined);
@@ -64,12 +66,12 @@ function FollowUpsPage() {
     const [tasksRes, eventsRes] = await Promise.all([
       supabase
         .from("tasks")
-        .select("id,next_action,next_action_at,priority,status,event_id,events(id,event_name,stage)")
+        .select("id,next_action,next_action_at,priority,status,event_id,events(id,event_name,stage,archived)")
         .eq("status", "pending")
         .order("next_action_at", { ascending: true }),
       supabase
         .from("events")
-        .select("id,event_name,stage,created_at,last_contact_at,course")
+        .select("id,event_name,stage,created_at,last_contact_at,course,archived")
         .not("stage", "in", "(closed_won,closed_lost)")
         .order("created_at", { ascending: false }),
     ]);
