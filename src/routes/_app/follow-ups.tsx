@@ -283,7 +283,7 @@ function FollowUpsPage() {
 }
 
 function Group({
-  title, icon, tasks, accent, onComplete, onSnooze, onDelete,
+  title, icon, tasks, accent, onComplete, onSnooze, onDelete, onArchive,
 }: {
   title: string;
   icon?: React.ReactNode;
@@ -292,6 +292,7 @@ function Group({
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
   onDelete: (eventId: string) => void;
+  onArchive: (eventId: string, archived: boolean) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -306,7 +307,7 @@ function Group({
         <div className="px-5 py-6 text-sm text-muted-foreground">Nothing here.</div>
       ) : (
         <ul className="divide-y">
-          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} onDelete={onDelete} />)}
+          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} onDelete={onDelete} onArchive={onArchive} />)}
         </ul>
       )}
     </section>
@@ -314,16 +315,17 @@ function Group({
 }
 
 function TaskRow({
-  t, accent, onComplete, onSnooze, onDelete,
+  t, accent, onComplete, onSnooze, onDelete, onArchive,
 }: {
   t: Task;
   accent?: "destructive";
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
   onDelete: (eventId: string) => void;
+  onArchive: (eventId: string, archived: boolean) => void;
 }) {
   return (
-    <li className="px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3">
+    <li className={`px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3 ${t.events?.archived ? "opacity-60" : ""}`}>
       <Button size="icon" variant="outline" className="h-7 w-7 shrink-0" onClick={() => onComplete(t.id)} aria-label="Complete">
         <Check className="h-3.5 w-3.5" />
       </Button>
@@ -333,6 +335,11 @@ function TaskRow({
             {format(new Date(t.next_action_at), "MMM d · h:mm a")}
           </span>
           {t.events && <StageChip stage={t.events.stage} />}
+          {t.events?.archived && (
+            <span className="rounded-full border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              Archived
+            </span>
+          )}
           {t.priority !== "normal" && (
             <span className="rounded-full px-1.5 py-0.5 text-[10px] uppercase font-semibold tracking-wider"
               style={{
@@ -367,6 +374,17 @@ function TaskRow({
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 1)}>+1h</Button>
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 24)}>+1d</Button>
         </div>
+        {t.events?.id && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            title={t.events.archived ? "Restore from archive" : "Archive event"}
+            onClick={() => onArchive(t.events!.id, !t.events!.archived)}
+          >
+            {t.events.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+          </Button>
+        )}
         {t.events?.id && (
           <DeleteEventButton
             eventName={t.events.event_name}
@@ -414,7 +432,7 @@ function DeleteEventButton({ eventName, onConfirm }: { eventName: string; onConf
 }
 
 function LeadGroup({
-  title, description, icon, events, accent, onDelete,
+  title, description, icon, events, accent, onDelete, onArchive,
 }: {
   title: string;
   description: string;
@@ -422,6 +440,7 @@ function LeadGroup({
   events: LeadEvent[];
   accent?: "warning";
   onDelete: (eventId: string) => void;
+  onArchive: (eventId: string, archived: boolean) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
