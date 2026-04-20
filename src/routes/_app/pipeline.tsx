@@ -434,10 +434,13 @@ function DraggableCard({ card, onOpen }: { card: EventCard; onOpen: () => void }
 function PipelineCard({ card, dragging }: { card: EventCard; dragging?: boolean }) {
   const value = cardValue(card);
   return (
-    <div className={`rounded-lg border bg-background p-3 text-sm shadow-[var(--shadow-card)] ${dragging ? "rotate-1 shadow-[var(--shadow-elevated)]" : ""}`}>
+    <div className={`rounded-lg border bg-background p-3 text-sm shadow-[var(--shadow-card)] ${dragging ? "rotate-1 shadow-[var(--shadow-elevated)]" : ""} ${card.archived ? "opacity-60" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium leading-tight">{card.event_name}</div>
-        {card.hot_lead && <Flame className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--clay)" }} />}
+        <div className="flex items-center gap-1 shrink-0">
+          {card.archived && <Archive className="h-3 w-3 text-muted-foreground" />}
+          {card.hot_lead && <Flame className="h-3.5 w-3.5" style={{ color: "var(--clay)" }} />}
+        </div>
       </div>
       {card.course && <div className="mt-1 text-xs text-muted-foreground truncate">{card.course}</div>}
       <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
