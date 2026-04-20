@@ -221,3 +221,104 @@ export function OffersPanel({ variant = "full" }: Props) {
     </div>
   );
 }
+
+function RailOfferCard({
+  offer,
+  detail,
+  offerPdfs,
+  onPreview,
+  onAddOffer,
+  onAddPdf,
+}: {
+  offer: Offer;
+  detail: string;
+  offerPdfs: LocalOfferPdf[];
+  onPreview: (p: LocalOfferPdf) => void;
+  onAddOffer: () => void;
+  onAddPdf: (p: LocalOfferPdf) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <article className="rounded-lg border bg-card">
+      {/* Header row — always visible */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-1.5 px-2.5 py-2 text-left hover:bg-secondary/40 rounded-t-lg"
+      >
+        <ChevronRight
+          className={`h-3 w-3 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`}
+        />
+        <span className="font-display text-sm font-semibold leading-tight truncate flex-1">
+          {offer.name}
+        </span>
+        {offer.type && (
+          <span className="hidden sm:inline whitespace-nowrap text-[9px] font-mono uppercase tracking-wider text-muted-foreground border rounded px-1 py-0.5">
+            {offer.type}
+          </span>
+        )}
+        <span className="whitespace-nowrap text-[10px] font-mono text-muted-foreground">
+          {offer.cost}
+        </span>
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => { e.stopPropagation(); onAddOffer(); }}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onAddOffer(); } }}
+          className="rounded p-1 hover:bg-background"
+          title="Add offer to email"
+        >
+          <Mail className="h-3.5 w-3.5" />
+        </span>
+      </button>
+
+      {/* When-to-introduce — always visible, compact */}
+      {offer.when_to_introduce && (
+        <div className="px-2.5 pb-1.5 text-[10px] italic text-muted-foreground truncate">
+          When: {offer.when_to_introduce}
+        </div>
+      )}
+
+      {/* PDF chips — always visible, single compact row */}
+      {offerPdfs.length > 0 && (
+        <div className="px-2.5 pb-2 flex flex-wrap gap-1">
+          {offerPdfs.map((p) => (
+            <div
+              key={p.id}
+              className="inline-flex items-center gap-1 rounded border bg-secondary/40 pl-1.5 pr-0.5 py-0.5 text-[10px]"
+              title={p.name}
+            >
+              <FileText className="h-3 w-3 text-primary shrink-0" />
+              <span className="truncate max-w-[110px]">{offerPdfs.length === 1 ? "PDF" : p.name}</span>
+              <button onClick={() => onPreview(p)} className="rounded p-0.5 hover:bg-background" title="Preview">
+                <Eye className="h-3 w-3" />
+              </button>
+              <a
+                href={p.file}
+                target="_blank"
+                rel="noreferrer"
+                download
+                className="rounded p-0.5 hover:bg-background"
+                title="Download"
+              >
+                <Download className="h-3 w-3" />
+              </a>
+              <button onClick={() => onAddPdf(p)} className="rounded p-0.5 hover:bg-background" title="Add to email">
+                <Mail className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Expanded details */}
+      {open && detail && (
+        <div className="border-t px-2.5 py-2">
+          <pre className="whitespace-pre-wrap font-sans text-[11px] leading-relaxed text-foreground/85">
+            {detail}
+          </pre>
+        </div>
+      )}
+    </article>
+  );
+}
