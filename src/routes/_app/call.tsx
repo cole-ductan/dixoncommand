@@ -99,7 +99,7 @@ function LiveCallWorkspace() {
 
   // load all events for picker
   useEffect(() => {
-    supabase.from("events").select("*").order("updated_at", { ascending: false }).then(({ data }) => {
+    supabase.from("events").select("*").eq("archived", false).order("updated_at", { ascending: false }).then(({ data }) => {
       setEvents(data ?? []);
       // Only auto-select first event if not explicitly starting a new lead
       if (!eventId && !forceNew && data && data.length) setEventId(data[0].id);
