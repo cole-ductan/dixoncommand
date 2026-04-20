@@ -18,10 +18,12 @@ import { CallCockpit } from "@/components/CallCockpit";
 import { STAGES, type Stage, stageLabel } from "@/lib/stages";
 import { generateDbNoteLine } from "@/lib/dbNote";
 import { applyTemplate } from "@/lib/templating";
-import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map } from "lucide-react";
+import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { LEAD_SOURCES } from "@/lib/leadSource";
+import { OffersPanel } from "@/components/OffersPanel";
+import { usePendingTray } from "@/lib/pendingTrayStore";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -285,17 +287,8 @@ function LiveCallWorkspace() {
                     ))}
                   </Accordion>
                 </TabsContent>
-                <TabsContent value="offers" className="mt-3 space-y-2">
-                  {offers.map((o) => (
-                    <details key={o.id} className="rounded-lg border bg-card p-3 text-xs">
-                      <summary className="flex cursor-pointer items-center justify-between font-medium text-sm">
-                        <span>{o.name}</span>
-                        <span className="font-mono text-muted-foreground text-[10px]">{o.cost}</span>
-                      </summary>
-                      <div className="mt-2 text-muted-foreground">{o.when_to_introduce}</div>
-                      <pre className="mt-2 whitespace-pre-wrap font-sans">{o.details}</pre>
-                    </details>
-                  ))}
+                <TabsContent value="offers" className="mt-3">
+                  <OffersPanel variant="rail" />
                 </TabsContent>
                 <TabsContent value="email" className="mt-3 text-xs text-muted-foreground">
                   Save a lead to personalize email templates.
@@ -373,14 +366,15 @@ function LiveCallWorkspace() {
       </div>
 
       {mode === "guided" ? (
-        <div className="flex-1 min-h-0">
-          <CallCockpit
-            event={event}
-            contact={contact}
-            onSaveEvent={saveEventField}
-            onSaveContact={saveContactField}
-          />
-        </div>
+        <GuidedWithSidePanes
+          event={event}
+          contact={contact}
+          saveEventField={saveEventField}
+          saveContactField={saveContactField}
+          scriptSections={scriptSections}
+          templates={templates}
+          tmplVars={tmplVars}
+        />
       ) : (
       /* 3-pane body */
       <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[320px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
@@ -542,33 +536,41 @@ function LiveCallWorkspace() {
                   ))}
                 </Accordion>
               </TabsContent>
-              <TabsContent value="offers" className="mt-3 space-y-2">
-                {offers.map((o) => (
-                  <details key={o.id} className="rounded-lg border bg-card p-3 text-xs">
-                    <summary className="flex cursor-pointer items-center justify-between font-medium text-sm">
-                      <span>{o.name}</span>
-                      <span className="font-mono text-muted-foreground text-[10px]">{o.cost}</span>
-                    </summary>
-                    <div className="mt-2 text-muted-foreground">{o.when_to_introduce}</div>
-                    <pre className="mt-2 whitespace-pre-wrap font-sans">{o.details}</pre>
-                  </details>
-                ))}
+              <TabsContent value="offers" className="mt-3">
+                <OffersPanel variant="rail" />
               </TabsContent>
               <TabsContent value="email" className="mt-3 space-y-3">
                 {templates.map((t) => {
                   const subj = applyTemplate(t.subject, tmplVars);
                   const body = applyTemplate(t.body, tmplVars);
-                  const mailto = `mailto:${contact?.email ?? ""}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
                   return (
                     <article key={t.id} className="rounded-lg border bg-card p-3">
                       <div className="font-medium text-sm">{t.name}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">Subject: {subj}</div>
-                      <div className="mt-2 flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(body).then(() => toast.success("Body copied"))}>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigator.clipboard.writeText(body).then(() => toast.success("Body copied"))}
+                        >
                           <Copy className="mr-1.5 h-3 w-3" />Copy
                         </Button>
-                        <Button asChild size="sm" variant="default" disabled={!contact?.email}>
-                          <a href={mailto}><Mail className="mr-1.5 h-3 w-3" />Open</a>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            usePendingTray.getState().setTo(contact?.email ?? "");
+                            usePendingTray.getState().add({
+                              kind: "template",
+                              id: t.id,
+                              name: t.name,
+                              subject: subj,
+                              body,
+                            });
+                            toast.success(`Added "${t.name}" to email tray`);
+                          }}
+                        >
+                          <Mail className="mr-1.5 h-3 w-3" />Add to tray
                         </Button>
                       </div>
                     </article>
@@ -822,6 +824,105 @@ function InlineNewLead({
           <Phone className="mr-2 h-4 w-4" />{saving ? "Creating…" : "Save & Start Call"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function GuidedWithSidePanes({
+  event,
+  contact,
+  saveEventField,
+  saveContactField,
+  scriptSections,
+  templates,
+  tmplVars,
+}: {
+  event: any;
+  contact: any;
+  saveEventField: (patch: Record<string, any>) => Promise<void> | void;
+  saveContactField: (patch: Record<string, any>) => Promise<void> | void;
+  scriptSections: ScriptSection[];
+  templates: Tmpl[];
+  tmplVars: Record<string, string>;
+}) {
+  const [paneOpen, setPaneOpen] = useState(false);
+  return (
+    <div className="flex flex-1 min-h-0 relative">
+      <div className="flex-1 min-w-0">
+        <CallCockpit
+          event={event}
+          contact={contact}
+          onSaveEvent={saveEventField}
+          onSaveContact={saveContactField}
+        />
+      </div>
+      {paneOpen && (
+        <ScrollArea className="hidden lg:block w-[360px] shrink-0 border-l bg-background">
+          <div className="p-3">
+            <Tabs defaultValue="offers" className="w-full">
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="script">Script</TabsTrigger>
+                <TabsTrigger value="offers">Offers</TabsTrigger>
+                <TabsTrigger value="email">Email</TabsTrigger>
+              </TabsList>
+              <TabsContent value="script" className="mt-3">
+                <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
+                  {scriptSections.map((s) => (
+                    <AccordionItem key={s.id} value={s.slug}>
+                      <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
+                      <AccordionContent>
+                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </TabsContent>
+              <TabsContent value="offers" className="mt-3">
+                <OffersPanel variant="rail" />
+              </TabsContent>
+              <TabsContent value="email" className="mt-3 space-y-3">
+                {templates.map((t) => {
+                  const subj = applyTemplate(t.subject, tmplVars);
+                  const body = applyTemplate(t.body, tmplVars);
+                  return (
+                    <article key={t.id} className="rounded-lg border bg-card p-3">
+                      <div className="font-medium text-sm">{t.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">Subject: {subj}</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            usePendingTray.getState().setTo(contact?.email ?? "");
+                            usePendingTray.getState().add({
+                              kind: "template",
+                              id: t.id,
+                              name: t.name,
+                              subject: subj,
+                              body,
+                            });
+                            toast.success(`Added "${t.name}" to email tray`);
+                          }}
+                        >
+                          <Mail className="mr-1.5 h-3 w-3" />Add to tray
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </ScrollArea>
+      )}
+      <button
+        onClick={() => setPaneOpen((v) => !v)}
+        className="hidden lg:flex absolute top-3 right-3 z-10 items-center gap-1.5 rounded-md border bg-card px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-secondary"
+        title={paneOpen ? "Hide panes" : "Show Script / Offers / Email"}
+      >
+        {paneOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+        {paneOpen ? "Hide" : "Panes"}
+      </button>
     </div>
   );
 }
