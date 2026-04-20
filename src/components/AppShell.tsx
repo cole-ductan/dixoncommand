@@ -124,7 +124,7 @@ export function AppShell() {
         </nav>
       </div>
 
-      <main className="flex-1 min-w-0 pt-24 md:pt-0">
+      <main className="flex-1 min-w-0 pt-[88px] md:pt-0 pb-20 md:pb-0">
         <Outlet />
       </main>
 
