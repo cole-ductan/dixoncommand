@@ -665,10 +665,13 @@ function CallCenterPane({
             </fieldset>
           </div>
         </ScrollArea>
+  );
+}
 
-        {/* RIGHT: dynamic script + offers + templates */}
-        <ScrollArea className="lg:col-span-1 lg:max-h-none">
-          <div className="p-4 pr-6">
+function CallRightPane({ scriptSections, setScriptSections, templates, tmplVars, contact }: any) {
+  return (
+    <ScrollArea className="h-full">
+      <div className="p-4 lg:pl-4">
             <Tabs defaultValue="script" className="w-full">
               <TabsList className="w-full grid grid-cols-3">
                 <TabsTrigger value="script">Script</TabsTrigger>
@@ -725,34 +728,6 @@ function CallCenterPane({
             </Tabs>
           </div>
         </ScrollArea>
-      </div>
-      )}
-
-      {/* Bottom action bar — DB summary + save */}
-      <div className="border-t bg-card px-3 py-3 md:px-6 md:py-4 space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">DB Note</span>
-          <div className="ml-auto flex flex-wrap gap-1.5">
-            <Button size="sm" variant="outline" className="h-8" onClick={useTemplate}>Template</Button>
-            <Button size="sm" variant="outline" className="h-8" onClick={generateAiSummary} disabled={generatingSummary}>
-              <Sparkles className="mr-1 h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{generatingSummary ? "Generating…" : "Generate w/ AI"}</span>
-              <span className="sm:hidden">{generatingSummary ? "…" : "AI"}</span>
-            </Button>
-            <Button size="sm" variant="default" className="h-8" onClick={copyDbLine}>
-              <Copy className="mr-1 h-3.5 w-3.5" />Copy
-            </Button>
-          </div>
-        </div>
-        <Textarea value={dbLine} onChange={(e) => setDbLine(e.target.value)} rows={2} className="font-mono text-xs" />
-        <div className="flex justify-end">
-          <Button size="sm" onClick={saveCall}>
-            <CheckCircle2 className="mr-1.5 h-4 w-4" />Log Call
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }
 
