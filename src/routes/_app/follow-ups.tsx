@@ -7,7 +7,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { StageChip } from "@/components/StageChip";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
-import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus } from "lucide-react";
+import { Phone, AlertTriangle, CalendarClock, Check, Clock, Plus, Sparkles, MailQuestion, CalendarX, CalendarPlus, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { format, isPast, isToday, isSameDay, startOfDay, subHours, subDays } from "date-fns";
 import { type Stage } from "@/lib/stages";
 import { toast } from "sonner";
@@ -121,6 +132,14 @@ function FollowUpsPage() {
     if (error) { toast.error("Failed"); load(); } else toast.success(`Snoozed ${hours}h`);
   };
 
+  const deleteEvent = async (eventId: string) => {
+    setTasks((prev) => prev.filter((t) => t.events?.id !== eventId));
+    setAllEvents((prev) => prev.filter((e) => e.id !== eventId));
+    const { error } = await supabase.from("events").delete().eq("id", eventId);
+    if (error) { toast.error("Delete failed: " + error.message); load(); }
+    else toast.success("Event deleted");
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -152,21 +171,23 @@ function FollowUpsPage() {
             <div className="text-muted-foreground">Loading…</div>
           ) : (
             <>
-              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} />
-              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} />
-              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} />
+              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
 
               <LeadGroup
                 title="Leads Just Added"
                 description="Added in the last 48 hours with no follow-up scheduled."
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
                 events={leadGroups.justAdded}
+                onDelete={deleteEvent}
               />
               <LeadGroup
                 title="Awaiting Response"
                 description="Pitch or proposal sent — no contact logged in the last 3 days."
                 icon={<MailQuestion className="h-4 w-4" style={{ color: "var(--stage-pitch)" }} />}
                 events={leadGroups.awaitingResponse}
+                onDelete={deleteEvent}
               />
               <LeadGroup
                 title="No Date Set"
@@ -174,6 +195,7 @@ function FollowUpsPage() {
                 icon={<CalendarX className="h-4 w-4" style={{ color: "var(--gold)" }} />}
                 events={leadGroups.noDateSet}
                 accent="warning"
+                onDelete={deleteEvent}
               />
             </>
           )}
@@ -222,7 +244,7 @@ function FollowUpsPage() {
               ) : (
                 <ul className="mt-4 divide-y">
                   {selectedTasks.map((t) => (
-                    <TaskRow key={t.id} t={t} onComplete={completeTask} onSnooze={snoozeTask} />
+                    <TaskRow key={t.id} t={t} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
                   ))}
                 </ul>
               )}
@@ -235,7 +257,7 @@ function FollowUpsPage() {
 }
 
 function Group({
-  title, icon, tasks, accent, onComplete, onSnooze,
+  title, icon, tasks, accent, onComplete, onSnooze, onDelete,
 }: {
   title: string;
   icon?: React.ReactNode;
@@ -243,6 +265,7 @@ function Group({
   accent?: "destructive";
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
+  onDelete: (eventId: string) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -257,7 +280,7 @@ function Group({
         <div className="px-5 py-6 text-sm text-muted-foreground">Nothing here.</div>
       ) : (
         <ul className="divide-y">
-          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} />)}
+          {tasks.map((t) => <TaskRow key={t.id} t={t} accent={accent} onComplete={onComplete} onSnooze={onSnooze} onDelete={onDelete} />)}
         </ul>
       )}
     </section>
@@ -265,12 +288,13 @@ function Group({
 }
 
 function TaskRow({
-  t, accent, onComplete, onSnooze,
+  t, accent, onComplete, onSnooze, onDelete,
 }: {
   t: Task;
   accent?: "destructive";
   onComplete: (id: string) => void;
   onSnooze: (id: string, h: number) => void;
+  onDelete: (eventId: string) => void;
 }) {
   return (
     <li className="px-3 sm:px-5 py-3 flex items-center gap-2 sm:gap-3">
@@ -317,19 +341,61 @@ function TaskRow({
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 1)}>+1h</Button>
           <Button size="sm" variant="ghost" className="text-xs" onClick={() => onSnooze(t.id, 24)}>+1d</Button>
         </div>
+        {t.events?.id && (
+          <DeleteEventButton
+            eventName={t.events.event_name}
+            onConfirm={() => onDelete(t.events!.id)}
+          />
+        )}
       </div>
     </li>
   );
 }
 
+function DeleteEventButton({ eventName, onConfirm }: { eventName: string; onConfirm: () => void }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+          title="Delete event"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this event?</AlertDialogTitle>
+          <AlertDialogDescription>
+            "{eventName}" and all its tasks, calls, and notes will be permanently deleted. This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 function LeadGroup({
-  title, description, icon, events, accent,
+  title, description, icon, events, accent, onDelete,
 }: {
   title: string;
   description: string;
   icon: React.ReactNode;
   events: LeadEvent[];
   accent?: "warning";
+  onDelete: (eventId: string) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -371,6 +437,7 @@ function LeadGroup({
                 <Button asChild size="sm" variant="default">
                   <Link to="/call" search={{ eventId: e.id }}><Phone className="h-3.5 w-3.5" /></Link>
                 </Button>
+                <DeleteEventButton eventName={e.event_name} onConfirm={() => onDelete(e.id)} />
               </div>
             </li>
           ))}
