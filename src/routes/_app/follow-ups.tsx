@@ -82,30 +82,32 @@ function FollowUpsPage() {
   useEffect(() => { load(); }, [load]);
 
   const groups = useMemo(() => {
-    const overdue = tasks.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
-    const today = tasks.filter((t) => isToday(new Date(t.next_action_at)));
-    const upcoming = tasks.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
+    const visible = tasks.filter((t) => showArchived || !t.events?.archived);
+    const overdue = visible.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
+    const today = visible.filter((t) => isToday(new Date(t.next_action_at)));
+    const upcoming = visible.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
     return { overdue, today, upcoming };
-  }, [tasks]);
+  }, [tasks, showArchived]);
 
   // Lead-based groups (events, not tasks)
   const leadGroups = useMemo(() => {
+    const visibleEvents = allEvents.filter((e) => showArchived || !e.archived);
     const eventIdsWithTasks = new Set(tasks.map((t) => t.events?.id).filter(Boolean));
     const cutoff48h = subHours(new Date(), 48);
     const cutoff3d = subDays(new Date(), 3);
 
-    const justAdded = allEvents.filter(
+    const justAdded = visibleEvents.filter(
       (e) => new Date(e.created_at) > cutoff48h && !eventIdsWithTasks.has(e.id),
     );
-    const awaitingResponse = allEvents.filter(
+    const awaitingResponse = visibleEvents.filter(
       (e) =>
         (e.stage === "pitch_delivered" || e.stage === "proposal_sent") &&
         (!e.last_contact_at || new Date(e.last_contact_at) < cutoff3d),
     );
-    const noDateSet = allEvents.filter((e) => !eventIdsWithTasks.has(e.id));
+    const noDateSet = visibleEvents.filter((e) => !eventIdsWithTasks.has(e.id));
 
     return { justAdded, awaitingResponse, noDateSet };
-  }, [allEvents, tasks]);
+  }, [allEvents, tasks, showArchived]);
 
   const tasksByDay = useMemo(() => {
     const map: Map<string, Task[]> = new Map();
