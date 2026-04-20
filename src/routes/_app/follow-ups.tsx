@@ -171,21 +171,23 @@ function FollowUpsPage() {
             <div className="text-muted-foreground">Loading…</div>
           ) : (
             <>
-              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} />
-              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} />
-              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} />
+              <Group title="Overdue" icon={<AlertTriangle className="h-4 w-4 text-destructive" />} tasks={groups.overdue} accent="destructive" onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+              <Group title="Today" icon={<CalendarClock className="h-4 w-4" style={{ color: "var(--gold)" }} />} tasks={groups.today} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
+              <Group title="Upcoming" icon={<Clock className="h-4 w-4 text-muted-foreground" />} tasks={groups.upcoming} onComplete={completeTask} onSnooze={snoozeTask} onDelete={deleteEvent} />
 
               <LeadGroup
                 title="Leads Just Added"
                 description="Added in the last 48 hours with no follow-up scheduled."
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
                 events={leadGroups.justAdded}
+                onDelete={deleteEvent}
               />
               <LeadGroup
                 title="Awaiting Response"
                 description="Pitch or proposal sent — no contact logged in the last 3 days."
                 icon={<MailQuestion className="h-4 w-4" style={{ color: "var(--stage-pitch)" }} />}
                 events={leadGroups.awaitingResponse}
+                onDelete={deleteEvent}
               />
               <LeadGroup
                 title="No Date Set"
@@ -193,6 +195,7 @@ function FollowUpsPage() {
                 icon={<CalendarX className="h-4 w-4" style={{ color: "var(--gold)" }} />}
                 events={leadGroups.noDateSet}
                 accent="warning"
+                onDelete={deleteEvent}
               />
             </>
           )}
