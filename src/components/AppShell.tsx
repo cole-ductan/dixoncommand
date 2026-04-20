@@ -3,8 +3,9 @@ import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-route
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange } from "lucide-react";
+import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
+import { PendingEmailTray } from "@/components/PendingEmailTray";
 
 export function AppShell() {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ export function AppShell() {
     { to: "/follow-ups", label: "Follow-Ups", Icon: CalendarClock },
     { to: "/my-week", label: "My Week", Icon: CalendarRange },
     { to: "/playbook", label: "Playbook", Icon: BookOpen },
+    { to: "/offers", label: "Offers & Products", Icon: Package },
   ];
 
   const isActive = (to: string, exact?: boolean) =>
@@ -110,6 +112,8 @@ export function AppShell() {
       <main className="flex-1 min-w-0 pt-24 md:pt-0">
         <Outlet />
       </main>
+
+      <PendingEmailTray />
     </div>
   );
 }
