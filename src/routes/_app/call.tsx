@@ -26,6 +26,7 @@ import { OffersPanel } from "@/components/OffersPanel";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
+import { openGCal } from "@/lib/gcal";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
