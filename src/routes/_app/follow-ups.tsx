@@ -132,6 +132,14 @@ function FollowUpsPage() {
     if (error) { toast.error("Failed"); load(); } else toast.success(`Snoozed ${hours}h`);
   };
 
+  const deleteEvent = async (eventId: string) => {
+    setTasks((prev) => prev.filter((t) => t.events?.id !== eventId));
+    setAllEvents((prev) => prev.filter((e) => e.id !== eventId));
+    const { error } = await supabase.from("events").delete().eq("id", eventId);
+    if (error) { toast.error("Delete failed: " + error.message); load(); }
+    else toast.success("Event deleted");
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-10">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
