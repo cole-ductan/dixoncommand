@@ -75,7 +75,7 @@ function Dashboard() {
   };
 
   const overdue = tasks.filter((t) => isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
-  const today = tasks.filter((t) => isToday(new Date(t.next_action_at)));
+  const todayItems = tasks.filter((t) => isToday(new Date(t.next_action_at)));
   const upcoming = tasks.filter((t) => !isPast(new Date(t.next_action_at)) && !isToday(new Date(t.next_action_at)));
   const hot = events.filter((e) => e.hot_lead || e.stage === "pitch_delivered" || e.stage === "challenges_booked").slice(0, 6);
 
