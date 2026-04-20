@@ -176,7 +176,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                       key={p.id}
                       className="flex items-center gap-2 rounded-md border bg-secondary/30 px-2 py-1.5"
                     >
-                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <FileText className={`h-3.5 w-3.5 shrink-0 ${isStored(p) ? "text-primary" : "text-muted-foreground"}`} />
                       <span className="text-xs flex-1 truncate" title={p.name}>
                         {p.name}
                       </span>
@@ -187,6 +187,18 @@ export function OffersPanel({ variant = "full" }: Props) {
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </button>
+                      {fileUrl(p) && (
+                        <a
+                          href={fileUrl(p)}
+                          target="_blank"
+                          rel="noreferrer"
+                          download
+                          className="rounded p-1 hover:bg-background"
+                          title="Download"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                      )}
                       <button
                         onClick={() => {
                           add({
@@ -194,7 +206,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                             id: p.id,
                             name: p.name,
                             driveFileId: p.drive_file_id ?? "",
-                            driveUrl: p.drive_url ?? "",
+                            driveUrl: fileUrl(p),
                           });
                           toast.success(`Added "${p.name}" to email tray`);
                         }}
