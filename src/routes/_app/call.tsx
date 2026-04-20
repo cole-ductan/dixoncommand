@@ -573,16 +573,10 @@ function LiveCallWorkspace() {
                 <TabsTrigger value="email">Email</TabsTrigger>
               </TabsList>
               <TabsContent value="script" className="mt-3">
-                <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
-                  {scriptSections.map((s) => (
-                    <AccordionItem key={s.id} value={s.slug}>
-                      <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
-                      <AccordionContent>
-                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                <ScriptPanel
+                  sections={scriptSections}
+                  onUpdated={(u) => setScriptSections((arr) => arr.map((s) => (s.id === u.id ? u : s)))}
+                />
               </TabsContent>
               <TabsContent value="offers" className="mt-3">
                 <OffersPanel variant="rail" />
