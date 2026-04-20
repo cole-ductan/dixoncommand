@@ -828,3 +828,102 @@ function InlineNewLead({
   );
 }
 
+function GuidedWithSidePanes({
+  event,
+  contact,
+  saveEventField,
+  saveContactField,
+  scriptSections,
+  templates,
+  tmplVars,
+}: {
+  event: any;
+  contact: any;
+  saveEventField: (patch: Record<string, any>) => Promise<void> | void;
+  saveContactField: (patch: Record<string, any>) => Promise<void> | void;
+  scriptSections: ScriptSection[];
+  templates: Tmpl[];
+  tmplVars: Record<string, string>;
+}) {
+  const [paneOpen, setPaneOpen] = useState(false);
+  return (
+    <div className="flex flex-1 min-h-0 relative">
+      <div className="flex-1 min-w-0">
+        <CallCockpit
+          event={event}
+          contact={contact}
+          onSaveEvent={saveEventField}
+          onSaveContact={saveContactField}
+        />
+      </div>
+      {paneOpen && (
+        <ScrollArea className="hidden lg:block w-[360px] shrink-0 border-l bg-background">
+          <div className="p-3">
+            <Tabs defaultValue="offers" className="w-full">
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="script">Script</TabsTrigger>
+                <TabsTrigger value="offers">Offers</TabsTrigger>
+                <TabsTrigger value="email">Email</TabsTrigger>
+              </TabsList>
+              <TabsContent value="script" className="mt-3">
+                <Accordion type="multiple" defaultValue={[scriptSections[0]?.slug]} className="w-full">
+                  {scriptSections.map((s) => (
+                    <AccordionItem key={s.id} value={s.slug}>
+                      <AccordionTrigger className="text-left text-sm">{s.title}</AccordionTrigger>
+                      <AccordionContent>
+                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground/85">{s.body}</pre>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </TabsContent>
+              <TabsContent value="offers" className="mt-3">
+                <OffersPanel variant="rail" />
+              </TabsContent>
+              <TabsContent value="email" className="mt-3 space-y-3">
+                {templates.map((t) => {
+                  const subj = applyTemplate(t.subject, tmplVars);
+                  const body = applyTemplate(t.body, tmplVars);
+                  return (
+                    <article key={t.id} className="rounded-lg border bg-card p-3">
+                      <div className="font-medium text-sm">{t.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">Subject: {subj}</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            usePendingTray.getState().setTo(contact?.email ?? "");
+                            usePendingTray.getState().add({
+                              kind: "template",
+                              id: t.id,
+                              name: t.name,
+                              subject: subj,
+                              body,
+                            });
+                            toast.success(`Added "${t.name}" to email tray`);
+                          }}
+                        >
+                          <Mail className="mr-1.5 h-3 w-3" />Add to tray
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </ScrollArea>
+      )}
+      <button
+        onClick={() => setPaneOpen((v) => !v)}
+        className="hidden lg:flex absolute top-3 right-3 z-10 items-center gap-1.5 rounded-md border bg-card px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-secondary"
+        title={paneOpen ? "Hide panes" : "Show Script / Offers / Email"}
+      >
+        {paneOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+        {paneOpen ? "Hide" : "Panes"}
+      </button>
+    </div>
+  );
+}
+
