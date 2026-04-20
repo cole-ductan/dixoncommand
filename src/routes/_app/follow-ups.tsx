@@ -388,13 +388,14 @@ function DeleteEventButton({ eventName, onConfirm }: { eventName: string; onConf
 }
 
 function LeadGroup({
-  title, description, icon, events, accent,
+  title, description, icon, events, accent, onDelete,
 }: {
   title: string;
   description: string;
   icon: React.ReactNode;
   events: LeadEvent[];
   accent?: "warning";
+  onDelete: (eventId: string) => void;
 }) {
   return (
     <section className="rounded-xl border bg-card shadow-[var(--shadow-card)]">
@@ -436,6 +437,7 @@ function LeadGroup({
                 <Button asChild size="sm" variant="default">
                   <Link to="/call" search={{ eventId: e.id }}><Phone className="h-3.5 w-3.5" /></Link>
                 </Button>
+                <DeleteEventButton eventName={e.event_name} onConfirm={() => onDelete(e.id)} />
               </div>
             </li>
           ))}
