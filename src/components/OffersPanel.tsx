@@ -6,6 +6,7 @@ import { Eye, Mail, FileText, Download, CloudDownload } from "lucide-react";
 import { usePendingTray } from "@/lib/pendingTrayStore";
 import { useServerFn } from "@tanstack/react-start";
 import { mirrorOfferPdfsToStorage } from "@/lib/driveOffers.functions";
+import { OFFER_EXPANDED } from "@/lib/offerExpanded";
 import { toast } from "sonner";
 
 type Offer = {
@@ -76,8 +77,6 @@ export function OffersPanel({ variant = "full" }: Props) {
   };
 
   const pdfsFor = (slug: string) => pdfs.filter((p) => p.offer_slug === slug);
-
-  // Helper: get the URL we should preview/link to (storage first, drive fallback)
   const fileUrl = (p: OfferPdf) => p.public_url || p.drive_url || "";
   const isStored = (p: OfferPdf) => !!p.public_url;
 
@@ -96,7 +95,7 @@ export function OffersPanel({ variant = "full" }: Props) {
           {needsImport ? (
             <div className="flex-1 rounded-lg border border-dashed bg-secondary/30 p-3 text-xs">
               <div className="font-medium text-foreground">PDFs not imported yet</div>
-              <div className="text-muted-foreground mt-0.5">
+              <div className="mt-0.5 text-muted-foreground">
                 Click <strong>Import PDFs</strong> below — this is a one-time copy from Drive into your app.
                 After this, PDFs live inside Dixon Command and never need to sync again.
               </div>
@@ -116,7 +115,7 @@ export function OffersPanel({ variant = "full" }: Props) {
       <div className={isRail ? "space-y-2" : "grid gap-4 md:grid-cols-2"}>
         {offers.map((o) => {
           const offerPdfs = pdfsFor(o.slug);
-          const detail = o.expanded_details || o.details || "";
+          const detail = o.expanded_details || OFFER_EXPANDED[o.slug] || o.details || "";
           return (
             <article
               key={o.id}
@@ -130,7 +129,7 @@ export function OffersPanel({ variant = "full" }: Props) {
                 <h3 className={isRail ? "font-display text-sm font-semibold" : "font-display text-lg font-semibold"}>
                   {o.name}
                 </h3>
-                <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">{o.cost}</span>
+                <span className="whitespace-nowrap text-[10px] font-mono text-muted-foreground">{o.cost}</span>
               </div>
               <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{o.type}</div>
               {o.when_to_introduce && (
@@ -139,18 +138,17 @@ export function OffersPanel({ variant = "full" }: Props) {
 
               {isRail ? (
                 <details className="mt-2 text-xs">
-                  <summary className="cursor-pointer text-primary font-medium">Details</summary>
+                  <summary className="cursor-pointer font-medium text-primary">Details</summary>
                   <pre className="mt-2 whitespace-pre-wrap font-sans text-[11px] leading-relaxed text-foreground/85">
                     {detail}
                   </pre>
                 </details>
               ) : (
-                <pre className="mt-3 whitespace-pre-wrap font-sans text-sm text-foreground/90 leading-relaxed">
+                <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground/90">
                   {detail}
                 </pre>
               )}
 
-              {/* Add-offer-text-to-tray button */}
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <Button
                   size="sm"
@@ -165,26 +163,16 @@ export function OffersPanel({ variant = "full" }: Props) {
                 </Button>
               </div>
 
-              {/* PDFs */}
               {offerPdfs.length > 0 && (
                 <div className="mt-3 space-y-1.5 border-t pt-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    PDFs
-                  </div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">PDFs</div>
                   {offerPdfs.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center gap-2 rounded-md border bg-secondary/30 px-2 py-1.5"
-                    >
+                    <div key={p.id} className="flex items-center gap-2 rounded-md border bg-secondary/30 px-2 py-1.5">
                       <FileText className={`h-3.5 w-3.5 shrink-0 ${isStored(p) ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className="text-xs flex-1 truncate" title={p.name}>
+                      <span className="flex-1 truncate text-xs" title={p.name}>
                         {p.name}
                       </span>
-                      <button
-                        onClick={() => setPreviewing(p)}
-                        className="rounded p-1 hover:bg-background"
-                        title="Preview"
-                      >
+                      <button onClick={() => setPreviewing(p)} className="rounded p-1 hover:bg-background" title="Preview">
                         <Eye className="h-3.5 w-3.5" />
                       </button>
                       {fileUrl(p) && (
@@ -224,20 +212,13 @@ export function OffersPanel({ variant = "full" }: Props) {
         })}
       </div>
 
-      {/* PDF preview modal */}
       <Dialog open={!!previewing} onOpenChange={(v) => !v && setPreviewing(null)}>
-        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 py-3 border-b">
+        <DialogContent className="flex h-[85vh] w-[95vw] max-w-5xl flex-col gap-0 p-0">
+          <DialogHeader className="border-b px-4 py-3">
             <DialogTitle className="text-sm font-medium">{previewing?.name}</DialogTitle>
           </DialogHeader>
-          {previewing && fileUrl(previewing) && (
-            <iframe
-              src={fileUrl(previewing)}
-              className="flex-1 w-full"
-              title={previewing.name}
-            />
-          )}
-          <div className="border-t p-3 flex gap-2 justify-end">
+          {previewing && fileUrl(previewing) && <iframe src={fileUrl(previewing)} className="flex-1 w-full" title={previewing.name} />}
+          <div className="flex justify-end gap-2 border-t p-3">
             {previewing && fileUrl(previewing) && (
               <Button size="sm" variant="outline" asChild>
                 <a href={fileUrl(previewing)} target="_blank" rel="noreferrer" download>

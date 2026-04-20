@@ -1,175 +1,277 @@
 /**
- * Full expanded details for each offer card. Seeded into offers.expanded_details.
+ * Full expanded details for each offer card. Used as the source of truth for
+ * the Offers & Products page and the live-call offer pane.
  */
 export const OFFER_EXPANDED: Record<string, string> = {
-  amateur_endorsement: `Free prize certificate the tournament gives to one player.
+  amateur_endorsement: `WHAT IT IS:
+A free prize redemption certificate the tournament gives to one player as an award — usually closest-to-the-pin, longest drive, or raffle.
 
-WINNER RECEIVES:
-• Dixon Bamboo Hat
-• Sleeve of Dixon Earth Golf Balls
-• Dixon Zinc Alloy Divot Tool & Ball Marker
-• 50% Off Dixon Golf Gear for 1 Year (dixongolf.com)
-• Social Media Spotlight on @Dixon_Golf / /dixongolfballs
+WHAT THE WINNER RECEIVES:
+• Dixon Bamboo Hat — white, lightweight bamboo-fiber hat with DIXON in gunmetal gray
+• Sleeve of Dixon Earth Golf Balls — 3-ball sleeve; eco-friendly high-performance ball
+• Zinc Alloy Divot Tool + Ball Marker — dual-function repair and marking tool
+• 50% Off Dixon Golf Gear for 1 Year — valid on balls, polos, towels, and accessories at dixongolf.com
+• Social Media Spotlight — selected winners may be featured on Dixon Golf social channels
 
-Total stated value: $50
+VALUE:
+Total stated value: $50.
 
 REDEMPTION:
-Unique code → dixongolf.com/amateur → complete form → activates physical items + discount.
+Winner uses the unique code at dixongolf.com/amateur, completes the form, and activates the physical items + discount.
 
-DELIVERY ON CALL:
-Ask for POC email → verify in DB → click Send Call Email → warn: "It has the word FREE so check spam, subject is Dixon Advantages" → ask them to mark not spam.
+HOW TO DELIVER IT ON THE CALL:
+1. Ask for the POC email
+2. Verify it in the database
+3. Send the call email immediately
+4. Tell them the word FREE may trigger spam filtering
+5. Ask them to mark it as not spam
 
-NOTES:
-Easiest yes on the call. Zero cost/risk. One endorsement per tournament/person/household. Never skip.`,
+TC NOTES:
+• Easiest yes on the call
+• Zero cost and zero risk to the client
+• Do not skip it even if rushed
+• One endorsement per tournament / person / household.`,
 
-  dixon_challenge: `Rep sets up on par 3 before tournament. Every player gets a FREE Dixon Earth golf ball just for showing up (no donation required).
+  dixon_challenge: `WHAT IT IS:
+A live on-course fundraising game run by a Dixon Golf rep on a par 3 during the tournament.
 
-DONATING PLAYERS ($10–$25+) RECEIVE OVER $150 IN PRIZES:
+HOW IT WORKS:
+1. Rep arrives before the event and sets up on the assigned par 3
+2. Every group stops at the activation during the round
+3. Every player gets a free Dixon Earth golf ball just for coming through
+4. Players can optionally donate to participate for additional prizes
+5. Rep runs the game all day and packs up after the last group
+
+DONATING PLAYERS RECEIVE $150+ IN PRIZES:
 • $40 Off Dixon Golf Products coupon
-• 1-Year Golf Digest Subscription ($30+ value)
+• 1-Year Golf Digest subscription
 • Additional gift certificates
-• Automatic Fiesta Bowl Hole-in-One entry (see Fiesta Bowl)
+• Automatic Fiesta Bowl Hole-in-One entry
 
 ON-GREEN BONUS:
-Land tee shot on the green → win $10 Dixon Golf gift card.
+Land the tee shot on the green and win a $10 Dixon gift card.
 
-TOURNAMENT RECEIVES:
-• 2 on-site reps
-• All products/prizes at no cost
-• Check for 30% of net proceeds mailed the Friday after the event
+CLIENT BENEFIT:
+• No upfront cost
+• Dixon staffs the hole
+• Dixon supplies products and prizes
+• Charity receives 30% of net proceeds by check after the event
 
-PITCH NOTE:
-Always pitch Par 3 + Par 5 together. If all par 3s taken, offer par 4 or par 5.`,
+TC NOTES:
+• Pitch Par 3 and Par 5 together
+• If par 3s are full, offer a par 4 or par 5 variation
+• Position it as fundraising + entertainment, not just a sponsorship.`,
 
-  aurelius_challenge: `Rep on par 5. Players hit an extra drive using the $500 Aurelius Emperor Driver.
-
-COST: $25/player (optional)
-
-EVERYONE WHO PARTICIPATES RECEIVES OVER $250 IN PRIZES:
-• $100 Off a Golf Club of their choice
-• Additional product certificates
-
-GRAND PRIZE (1 winner):
-Custom $500 Aurelius Emperor Driver OR $500 Zovatti Watch
-
-TOURNAMENT RECEIVES:
-30% net proceeds check on Friday after the event.
-
-PITCH NOTE:
-Lead with the $500 prize. Always pitch alongside Dixon Challenge.`,
-
-  fiesta_bowl: `Bonus contest included free with the Dixon Challenge.
+  aurelius_challenge: `WHAT IT IS:
+A second live on-course fundraising game run by a Dixon rep on a par 5. Players hit an extra drive using the Aurelius Emperor Driver.
 
 HOW IT WORKS:
-Any player who makes a hole-in-one during the Dixon Challenge automatically qualifies for one shot at the $1,000,000 Fiesta Bowl Par 3 Challenge.
+1. Rep sets up on the assigned par 5 before play begins
+2. Players are invited to make an optional donation
+3. Donors hit an extra drive using the Aurelius club
+4. Every donor receives prize certificates
+5. One player wins the featured grand prize
 
-REQUIREMENTS:
-Must be witnessed by an official Dixon Golf Rep on site.
+DONATION / VALUE:
+• Typical player donation: $25
+• Every donor receives $250+ in prizes
 
-RULES:
-Must be 18+, subject to company approval, airfare/accommodations not included, void where prohibited.
+PLAYER PRIZES:
+• $100 Off a golf club of their choice
+• Additional Aurelius / partner product certificates
 
-PITCH NOTE:
-Free add-on — powerful excitement builder. Don't oversell as likely — it's a bonus, not a guarantee.`,
+GRAND PRIZE:
+• Custom Aurelius Emperor Driver OR
+• $500 Zovatti watch
 
-  legend_shootout: `Rep sells $20 raffle tickets at registration before shotgun start.
+CLIENT BENEFIT:
+• No upfront cost
+• Charity receives 30% of net proceeds
+• Big visible premium prize helps participation
+
+TC NOTES:
+• Lead with the $500 prize
+• Always pitch with Dixon Challenge
+• Present it as a premium companion to the par 3 game.`,
+
+  fiesta_bowl: `WHAT IT IS:
+A bonus contest included with the Dixon Challenge.
 
 HOW IT WORKS:
-4 winners drawn → each gets 1 shot at a hole-in-one on the LEGEND Shootout hole.
+1. Player makes a hole-in-one during the Dixon Challenge
+2. Shot must be witnessed by an official Dixon rep
+3. Player qualifies for one shot in the Fiesta Bowl Par 3 Challenge
+4. Winner gets one shot at $1,000,000
 
 PRIZE:
-If any contestant makes it: Golfer wins $10,000 + Charity wins $10,000.
+• One shot at the Fiesta Bowl Par 3 Challenge hole-in-one contest
+• Advertised top prize: $1,000,000
 
-CHARITY GUARANTEED:
-Charity also receives 30% of net raffle proceeds regardless of outcome.
+IMPORTANT RULES:
+• Must be 18+
+• Must be witnessed by a Dixon Golf rep
+• Subject to company approval
+• Travel / accommodations may not be included
+• Void where prohibited
 
-RULES:
-Hole-in-one must be witnessed by 2 people + full-view video evidence.
+TC NOTES:
+• Free add-on to increase excitement
+• Pitch as a bonus, not a probability
+• Best used to energize the Dixon Challenge story.`,
+
+  legend_shootout: `WHAT IT IS:
+A raffle-based hole-in-one contest held at registration before the shotgun start.
+
+HOW IT WORKS:
+1. A LEGEND rep sells $20 raffle tickets at registration
+2. Four winners are drawn
+3. Each winner gets one shot at a hole-in-one
+4. If someone makes it, golfer wins $10,000 and charity wins $10,000
+
+CHARITY BENEFIT:
+• Charity still receives 30% of net raffle proceeds regardless of outcome
+
+REQUIREMENTS:
+• Hole-in-one must be witnessed by 2 people
+• Full-view video evidence is required
+
+WHEN TO OFFER:
+• Large events with 100+ players
+• Tournaments wanting a big-ticket attraction at registration
+• Events that want excitement before play starts
+
+TC NOTES:
+• Situational upsell
+• Best for higher-volume or premium events.`,
+
+  cgt: `WHAT IT IS:
+A free, full-service tournament planning platform the TC sets up during or right after the booking call.
+
+PLATFORM FEATURES:
+• Tournament website
+• Online player registration and payment collection
+• Sponsor packages
+• Event products store
+• Committee / volunteer management
+• Foursomes and pairings builder
+• Check-in tools
+• Live scoring
+• Customer service / setup help from the CGT team
+
+PRICING:
+• Platform tools: Free
+• Payments collected online: 5% platform fee + 2.5% credit card processing
+
+IMPORTANT RULE:
+The URL should be cleaned up before creation because it cannot be changed later.
+
+WHEN TO INTRODUCE:
+Always after booking.
+
+TC NOTES:
+• Create it immediately when possible
+• Best pitch trigger: registration, website, payments, sponsors, logistics
+• Use live walkthrough momentum whenever they are already at a computer.`,
+
+  custom_products: `WHAT IT IS:
+Branded tournament merchandise sold at wholesale pricing so the client can create sponsor-funded player gifts and profit.
+
+PROFIT MODEL EXAMPLE:
+1. Tournament sells a golf ball sponsorship for $1,000
+2. Tournament buys 12 dozen custom logo balls for under $500
+3. Players get a premium gift, sponsor gets branding, tournament keeps the margin
+
+PRODUCT EXAMPLES:
+GOLF BALLS (12 dozen minimum with logo)
+• Dixon Wind — MSRP $24.95 / Wholesale $15.99
+• Dixon Earth — MSRP $39.95 / Wholesale $23.99
+• Dixon Fire — MSRP $74.95 / Wholesale $42.99
+• Dixon Spirit — MSRP $49.95 / Wholesale $29.99
+
+APPAREL
+• Dixon Tour 1 Polo — MSRP $49.95 / Wholesale $29.99
+
+BAGS & ACCESSORIES
+• Drawstring Backpack — MSRP $11.99 / Wholesale $6.99
+• Tote Bag — MSRP $5.99 / Wholesale $2.49 (logo add-on available)
+• Zinc Alloy Divot Tool + Ball Marker — MSRP $11.99 / Wholesale $5.99
+
+INCENTIVES:
+• Buy any 2 custom products → free tote bag for every golfer
+• Buy any custom products → free PRIVILEGES hole-in-one prize card
+
+TC NOTES:
+• Show after the CGT walkthrough
+• Best when the client already sells sponsorships
+• Position as profit-building, not just swag.`,
+
+  sponsorship_packages: `WHAT IT IS:
+Ready-made sponsor tiers inside CGT that help tournaments organize and grow sponsorship revenue.
+
+HOW TO PRESENT IT:
+1. During the CGT walkthrough, open Event Management → Sponsor Packages
+2. Show the pre-built sponsor tiers
+3. Explain they can be customized by the CGT customer service team
 
 BEST FOR:
-Events with 100+ players, tournaments wanting a big-ticket registration excitement item.`,
+• Tournaments already selling sponsorships
+• POCs with messy or informal sponsor structures
+• Events wanting to upsell more sponsorship inventory
 
-  cgt: `PLATFORM FEATURES:
-• Tournament Website — public-facing, players/sponsors register & pay online
-• Sponsor Packages — ready-made tiers to sell
-• Event Products Store — wholesale custom products
-• Committee & Volunteers — add organizers, grant platform access
-• Foursomes & Pairings — drag-and-drop builder
-• Check In — online day-of registration
-• Live Scoring — real-time monitoring
-• CGT Customer Service — dedicated TA for setup & customization
+TC NOTES:
+• Always show after the pricing / sponsorship video during CGT walkthrough
+• Major bridge into custom products and event-product revenue.`,
 
-URL RULE:
-Set at creation, CANNOT be changed. Clean it up before clicking Create Event.
+  hole_in_one_insurance: `WHAT IT IS:
+Prize insurance that lets the tournament advertise a major hole-in-one prize without paying the full prize cost unless someone actually wins it.
 
-TIMING:
-Always create CGT immediately after booking — never wait for a follow-up call.`,
-
-  custom_products: `PROFIT MODEL:
-Sell a sponsorship to a local business → buy products at wholesale → give to players → keep the profit.
-Example: $1,000 sponsorship - $500 product cost = $500+ profit with zero risk.
-
-GOLF BALLS (per dozen, includes logo, min 12 dozen):
-• Dixon Wind (Distance) — MSRP $24.95 → Wholesale $15.99/doz
-• Dixon Earth (High Performance, most popular) — MSRP $39.95 → Wholesale $23.99/doz
-• Dixon Fire (Pro/Tour) — MSRP $74.95 → Wholesale $42.99/doz
-• Dixon Spirit (Women's eco) — MSRP $49.95 → Wholesale $29.99/doz
-
-APPAREL:
-• Dixon Tour 1 Polo (moisture-wicking) — MSRP $49.95 → Wholesale $29.99
-
-BAGS & ACCESSORIES:
-• Drawstring Backpack — MSRP $11.99 → Wholesale $6.99
-• Tote Bag (logo +$2.99/tote, min 50) — MSRP $5.99 → Wholesale $2.49
-• Zinc Alloy Divot Tool & Ball Marker — MSRP $11.99 → Wholesale $5.99
-
-BUNDLE: Buy any 2 custom products → FREE tote bag for every golfer.
-BONUS: Purchase any custom products → FREE PRIVILEGES Hole-in-One prize card.`,
-
-  sponsorship_packages: `Pre-built tiers inside CGT under Event Management → Sponsor Packages.
-
-CUSTOMIZATION:
-Fully customizable by the CGT customer service team.
+HOW TO POSITION IT:
+• The client pays only the insurance premium
+• If nobody makes the hole-in-one, they still get the promotional value and excitement of the big prize
+• Available through CGT Event Products at wholesale pricing
 
 BEST FOR:
-POCs who sell sponsorships but have disorganized structure, or want to grow sponsorship revenue.
+• Clients who want a big prize but are worried about financial exposure
+• Events trying to create buzz around sponsorships or premium activations
 
-WHEN TO PITCH:
-Always show after the pricing/sponsorship video during CGT walkthrough.`,
+TC NOTES:
+• Present it as low-risk excitement
+• Best after CGT is already accepted.`,
 
-  hole_in_one_insurance: `Allows tournament to offer a large prize (car, $10,000 cash) without paying unless someone actually makes the hole-in-one.
+  consulting: `WHAT IT IS:
+The TC positions themselves as a free tournament consultant and advisor throughout planning.
 
-AVAILABILITY:
-Available at wholesale pricing through CGT Event Products store.
-
-PITCH:
-"You only pay the insurance premium. If no one makes it, you still had the excitement of the prize without paying out."
-
-BEST FOR:
-POCs who want big prizes but are worried about cost.`,
-
-  consulting: `PITCH SCRIPT:
+THE PITCH:
 "Perhaps the most valuable tool I can offer is myself. I want to make your tournament a success, as we have done for tens of thousands of tournaments. I want to be part of your team. If you ever have questions, I am available. I can even call into committee meetings as needed."
 
-"The only way I make money is when you buy stuff in the Event Products tool. You do not have to purchase anything, but you do get wholesale pricing and I would like for you to take advantage of it."
+POSITIONING:
+• Ongoing support
+• Available for questions and committee calls
+• Revenue only comes from optional product purchases in CGT
 
-POST-CALL:
-Send follow-up email with TC contact info → set monthly check-in for CGT usage, product orders, and event prep.`,
+TC NOTES:
+• End-of-call close
+• Reinforces trust and long-term relationship
+• Makes future follow-ups feel consultative, not salesy.`,
 
-  auction_referral: `Referral to a virtual fundraising partner for online auctions.
+  auction_referral: `WHAT IT IS:
+A referral to a virtual fundraising partner that runs online auctions for charities.
 
-DESCRIBED AS:
-"A combination of Amazon, GoFundMe, and eBay all-in-one"
+HOW IT'S DESCRIBED:
+A combination of Amazon, GoFundMe, and eBay in one fundraising system.
+
+WHEN TO USE:
+• Tournament is several months out and wants to raise money now
+• Tournament was canceled
+• Client declined the on-course games
+• Client is open to extra fundraising beyond the tournament itself
 
 PROCESS:
-TC sets up 15-minute intro call between POC and auction consultant.
+• TC sets a 15-minute intro call between the POC and the auction consultant
+• Confirm the client received the intro / confirmation email
 
-EXECUTE:
-Click Refer Auction in database → fill out form → confirm POC received confirmation email.
-
-BEST FOR:
-Canceled/declined tournaments, events months out, clients open to extra fundraising beyond the tournament itself.
-
-NOTES:
-Rescue offer. Use as add-on or fallback. Never lead with it.`,
+TC NOTES:
+• Never lead with this
+• Always an add-on or fallback
+• Good rescue offer when the main golf activations are not moving forward.`,
 };
