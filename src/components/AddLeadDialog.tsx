@@ -146,7 +146,12 @@ export function AddLeadDialog({
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-1.5">
-            <Label htmlFor="org">Organization *</Label>
+            <Label htmlFor="event">Event name *</Label>
+            <Input id="event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="org">Organization</Label>
             <Input id="org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
           </div>
 
@@ -157,17 +162,12 @@ export function AddLeadDialog({
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
+              <Input id="phone" type="tel" inputMode="tel" value={contactPhone} onChange={(e) => setContactPhone(formatPhone(e.target.value))} placeholder="(555) 010-1000" />
             </div>
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="event">Event name *</Label>
-            <Input id="event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -195,6 +195,11 @@ export function AddLeadDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="eventid">Event ID</Label>
+            <Input id="eventid" value={eventId} onChange={(e) => setEventId(e.target.value)} placeholder="e.g. Dixon tournament ID" />
           </div>
 
           <div className="grid gap-1.5">
