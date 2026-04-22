@@ -768,7 +768,7 @@ function CallCenterPane({
 
         {/* SECTION B — EVENT FLOW */}
         <SectionCard letter="B" title="Event Flow">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
             <Field
               label="Registration opens"
               value={event.registration_opens_at ?? event.registration_time}
