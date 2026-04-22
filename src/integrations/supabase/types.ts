@@ -232,16 +232,29 @@ export type Database = {
           check_address: string | null
           check_mail_to: string | null
           check_payable_to: string | null
+          contact_how_involved: string | null
+          contact_role: string | null
+          contact_years_in_charge: number | null
+          contact_years_involved: number | null
           course: string | null
+          course_games: string | null
           created_at: string
           custom_products_sold: boolean
+          decision_maker: string | null
           dixon_tournament_id: string | null
           entry_fee: number | null
           event_date: string | null
           event_name: string
           event_time: string | null
           event_website: string | null
+          extra_donation_games: boolean | null
+          extra_donation_notes: string | null
+          extra_fundraising: string | null
           funds_use: string | null
+          funds_use_notes: string | null
+          funds_use_type: string | null
+          hardest_part: string | null
+          has_player_gift_budget: string | null
           hot_lead: boolean
           id: string
           interest_amateur_endorsement: boolean
@@ -250,23 +263,40 @@ export type Database = {
           interest_custom_products: boolean
           interest_par3: boolean
           interest_par5: boolean
+          is_annual_event: boolean | null
           last_contact_at: string | null
           lead_source: string | null
           notes: string | null
+          objections: string | null
+          opportunity_flags: string[] | null
+          org_age_years: number | null
           organization_id: string | null
+          overall_goal: string | null
+          pain_point_chips: string[] | null
           pain_points: string | null
           par3_booked: boolean
           par5_booked: boolean
+          payment_processor_notes: string | null
           player_count: number | null
           player_gift_budget: string | null
+          player_gift_items: string | null
+          post_round_activities: string | null
           primary_contact_id: string | null
+          prize_donor_lead: string | null
+          prize_types: string | null
           registration_method: string | null
+          registration_opens_at: string | null
+          registration_sales: string | null
+          registration_time: string | null
+          revenue_sources: string[] | null
           sponsorship_details: string | null
           stage: Database["public"]["Enums"]["pipeline_stage"]
+          tee_off_time: string | null
           territory: string | null
           updated_at: string
           user_id: string
           where_left_off: string | null
+          years_running: number | null
         }
         Insert: {
           amateur_endorsement_sent?: boolean
@@ -278,16 +308,29 @@ export type Database = {
           check_address?: string | null
           check_mail_to?: string | null
           check_payable_to?: string | null
+          contact_how_involved?: string | null
+          contact_role?: string | null
+          contact_years_in_charge?: number | null
+          contact_years_involved?: number | null
           course?: string | null
+          course_games?: string | null
           created_at?: string
           custom_products_sold?: boolean
+          decision_maker?: string | null
           dixon_tournament_id?: string | null
           entry_fee?: number | null
           event_date?: string | null
           event_name: string
           event_time?: string | null
           event_website?: string | null
+          extra_donation_games?: boolean | null
+          extra_donation_notes?: string | null
+          extra_fundraising?: string | null
           funds_use?: string | null
+          funds_use_notes?: string | null
+          funds_use_type?: string | null
+          hardest_part?: string | null
+          has_player_gift_budget?: string | null
           hot_lead?: boolean
           id?: string
           interest_amateur_endorsement?: boolean
@@ -296,23 +339,40 @@ export type Database = {
           interest_custom_products?: boolean
           interest_par3?: boolean
           interest_par5?: boolean
+          is_annual_event?: boolean | null
           last_contact_at?: string | null
           lead_source?: string | null
           notes?: string | null
+          objections?: string | null
+          opportunity_flags?: string[] | null
+          org_age_years?: number | null
           organization_id?: string | null
+          overall_goal?: string | null
+          pain_point_chips?: string[] | null
           pain_points?: string | null
           par3_booked?: boolean
           par5_booked?: boolean
+          payment_processor_notes?: string | null
           player_count?: number | null
           player_gift_budget?: string | null
+          player_gift_items?: string | null
+          post_round_activities?: string | null
           primary_contact_id?: string | null
+          prize_donor_lead?: string | null
+          prize_types?: string | null
           registration_method?: string | null
+          registration_opens_at?: string | null
+          registration_sales?: string | null
+          registration_time?: string | null
+          revenue_sources?: string[] | null
           sponsorship_details?: string | null
           stage?: Database["public"]["Enums"]["pipeline_stage"]
+          tee_off_time?: string | null
           territory?: string | null
           updated_at?: string
           user_id: string
           where_left_off?: string | null
+          years_running?: number | null
         }
         Update: {
           amateur_endorsement_sent?: boolean
@@ -324,16 +384,29 @@ export type Database = {
           check_address?: string | null
           check_mail_to?: string | null
           check_payable_to?: string | null
+          contact_how_involved?: string | null
+          contact_role?: string | null
+          contact_years_in_charge?: number | null
+          contact_years_involved?: number | null
           course?: string | null
+          course_games?: string | null
           created_at?: string
           custom_products_sold?: boolean
+          decision_maker?: string | null
           dixon_tournament_id?: string | null
           entry_fee?: number | null
           event_date?: string | null
           event_name?: string
           event_time?: string | null
           event_website?: string | null
+          extra_donation_games?: boolean | null
+          extra_donation_notes?: string | null
+          extra_fundraising?: string | null
           funds_use?: string | null
+          funds_use_notes?: string | null
+          funds_use_type?: string | null
+          hardest_part?: string | null
+          has_player_gift_budget?: string | null
           hot_lead?: boolean
           id?: string
           interest_amateur_endorsement?: boolean
@@ -342,23 +415,40 @@ export type Database = {
           interest_custom_products?: boolean
           interest_par3?: boolean
           interest_par5?: boolean
+          is_annual_event?: boolean | null
           last_contact_at?: string | null
           lead_source?: string | null
           notes?: string | null
+          objections?: string | null
+          opportunity_flags?: string[] | null
+          org_age_years?: number | null
           organization_id?: string | null
+          overall_goal?: string | null
+          pain_point_chips?: string[] | null
           pain_points?: string | null
           par3_booked?: boolean
           par5_booked?: boolean
+          payment_processor_notes?: string | null
           player_count?: number | null
           player_gift_budget?: string | null
+          player_gift_items?: string | null
+          post_round_activities?: string | null
           primary_contact_id?: string | null
+          prize_donor_lead?: string | null
+          prize_types?: string | null
           registration_method?: string | null
+          registration_opens_at?: string | null
+          registration_sales?: string | null
+          registration_time?: string | null
+          revenue_sources?: string[] | null
           sponsorship_details?: string | null
           stage?: Database["public"]["Enums"]["pipeline_stage"]
+          tee_off_time?: string | null
           territory?: string | null
           updated_at?: string
           user_id?: string
           where_left_off?: string | null
+          years_running?: number | null
         }
         Relationships: [
           {
