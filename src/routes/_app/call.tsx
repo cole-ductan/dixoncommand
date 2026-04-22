@@ -922,7 +922,7 @@ function CallCenterPane({
         <SectionCard letter="E" title="Call Outcome">
           <fieldset className="rounded-lg border bg-secondary/30 p-3">
             <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest</legend>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 @[360px]:grid-cols-2 gap-2">
               {[
                 ["interest_amateur_endorsement", "Amateur Endorsement"],
                 ["interest_par3", "Par 3 (Dixon Challenge)"],
@@ -949,7 +949,7 @@ function CallCenterPane({
 
           <fieldset className="rounded-lg border bg-secondary/30 p-3">
             <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Booked / Sent</legend>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 @[360px]:grid-cols-2 gap-2">
               <CheckRow label="AE Sent" checked={event.amateur_endorsement_sent} onChange={(v) => saveEventField({ amateur_endorsement_sent: v })} />
               <CheckRow label="Par 3 Booked" checked={event.par3_booked} onChange={(v) => saveEventField({ par3_booked: v })} />
               <CheckRow label="Par 5 Booked" checked={event.par5_booked} onChange={(v) => saveEventField({ par5_booked: v })} />
@@ -967,7 +967,7 @@ function CallCenterPane({
 
           <fieldset className="rounded-lg border bg-secondary/30 p-3 space-y-2">
             <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Check details</legend>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 @[360px]:grid-cols-2 gap-3">
               <div className="grid gap-1">
                 <Label className="text-xs">Payable to</Label>
                 <Input defaultValue={event.check_payable_to ?? ""} onBlur={(e) => saveEventField({ check_payable_to: e.target.value })} />
