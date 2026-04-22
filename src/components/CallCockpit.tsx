@@ -14,6 +14,7 @@ import {
   type PipelineStep,
 } from "@/lib/pipeline";
 import { ChevronRight, Phone, PhoneOff, Mic, AlertTriangle, CheckCircle2, Timer } from "lucide-react";
+import { formatPhone } from "@/lib/phone";
 
 type AnyEvent = Record<string, any>;
 type AnyContact = Record<string, any> | null;
@@ -366,7 +367,10 @@ function CaptureInput({
       <Input
         type={meta.type === "number" ? "number" : meta.type === "date" ? "date" : meta.type === "time" ? "time" : "text"}
         value={v}
-        onChange={(e) => setV(e.target.value)}
+        inputMode={fieldKey === "contact_phone" ? "tel" : undefined}
+        onChange={(e) =>
+          setV(fieldKey === "contact_phone" ? formatPhone(e.target.value) : e.target.value)
+        }
         onBlur={() => {
           if (v === String(raw ?? "")) return;
           if (meta.type === "number") save(v === "" ? null : Number(v));
