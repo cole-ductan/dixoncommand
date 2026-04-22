@@ -431,9 +431,10 @@ function LiveCallWorkspace() {
             <Flame className="h-3.5 w-3.5 md:mr-1.5" />
             <span className="hidden md:inline">{event.hot_lead ? "Hot" : "Mark hot"}</span>
           </Button>
+          {/* Mobile: open Script/Offers/Email in a slide-out sheet */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline" className="h-8 px-2 md:h-9 md:px-3">
+              <Button size="sm" variant="outline" className="h-8 px-2 lg:hidden">
                 <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />
                 <span className="hidden md:inline">Script &amp; Offers</span>
               </Button>
@@ -453,6 +454,17 @@ function LiveCallWorkspace() {
               </div>
             </SheetContent>
           </Sheet>
+          {/* Desktop: toggle the inline side pane (matches Guided) */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 px-2 md:h-9 md:px-3 hidden lg:inline-flex"
+            onClick={() => setFreePaneOpen((v) => !v)}
+            title={freePaneOpen ? "Hide Script / Offers / Email" : "Show Script / Offers / Email"}
+          >
+            {freePaneOpen ? <PanelRightClose className="h-3.5 w-3.5 md:mr-1.5" /> : <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />}
+            <span className="hidden md:inline">{freePaneOpen ? "Hide panes" : "Script & Offers"}</span>
+          </Button>
           <span className="hidden md:inline text-xs text-muted-foreground">{savingField ? "Saving…" : "Saved"}</span>
         </div>
       </div>
