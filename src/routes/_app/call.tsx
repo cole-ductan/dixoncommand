@@ -94,6 +94,13 @@ function LiveCallWorkspace() {
   useEffect(() => {
     if (typeof window !== "undefined") localStorage.setItem("callMode", mode);
   }, [mode]);
+  const [freePaneOpen, setFreePaneOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("callFreePaneOpen") !== "0";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("callFreePaneOpen", freePaneOpen ? "1" : "0");
+  }, [freePaneOpen]);
 
   const saveContactField = useCallback(async (patch: Record<string, any>) => {
     if (!contact) return;
