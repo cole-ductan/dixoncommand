@@ -28,6 +28,7 @@ import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
 import { ResizablePanels3 } from "@/components/ResizablePanels3";
+import { ResizablePanels2 } from "@/components/ResizablePanels2";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
