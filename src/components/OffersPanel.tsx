@@ -239,25 +239,25 @@ function RailOfferCard({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <article className="rounded-lg border bg-card">
+    <article className="rounded-lg border bg-card min-w-0 overflow-hidden">
       {/* Header row — always visible */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-1.5 px-2.5 py-2 text-left hover:bg-secondary/40 rounded-t-lg"
+        className="flex w-full min-w-0 items-center gap-1.5 px-2.5 py-2 text-left hover:bg-secondary/40 rounded-t-lg"
       >
         <ChevronRight
           className={`h-3 w-3 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`}
         />
-        <span className="font-display text-sm font-semibold leading-tight truncate flex-1">
+        <span className="font-display text-sm font-semibold leading-tight truncate flex-1 min-w-0">
           {offer.name}
         </span>
         {offer.type && (
-          <span className="hidden sm:inline whitespace-nowrap text-[9px] font-mono uppercase tracking-wider text-muted-foreground border rounded px-1 py-0.5">
+          <span className="hidden @[280px]:inline whitespace-nowrap text-[9px] font-mono uppercase tracking-wider text-muted-foreground border rounded px-1 py-0.5 shrink-0">
             {offer.type}
           </span>
         )}
-        <span className="whitespace-nowrap text-[10px] font-mono text-muted-foreground">
+        <span className="hidden @[200px]:inline whitespace-nowrap text-[10px] font-mono text-muted-foreground shrink-0">
           {offer.cost}
         </span>
         <span
@@ -265,7 +265,7 @@ function RailOfferCard({
           tabIndex={0}
           onClick={(e) => { e.stopPropagation(); onAddOffer(); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onAddOffer(); } }}
-          className="rounded p-1 hover:bg-background"
+          className="rounded p-1 hover:bg-background shrink-0"
           title="Add offer to email"
         >
           <Mail className="h-3.5 w-3.5" />
@@ -274,23 +274,23 @@ function RailOfferCard({
 
       {/* When-to-introduce — always visible, compact */}
       {offer.when_to_introduce && (
-        <div className="px-2.5 pb-1.5 text-[10px] italic text-muted-foreground truncate">
+        <div className="px-2.5 pb-1.5 text-[10px] italic text-muted-foreground truncate min-w-0">
           When: {offer.when_to_introduce}
         </div>
       )}
 
       {/* PDF chips — always visible, single compact row */}
       {offerPdfs.length > 0 && (
-        <div className="px-2.5 pb-2 flex flex-wrap gap-1">
+        <div className="px-2.5 pb-2 flex flex-wrap gap-1 min-w-0">
           {offerPdfs.map((p) => (
             <div
               key={p.id}
-              className="inline-flex items-center gap-1 rounded border bg-secondary/40 pl-1.5 pr-0.5 py-0.5 text-[10px]"
+              className="inline-flex max-w-full min-w-0 items-center gap-1 rounded border bg-secondary/40 pl-1.5 pr-0.5 py-0.5 text-[10px]"
               title={p.name}
             >
               <FileText className="h-3 w-3 text-primary shrink-0" />
-              <span className="truncate max-w-[110px]">{offerPdfs.length === 1 ? "PDF" : p.name}</span>
-              <button onClick={() => onPreview(p)} className="rounded p-0.5 hover:bg-background" title="Preview">
+              <span className="truncate max-w-[110px] min-w-0">{offerPdfs.length === 1 ? "PDF" : p.name}</span>
+              <button onClick={() => onPreview(p)} className="rounded p-0.5 hover:bg-background shrink-0" title="Preview">
                 <Eye className="h-3 w-3" />
               </button>
               <a
@@ -298,12 +298,12 @@ function RailOfferCard({
                 target="_blank"
                 rel="noreferrer"
                 download
-                className="rounded p-0.5 hover:bg-background"
+                className="rounded p-0.5 hover:bg-background shrink-0"
                 title="Download"
               >
                 <Download className="h-3 w-3" />
               </a>
-              <button onClick={() => onAddPdf(p)} className="rounded p-0.5 hover:bg-background" title="Add to email">
+              <button onClick={() => onAddPdf(p)} className="rounded p-0.5 hover:bg-background shrink-0" title="Add to email">
                 <Mail className="h-3 w-3" />
               </button>
             </div>
@@ -313,7 +313,7 @@ function RailOfferCard({
 
       {/* Expanded details */}
       {open && detail && (
-        <div className="border-t px-2.5 py-2">
+        <div className="border-t px-2.5 py-2 min-w-0">
           <pre className="whitespace-pre-wrap font-sans text-[11px] leading-relaxed text-foreground/85">
             {detail}
           </pre>
