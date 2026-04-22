@@ -404,10 +404,41 @@ export type Database = {
         }
         Relationships: []
       }
+      note_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           body: string
           created_at: string
+          folder_id: string | null
           id: string
           pinned: boolean
           reminder_at: string | null
@@ -419,6 +450,7 @@ export type Database = {
         Insert: {
           body?: string
           created_at?: string
+          folder_id?: string | null
           id?: string
           pinned?: boolean
           reminder_at?: string | null
@@ -430,6 +462,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+          folder_id?: string | null
           id?: string
           pinned?: boolean
           reminder_at?: string | null
@@ -439,6 +472,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "notes_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "note_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notes_task_id_fkey"
             columns: ["task_id"]

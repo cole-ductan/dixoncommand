@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppPlaybookRouteImport } from './routes/_app/playbook'
 import { Route as AppPipelineRouteImport } from './routes/_app/pipeline'
 import { Route as AppOffersRouteImport } from './routes/_app/offers'
+import { Route as AppNotesRouteImport } from './routes/_app/notes'
 import { Route as AppMyWeekRouteImport } from './routes/_app/my-week'
 import { Route as AppFollowUpsRouteImport } from './routes/_app/follow-ups'
 import { Route as AppFlyersRouteImport } from './routes/_app/flyers'
@@ -49,6 +50,11 @@ const AppOffersRoute = AppOffersRouteImport.update({
   path: '/offers',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotesRoute = AppNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMyWeekRoute = AppMyWeekRouteImport.update({
   id: '/my-week',
   path: '/my-week',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/flyers': typeof AppFlyersRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/my-week': typeof AppMyWeekRoute
+  '/notes': typeof AppNotesRoute
   '/offers': typeof AppOffersRoute
   '/pipeline': typeof AppPipelineRoute
   '/playbook': typeof AppPlaybookRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/flyers': typeof AppFlyersRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/my-week': typeof AppMyWeekRoute
+  '/notes': typeof AppNotesRoute
   '/offers': typeof AppOffersRoute
   '/pipeline': typeof AppPipelineRoute
   '/playbook': typeof AppPlaybookRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_app/flyers': typeof AppFlyersRoute
   '/_app/follow-ups': typeof AppFollowUpsRoute
   '/_app/my-week': typeof AppMyWeekRoute
+  '/_app/notes': typeof AppNotesRoute
   '/_app/offers': typeof AppOffersRoute
   '/_app/pipeline': typeof AppPipelineRoute
   '/_app/playbook': typeof AppPlaybookRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/flyers'
     | '/follow-ups'
     | '/my-week'
+    | '/notes'
     | '/offers'
     | '/pipeline'
     | '/playbook'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/flyers'
     | '/follow-ups'
     | '/my-week'
+    | '/notes'
     | '/offers'
     | '/pipeline'
     | '/playbook'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/_app/flyers'
     | '/_app/follow-ups'
     | '/_app/my-week'
+    | '/_app/notes'
     | '/_app/offers'
     | '/_app/pipeline'
     | '/_app/playbook'
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOffersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notes': {
+      id: '/_app/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AppNotesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/my-week': {
       id: '/_app/my-week'
       path: '/my-week'
@@ -227,6 +246,7 @@ interface AppRouteChildren {
   AppFlyersRoute: typeof AppFlyersRoute
   AppFollowUpsRoute: typeof AppFollowUpsRoute
   AppMyWeekRoute: typeof AppMyWeekRoute
+  AppNotesRoute: typeof AppNotesRoute
   AppOffersRoute: typeof AppOffersRoute
   AppPipelineRoute: typeof AppPipelineRoute
   AppPlaybookRoute: typeof AppPlaybookRoute
@@ -238,6 +258,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFlyersRoute: AppFlyersRoute,
   AppFollowUpsRoute: AppFollowUpsRoute,
   AppMyWeekRoute: AppMyWeekRoute,
+  AppNotesRoute: AppNotesRoute,
   AppOffersRoute: AppOffersRoute,
   AppPipelineRoute: AppPipelineRoute,
   AppPlaybookRoute: AppPlaybookRoute,

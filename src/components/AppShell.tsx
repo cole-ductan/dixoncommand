@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2, FileText } from "lucide-react";
+import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2, FileText, StickyNote } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { PendingEmailTray } from "@/components/PendingEmailTray";
 import { NotesTray } from "@/components/NotesTray";
@@ -37,6 +37,7 @@ export function AppShell() {
     { to: "/playbook", label: "Playbook", Icon: BookOpen },
     { to: "/offers", label: "Offers & Products", Icon: Package },
     { to: "/flyers", label: "PDF Flyers", Icon: FileText },
+    { to: "/notes", label: "Notes", Icon: StickyNote },
   ];
 
   const isActive = (to: string, exact?: boolean) =>
