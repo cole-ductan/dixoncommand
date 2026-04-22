@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { Pencil, Save, X } from "lucide-react";
+import { Pencil, Save, X, Check } from "lucide-react";
 import { toast } from "sonner";
 
 export type ScriptSection = {
@@ -35,26 +35,44 @@ function ScriptItem({ section, onUpdated }: { section: ScriptSection; onUpdated?
   const [title, setTitle] = useState(section.title);
   const [body, setBody] = useState(section.body);
   const [saving, setSaving] = useState(false);
+  const [savedTick, setSavedTick] = useState(false);
 
   useEffect(() => {
     setTitle(section.title);
     setBody(section.body);
   }, [section.title, section.body]);
 
-  const save = async () => {
+  const persist = async (nextTitle: string, nextBody: string) => {
+    if (nextTitle === section.title && nextBody === section.body) return true;
     setSaving(true);
     const { error } = await supabase
       .from("script_sections")
-      .update({ title, body })
+      .update({ title: nextTitle, body: nextBody })
       .eq("id", section.id);
     setSaving(false);
     if (error) {
       toast.error("Save failed: " + error.message);
-      return;
+      return false;
     }
+    onUpdated?.({ ...section, title: nextTitle, body: nextBody });
+    setSavedTick(true);
+    setTimeout(() => setSavedTick(false), 1200);
+    return true;
+  };
+
+  const save = async () => {
+    const ok = await persist(title, body);
+    if (!ok) return;
     toast.success("Script updated");
-    onUpdated?.({ ...section, title, body });
     setEditing(false);
+  };
+
+  // Autosave on blur — guarantees changes persist even if user navigates away
+  // before clicking Save.
+  const autoSaveOnBlur = () => {
+    if (!editing) return;
+    if (title === section.title && body === section.body) return;
+    void persist(title, body);
   };
 
   const cancel = () => {
@@ -86,17 +104,19 @@ function ScriptItem({ section, onUpdated }: { section: ScriptSection; onUpdated?
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onBlur={autoSaveOnBlur}
               className="h-8 text-sm"
               placeholder="Section title"
             />
             <Textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
+              onBlur={autoSaveOnBlur}
               rows={10}
               className="text-xs font-sans leading-relaxed"
               placeholder="Script body"
             />
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button size="sm" onClick={save} disabled={saving}>
                 <Save className="mr-1.5 h-3 w-3" />
                 {saving ? "Saving…" : "Save"}
@@ -105,6 +125,11 @@ function ScriptItem({ section, onUpdated }: { section: ScriptSection; onUpdated?
                 <X className="mr-1.5 h-3 w-3" />
                 Cancel
               </Button>
+              {savedTick && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" /> Autosaved
+                </span>
+              )}
             </div>
           </div>
         ) : (

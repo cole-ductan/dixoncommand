@@ -28,6 +28,7 @@ import { DateTimePicker } from "@/components/DateTimePicker";
 import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
 import { ResizablePanels3 } from "@/components/ResizablePanels3";
+import { ResizablePanels2 } from "@/components/ResizablePanels2";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -962,66 +963,80 @@ function GuidedWithSidePanes({
   tmplVars: Record<string, string>;
 }) {
   const [paneOpen, setPaneOpen] = useState(false);
-  return (
-    <div className="flex flex-1 min-h-0 relative">
-      <div className="flex-1 min-w-0">
-        <CallCockpit
-          event={event}
-          contact={contact}
-          onSaveEvent={saveEventField}
-          onSaveContact={saveContactField}
-        />
+  const cockpit = (
+    <CallCockpit
+      event={event}
+      contact={contact}
+      onSaveEvent={saveEventField}
+      onSaveContact={saveContactField}
+    />
+  );
+  const sidePanel = (
+    <ScrollArea className="h-full bg-background">
+      <div className="p-3">
+        <Tabs defaultValue="offers" className="w-full">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="script">Script</TabsTrigger>
+            <TabsTrigger value="offers">Offers</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
+          </TabsList>
+          <TabsContent value="script" className="mt-3">
+            <ScriptPanel sections={scriptSections} />
+          </TabsContent>
+          <TabsContent value="offers" className="mt-3">
+            <OffersPanel variant="rail" />
+          </TabsContent>
+          <TabsContent value="email" className="mt-3 space-y-3">
+            {templates.map((t) => {
+              const subj = applyTemplate(t.subject, tmplVars);
+              const body = applyTemplate(t.body, tmplVars);
+              return (
+                <article key={t.id} className="rounded-lg border bg-card p-3">
+                  <div className="font-medium text-sm">{t.name}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Subject: {subj}</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => {
+                        usePendingTray.getState().setTo(contact?.email ?? "");
+                        usePendingTray.getState().add({
+                          kind: "template",
+                          id: t.id,
+                          name: t.name,
+                          subject: subj,
+                          body,
+                        });
+                        toast.success(`Added "${t.name}" to email tray`);
+                      }}
+                    >
+                      <Mail className="mr-1.5 h-3 w-3" />Add to tray
+                    </Button>
+                  </div>
+                </article>
+              );
+            })}
+          </TabsContent>
+        </Tabs>
       </div>
-      {paneOpen && (
-        <ScrollArea className="hidden lg:block w-[360px] shrink-0 border-l bg-background">
-          <div className="p-3">
-            <Tabs defaultValue="offers" className="w-full">
-              <TabsList className="w-full grid grid-cols-3">
-                <TabsTrigger value="script">Script</TabsTrigger>
-                <TabsTrigger value="offers">Offers</TabsTrigger>
-                <TabsTrigger value="email">Email</TabsTrigger>
-              </TabsList>
-              <TabsContent value="script" className="mt-3">
-                <ScriptPanel sections={scriptSections} />
-              </TabsContent>
-              <TabsContent value="offers" className="mt-3">
-                <OffersPanel variant="rail" />
-              </TabsContent>
-              <TabsContent value="email" className="mt-3 space-y-3">
-                {templates.map((t) => {
-                  const subj = applyTemplate(t.subject, tmplVars);
-                  const body = applyTemplate(t.body, tmplVars);
-                  return (
-                    <article key={t.id} className="rounded-lg border bg-card p-3">
-                      <div className="font-medium text-sm">{t.name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Subject: {subj}</div>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => {
-                            usePendingTray.getState().setTo(contact?.email ?? "");
-                            usePendingTray.getState().add({
-                              kind: "template",
-                              id: t.id,
-                              name: t.name,
-                              subject: subj,
-                              body,
-                            });
-                            toast.success(`Added "${t.name}" to email tray`);
-                          }}
-                        >
-                          <Mail className="mr-1.5 h-3 w-3" />Add to tray
-                        </Button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ScrollArea>
-      )}
+    </ScrollArea>
+  );
+  return (
+    <div className="flex flex-1 min-h-0 relative px-4 lg:px-6">
+      {/* Mobile: cockpit only */}
+      <div className="flex-1 min-w-0 lg:hidden">{cockpit}</div>
+      {/* Desktop: resizable when pane open, full-width cockpit when closed */}
+      <div className="hidden lg:block flex-1 min-w-0">
+        {paneOpen ? (
+          <ResizablePanels2
+            storageId="call-guided-2pane-v1"
+            left={<div className="h-full">{cockpit}</div>}
+            right={sidePanel}
+          />
+        ) : (
+          cockpit
+        )}
+      </div>
       <button
         onClick={() => setPaneOpen((v) => !v)}
         className="hidden lg:flex absolute top-3 right-3 z-10 items-center gap-1.5 rounded-md border bg-card px-2.5 py-1.5 text-xs font-medium shadow-sm hover:bg-secondary"
