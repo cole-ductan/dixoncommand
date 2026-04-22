@@ -453,78 +453,26 @@ function LiveCallWorkspace() {
           tmplVars={tmplVars}
         />
       ) : (
-      /* 3-pane body — on mobile we stack naturally so each pane shows in full */
-      <div className="flex-1 min-h-0 px-4 lg:px-6">
-        {/* Mobile: stacked. Desktop: resizable */}
-        <div className="lg:hidden grid grid-cols-1 divide-y h-full">
-          <CallLeftPane
-            event={event}
-            contacts={contacts}
-            saveEventField={saveEventField}
-            updateContactById={updateContactById}
-            addContact={addContact}
-            removeContact={removeContact}
-          />
-          <CallCenterPane
-            event={event}
-            setEvent={setEvent}
-            saveEventField={saveEventField}
-            callType={callType}
-            setCallType={setCallType}
-            outcome={outcome}
-            setOutcome={setOutcome}
-            summary={summary}
-            setSummary={setSummary}
-            followUpAction={followUpAction}
-            setFollowUpAction={setFollowUpAction}
-            followUpAt={followUpAt}
-            setFollowUpAt={setFollowUpAt}
-          />
-          <CallRightPane
-            scriptSections={scriptSections}
-            setScriptSections={setScriptSections}
-            templates={templates}
-            tmplVars={tmplVars}
-            contact={contact}
-          />
-        </div>
-        <ResizablePanels3
-          left={
-            <CallLeftPane
-              event={event}
-              contacts={contacts}
-              saveEventField={saveEventField}
-              updateContactById={updateContactById}
-              addContact={addContact}
-              removeContact={removeContact}
-            />
-          }
-          center={
-            <CallCenterPane
-              event={event}
-              setEvent={setEvent}
-              saveEventField={saveEventField}
-              callType={callType}
-              setCallType={setCallType}
-              outcome={outcome}
-              setOutcome={setOutcome}
-              summary={summary}
-              setSummary={setSummary}
-              followUpAction={followUpAction}
-              setFollowUpAction={setFollowUpAction}
-              followUpAt={followUpAt}
-              setFollowUpAt={setFollowUpAt}
-            />
-          }
-          right={
-            <CallRightPane
-              scriptSections={scriptSections}
-              setScriptSections={setScriptSections}
-              templates={templates}
-              tmplVars={tmplVars}
-              contact={contact}
-            />
-          }
+      /* Single merged pane — Event Snapshot + Discovery Capture together. Right rail lives in a slide-out sheet. */
+      <div className="flex-1 min-h-0">
+        <CallMainPane
+          event={event}
+          setEvent={setEvent}
+          contacts={contacts}
+          saveEventField={saveEventField}
+          updateContactById={updateContactById}
+          addContact={addContact}
+          removeContact={removeContact}
+          callType={callType}
+          setCallType={setCallType}
+          outcome={outcome}
+          setOutcome={setOutcome}
+          summary={summary}
+          setSummary={setSummary}
+          followUpAction={followUpAction}
+          setFollowUpAction={setFollowUpAction}
+          followUpAt={followUpAt}
+          setFollowUpAt={setFollowUpAt}
         />
       </div>
       )}
