@@ -438,6 +438,28 @@ function LiveCallWorkspace() {
             <Flame className="h-3.5 w-3.5 md:mr-1.5" />
             <span className="hidden md:inline">{event.hot_lead ? "Hot" : "Mark hot"}</span>
           </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline" className="h-8 px-2 md:h-9 md:px-3">
+                <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />
+                <span className="hidden md:inline">Script &amp; Offers</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg p-0 flex flex-col">
+              <SheetHeader className="border-b px-4 py-3">
+                <SheetTitle className="text-sm font-semibold">Script · Offers · Email</SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <CallRightPane
+                  scriptSections={scriptSections}
+                  setScriptSections={setScriptSections}
+                  templates={templates}
+                  tmplVars={tmplVars}
+                  contact={contact}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
           <span className="hidden md:inline text-xs text-muted-foreground">{savingField ? "Saving…" : "Saved"}</span>
         </div>
       </div>
