@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { withSupabaseSession } from "@/integrations/supabase/serverfn-auth";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { OFFER_PDF_MAP, DRIVE_FOLDER_IDS } from "@/lib/offerPdfMap";
 import { OFFER_EXPANDED } from "@/lib/offerExpanded";
@@ -42,7 +42,7 @@ function safeName(name: string) {
  * Idempotent: re-uploading the same file overwrites it; rebuilds offer_pdfs rows.
  */
 export const mirrorOfferPdfsToStorage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseSession])
   .handler(async ({ context }) => {
     try {
       const { supabase, userId } = context;
