@@ -807,10 +807,10 @@ function CallLeftPane({
 function CallCenterPane({
   event, setEvent, saveEventField, callType, setCallType, outcome, setOutcome,
   summary, setSummary, followUpAction, setFollowUpAction, followUpAt, setFollowUpAt,
+  embedded = false,
 }: any) {
-  return (
-    <ScrollArea className="h-full @container">
-      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto min-w-0">
+  const body = (
+    <div className={embedded ? "space-y-4 min-w-0" : "p-4 md:p-6 space-y-4 max-w-3xl mx-auto min-w-0"}>
         <header>
           <h2 className="font-display text-xl font-semibold">Discovery Capture</h2>
           <p className="text-xs text-muted-foreground">
