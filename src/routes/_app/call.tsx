@@ -94,6 +94,13 @@ function LiveCallWorkspace() {
   useEffect(() => {
     if (typeof window !== "undefined") localStorage.setItem("callMode", mode);
   }, [mode]);
+  const [freePaneOpen, setFreePaneOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("callFreePaneOpen") !== "0";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("callFreePaneOpen", freePaneOpen ? "1" : "0");
+  }, [freePaneOpen]);
 
   const saveContactField = useCallback(async (patch: Record<string, any>) => {
     if (!contact) return;
@@ -424,9 +431,10 @@ function LiveCallWorkspace() {
             <Flame className="h-3.5 w-3.5 md:mr-1.5" />
             <span className="hidden md:inline">{event.hot_lead ? "Hot" : "Mark hot"}</span>
           </Button>
+          {/* Mobile: open Script/Offers/Email in a slide-out sheet */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="sm" variant="outline" className="h-8 px-2 md:h-9 md:px-3">
+              <Button size="sm" variant="outline" className="h-8 px-2 lg:hidden">
                 <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />
                 <span className="hidden md:inline">Script &amp; Offers</span>
               </Button>
@@ -446,6 +454,17 @@ function LiveCallWorkspace() {
               </div>
             </SheetContent>
           </Sheet>
+          {/* Desktop: toggle the inline side pane (matches Guided) */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 px-2 md:h-9 md:px-3 hidden lg:inline-flex"
+            onClick={() => setFreePaneOpen((v) => !v)}
+            title={freePaneOpen ? "Hide Script / Offers / Email" : "Show Script / Offers / Email"}
+          >
+            {freePaneOpen ? <PanelRightClose className="h-3.5 w-3.5 md:mr-1.5" /> : <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />}
+            <span className="hidden md:inline">{freePaneOpen ? "Hide panes" : "Script & Offers"}</span>
+          </Button>
           <span className="hidden md:inline text-xs text-muted-foreground">{savingField ? "Saving…" : "Saved"}</span>
         </div>
       </div>
@@ -461,27 +480,58 @@ function LiveCallWorkspace() {
           tmplVars={tmplVars}
         />
       ) : (
-      /* Single merged pane — Event Snapshot + Discovery Capture together. Right rail lives in a slide-out sheet. */
+      /* Free mode: merged main pane + side pane (Script/Offers/Email) like Guided. */
       <div className="flex-1 min-h-0">
-        <CallMainPane
-          event={event}
-          setEvent={setEvent}
-          contacts={contacts}
-          saveEventField={saveEventField}
-          updateContactById={updateContactById}
-          addContact={addContact}
-          removeContact={removeContact}
-          callType={callType}
-          setCallType={setCallType}
-          outcome={outcome}
-          setOutcome={setOutcome}
-          summary={summary}
-          setSummary={setSummary}
-          followUpAction={followUpAction}
-          setFollowUpAction={setFollowUpAction}
-          followUpAt={followUpAt}
-          setFollowUpAt={setFollowUpAt}
-        />
+        {(() => {
+          const main = (
+            <CallMainPane
+              event={event}
+              setEvent={setEvent}
+              contacts={contacts}
+              saveEventField={saveEventField}
+              updateContactById={updateContactById}
+              addContact={addContact}
+              removeContact={removeContact}
+              callType={callType}
+              setCallType={setCallType}
+              outcome={outcome}
+              setOutcome={setOutcome}
+              summary={summary}
+              setSummary={setSummary}
+              followUpAction={followUpAction}
+              setFollowUpAction={setFollowUpAction}
+              followUpAt={followUpAt}
+              setFollowUpAt={setFollowUpAt}
+            />
+          );
+          const side = (
+            <CallRightPane
+              scriptSections={scriptSections}
+              setScriptSections={setScriptSections}
+              templates={templates}
+              tmplVars={tmplVars}
+              contact={contact}
+            />
+          );
+          return (
+            <>
+              {/* Mobile / tablet: main only (sheet handles side panel) */}
+              <div className="h-full lg:hidden">{main}</div>
+              {/* Desktop: resizable split when open, full-width main when closed */}
+              <div className="hidden lg:block h-full">
+                {freePaneOpen ? (
+                  <ResizablePanels2
+                    storageId="call-free-2pane-v1"
+                    left={<div className="h-full">{main}</div>}
+                    right={side}
+                  />
+                ) : (
+                  main
+                )}
+              </div>
+            </>
+          );
+        })()}
       </div>
       )}
 
@@ -541,7 +591,7 @@ function CallMainPane(props: {
 }) {
   return (
     <ScrollArea className="h-full @container">
-      <div className="mx-auto max-w-4xl space-y-4 p-4 md:p-6 min-w-0">
+      <div className="space-y-4 p-4 md:p-6 min-w-0 w-full">
         {/* Event Snapshot card (was the left pane) */}
         <section className="rounded-xl border bg-card overflow-hidden">
           <header className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
