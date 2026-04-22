@@ -95,7 +95,7 @@ export function GoogleConnectButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs" disabled={busy}>
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
           <span className="hidden md:inline truncate max-w-[140px]">
             {status.email ?? "Google"}
           </span>
