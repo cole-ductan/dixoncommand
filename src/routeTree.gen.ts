@@ -22,6 +22,7 @@ import { Route as AppFollowUpsRouteImport } from './routes/_app/follow-ups'
 import { Route as AppFlyersRouteImport } from './routes/_app/flyers'
 import { Route as AppDixonRouteImport } from './routes/_app/dixon'
 import { Route as AppCallRouteImport } from './routes/_app/call'
+import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google.callback'
 
 const AuthRoute = AuthRouteImport.update({
@@ -88,6 +89,11 @@ const AppCallRoute = AppCallRouteImport.update({
   path: '/call',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiPublicGoogleCallbackRoute = ApiPublicGoogleCallbackRouteImport.update({
   id: '/api/public/google/callback',
   path: '/api/public/google/callback',
@@ -97,6 +103,7 @@ const ApiPublicGoogleCallbackRoute = ApiPublicGoogleCallbackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof AppCalendarRoute
   '/call': typeof AppCallRoute
   '/dixon': typeof AppDixonRoute
   '/flyers': typeof AppFlyersRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/calendar': typeof AppCalendarRoute
   '/call': typeof AppCallRoute
   '/dixon': typeof AppDixonRoute
   '/flyers': typeof AppFlyersRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_app/calendar': typeof AppCalendarRoute
   '/_app/call': typeof AppCallRoute
   '/_app/dixon': typeof AppDixonRoute
   '/_app/flyers': typeof AppFlyersRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/calendar'
     | '/call'
     | '/dixon'
     | '/flyers'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/calendar'
     | '/call'
     | '/dixon'
     | '/flyers'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/auth'
+    | '/_app/calendar'
     | '/_app/call'
     | '/_app/dixon'
     | '/_app/flyers'
@@ -289,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCallRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/calendar': {
+      id: '/_app/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/public/google/callback': {
       id: '/api/public/google/callback'
       path: '/api/public/google/callback'
@@ -300,6 +319,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppCalendarRoute: typeof AppCalendarRoute
   AppCallRoute: typeof AppCallRoute
   AppDixonRoute: typeof AppDixonRoute
   AppFlyersRoute: typeof AppFlyersRoute
@@ -314,6 +334,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCalendarRoute: AppCalendarRoute,
   AppCallRoute: AppCallRoute,
   AppDixonRoute: AppDixonRoute,
   AppFlyersRoute: AppFlyersRoute,
