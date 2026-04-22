@@ -19,6 +19,7 @@ import { Route as AppNotesRouteImport } from './routes/_app/notes'
 import { Route as AppMyWeekRouteImport } from './routes/_app/my-week'
 import { Route as AppFollowUpsRouteImport } from './routes/_app/follow-ups'
 import { Route as AppFlyersRouteImport } from './routes/_app/flyers'
+import { Route as AppDixonRouteImport } from './routes/_app/dixon'
 import { Route as AppCallRouteImport } from './routes/_app/call'
 import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google.callback'
 
@@ -71,6 +72,11 @@ const AppFlyersRoute = AppFlyersRouteImport.update({
   path: '/flyers',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDixonRoute = AppDixonRouteImport.update({
+  id: '/dixon',
+  path: '/dixon',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCallRoute = AppCallRouteImport.update({
   id: '/call',
   path: '/call',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
   '/call': typeof AppCallRoute
+  '/dixon': typeof AppDixonRoute
   '/flyers': typeof AppFlyersRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/my-week': typeof AppMyWeekRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/call': typeof AppCallRoute
+  '/dixon': typeof AppDixonRoute
   '/flyers': typeof AppFlyersRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/my-week': typeof AppMyWeekRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/call': typeof AppCallRoute
+  '/_app/dixon': typeof AppDixonRoute
   '/_app/flyers': typeof AppFlyersRoute
   '/_app/follow-ups': typeof AppFollowUpsRoute
   '/_app/my-week': typeof AppMyWeekRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/call'
+    | '/dixon'
     | '/flyers'
     | '/follow-ups'
     | '/my-week'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/call'
+    | '/dixon'
     | '/flyers'
     | '/follow-ups'
     | '/my-week'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/auth'
     | '/_app/call'
+    | '/_app/dixon'
     | '/_app/flyers'
     | '/_app/follow-ups'
     | '/_app/my-week'
@@ -244,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFlyersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dixon': {
+      id: '/_app/dixon'
+      path: '/dixon'
+      fullPath: '/dixon'
+      preLoaderRoute: typeof AppDixonRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/call': {
       id: '/_app/call'
       path: '/call'
@@ -263,6 +282,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCallRoute: typeof AppCallRoute
+  AppDixonRoute: typeof AppDixonRoute
   AppFlyersRoute: typeof AppFlyersRoute
   AppFollowUpsRoute: typeof AppFollowUpsRoute
   AppMyWeekRoute: typeof AppMyWeekRoute
@@ -275,6 +295,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCallRoute: AppCallRoute,
+  AppDixonRoute: AppDixonRoute,
   AppFlyersRoute: AppFlyersRoute,
   AppFollowUpsRoute: AppFollowUpsRoute,
   AppMyWeekRoute: AppMyWeekRoute,

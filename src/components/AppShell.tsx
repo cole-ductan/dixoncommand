@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2, FileText, StickyNote } from "lucide-react";
+import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2, FileText, StickyNote, Globe } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { PendingEmailTray } from "@/components/PendingEmailTray";
 import { NotesTray } from "@/components/NotesTray";
@@ -31,6 +31,7 @@ export function AppShell() {
 
   const nav = [
     { to: "/", label: "Dashboard", Icon: LayoutDashboard, exact: true },
+    { to: "/dixon", label: "Dixon", Icon: Globe },
     { to: "/call", label: "Live Call", Icon: Phone },
     { to: "/pipeline", label: "Pipeline", Icon: KanbanSquare },
     { to: "/follow-ups", label: "Follow-Ups", Icon: CalendarClock },
