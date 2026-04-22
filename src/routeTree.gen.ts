@@ -24,6 +24,7 @@ import { Route as AppDixonRouteImport } from './routes/_app/dixon'
 import { Route as AppCallRouteImport } from './routes/_app/call'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google.callback'
+import { Route as ApiPublicDixonSplatRouteImport } from './routes/api/public/dixon.$'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -99,6 +100,11 @@ const ApiPublicGoogleCallbackRoute = ApiPublicGoogleCallbackRouteImport.update({
   path: '/api/public/google/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDixonSplatRoute = ApiPublicDixonSplatRouteImport.update({
+  id: '/api/public/dixon/$',
+  path: '/api/public/dixon/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/offers': typeof AppOffersRoute
   '/pipeline': typeof AppPipelineRoute
   '/playbook': typeof AppPlaybookRoute
+  '/api/public/dixon/$': typeof ApiPublicDixonSplatRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/pipeline': typeof AppPipelineRoute
   '/playbook': typeof AppPlaybookRoute
   '/': typeof AppIndexRoute
+  '/api/public/dixon/$': typeof ApiPublicDixonSplatRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
 }
 export interface FileRoutesById {
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/_app/pipeline': typeof AppPipelineRoute
   '/_app/playbook': typeof AppPlaybookRoute
   '/_app/': typeof AppIndexRoute
+  '/api/public/dixon/$': typeof ApiPublicDixonSplatRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
 }
 export interface FileRouteTypes {
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/offers'
     | '/pipeline'
     | '/playbook'
+    | '/api/public/dixon/$'
     | '/api/public/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/pipeline'
     | '/playbook'
     | '/'
+    | '/api/public/dixon/$'
     | '/api/public/google/callback'
   id:
     | '__root__'
@@ -199,12 +210,14 @@ export interface FileRouteTypes {
     | '/_app/pipeline'
     | '/_app/playbook'
     | '/_app/'
+    | '/api/public/dixon/$'
     | '/api/public/google/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicDixonSplatRoute: typeof ApiPublicDixonSplatRoute
   ApiPublicGoogleCallbackRoute: typeof ApiPublicGoogleCallbackRoute
 }
 
@@ -315,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGoogleCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/dixon/$': {
+      id: '/api/public/dixon/$'
+      path: '/api/public/dixon/$'
+      fullPath: '/api/public/dixon/$'
+      preLoaderRoute: typeof ApiPublicDixonSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -353,6 +373,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicDixonSplatRoute: ApiPublicDixonSplatRoute,
   ApiPublicGoogleCallbackRoute: ApiPublicGoogleCallbackRoute,
 }
 export const routeTree = rootRouteImport
