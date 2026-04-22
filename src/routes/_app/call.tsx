@@ -29,6 +29,7 @@ import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
 import { ResizablePanels3 } from "@/components/ResizablePanels3";
 import { ResizablePanels2 } from "@/components/ResizablePanels2";
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatPhone } from "@/lib/phone";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -325,52 +326,38 @@ function LiveCallWorkspace() {
           <div className="ml-auto text-xs text-muted-foreground hidden md:inline">
             Fill the lead card on the left to start
           </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline" className="h-8 px-2 md:h-9 md:px-3">
+                <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />
+                <span className="hidden md:inline">Script &amp; Offers</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg p-0 flex flex-col">
+              <SheetHeader className="border-b px-4 py-3">
+                <SheetTitle className="text-sm font-semibold">Script · Offers · Email</SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <CallRightPane
+                  scriptSections={scriptSections}
+                  setScriptSections={setScriptSections}
+                  templates={templates}
+                  tmplVars={{}}
+                  contact={null}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
-        <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[360px_1fr_360px] divide-y lg:divide-y-0 lg:divide-x">
-          <ScrollArea className="min-h-0">
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="mx-auto max-w-2xl p-4 md:p-6">
             <InlineNewLead
               userId={user?.id ?? null}
               onCreated={(id) => setEventId(id)}
             />
-          </ScrollArea>
-
-          <ScrollArea className="min-h-0">
-            <div className="p-4 md:p-6 max-w-2xl mx-auto">
-              <div className="rounded-xl border-2 border-dashed bg-secondary/20 p-8 text-center">
-                <Phone className="mx-auto h-8 w-8 text-muted-foreground/60" />
-                <h3 className="mt-3 font-display text-lg font-semibold">Capture starts here</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Save the lead on the left and the call cockpit — interest flags, booked/sent, follow-up scheduling, AI summary — opens up instantly.
-                </p>
-              </div>
-            </div>
-          </ScrollArea>
-
-          <ScrollArea className="min-h-0">
-            <div className="p-4">
-              <Tabs defaultValue="script" className="w-full">
-                <TabsList className="w-full grid grid-cols-3">
-                  <TabsTrigger value="script">Script</TabsTrigger>
-                  <TabsTrigger value="offers">Offers</TabsTrigger>
-                  <TabsTrigger value="email">Email</TabsTrigger>
-                </TabsList>
-                <TabsContent value="script" className="mt-3">
-                  <ScriptPanel
-                    sections={scriptSections}
-                    onUpdated={(u) => setScriptSections((arr) => arr.map((s) => (s.id === u.id ? u : s)))}
-                  />
-                </TabsContent>
-                <TabsContent value="offers" className="mt-3">
-                  <OffersPanel variant="rail" />
-                </TabsContent>
-                <TabsContent value="email" className="mt-3 text-xs text-muted-foreground">
-                  Save a lead to personalize email templates.
-                </TabsContent>
-              </Tabs>
-            </div>
-          </ScrollArea>
-        </div>
+          </div>
+        </ScrollArea>
       </div>
     );
   }
@@ -437,6 +424,28 @@ function LiveCallWorkspace() {
             <Flame className="h-3.5 w-3.5 md:mr-1.5" />
             <span className="hidden md:inline">{event.hot_lead ? "Hot" : "Mark hot"}</span>
           </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" variant="outline" className="h-8 px-2 md:h-9 md:px-3">
+                <PanelRightOpen className="h-3.5 w-3.5 md:mr-1.5" />
+                <span className="hidden md:inline">Script &amp; Offers</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg p-0 flex flex-col">
+              <SheetHeader className="border-b px-4 py-3">
+                <SheetTitle className="text-sm font-semibold">Script · Offers · Email</SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <CallRightPane
+                  scriptSections={scriptSections}
+                  setScriptSections={setScriptSections}
+                  templates={templates}
+                  tmplVars={tmplVars}
+                  contact={contact}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
           <span className="hidden md:inline text-xs text-muted-foreground">{savingField ? "Saving…" : "Saved"}</span>
         </div>
       </div>
@@ -452,78 +461,26 @@ function LiveCallWorkspace() {
           tmplVars={tmplVars}
         />
       ) : (
-      /* 3-pane body — on mobile we stack naturally so each pane shows in full */
-      <div className="flex-1 min-h-0 px-4 lg:px-6">
-        {/* Mobile: stacked. Desktop: resizable */}
-        <div className="lg:hidden grid grid-cols-1 divide-y h-full">
-          <CallLeftPane
-            event={event}
-            contacts={contacts}
-            saveEventField={saveEventField}
-            updateContactById={updateContactById}
-            addContact={addContact}
-            removeContact={removeContact}
-          />
-          <CallCenterPane
-            event={event}
-            setEvent={setEvent}
-            saveEventField={saveEventField}
-            callType={callType}
-            setCallType={setCallType}
-            outcome={outcome}
-            setOutcome={setOutcome}
-            summary={summary}
-            setSummary={setSummary}
-            followUpAction={followUpAction}
-            setFollowUpAction={setFollowUpAction}
-            followUpAt={followUpAt}
-            setFollowUpAt={setFollowUpAt}
-          />
-          <CallRightPane
-            scriptSections={scriptSections}
-            setScriptSections={setScriptSections}
-            templates={templates}
-            tmplVars={tmplVars}
-            contact={contact}
-          />
-        </div>
-        <ResizablePanels3
-          left={
-            <CallLeftPane
-              event={event}
-              contacts={contacts}
-              saveEventField={saveEventField}
-              updateContactById={updateContactById}
-              addContact={addContact}
-              removeContact={removeContact}
-            />
-          }
-          center={
-            <CallCenterPane
-              event={event}
-              setEvent={setEvent}
-              saveEventField={saveEventField}
-              callType={callType}
-              setCallType={setCallType}
-              outcome={outcome}
-              setOutcome={setOutcome}
-              summary={summary}
-              setSummary={setSummary}
-              followUpAction={followUpAction}
-              setFollowUpAction={setFollowUpAction}
-              followUpAt={followUpAt}
-              setFollowUpAt={setFollowUpAt}
-            />
-          }
-          right={
-            <CallRightPane
-              scriptSections={scriptSections}
-              setScriptSections={setScriptSections}
-              templates={templates}
-              tmplVars={tmplVars}
-              contact={contact}
-            />
-          }
+      /* Single merged pane — Event Snapshot + Discovery Capture together. Right rail lives in a slide-out sheet. */
+      <div className="flex-1 min-h-0">
+        <CallMainPane
+          event={event}
+          setEvent={setEvent}
+          contacts={contacts}
+          saveEventField={saveEventField}
+          updateContactById={updateContactById}
+          addContact={addContact}
+          removeContact={removeContact}
+          callType={callType}
+          setCallType={setCallType}
+          outcome={outcome}
+          setOutcome={setOutcome}
+          summary={summary}
+          setSummary={setSummary}
+          followUpAction={followUpAction}
+          setFollowUpAction={setFollowUpAction}
+          followUpAt={followUpAt}
+          setFollowUpAt={setFollowUpAt}
         />
       </div>
       )}
@@ -557,6 +514,182 @@ function LiveCallWorkspace() {
 }
 
 /* ---------- Pane components (extracted for reuse on mobile + resizable desktop) ---------- */
+
+/**
+ * Merged main pane: Event Snapshot (formerly the left rail) on top, followed by
+ * the full Discovery Capture flow. Renders inside a single ScrollArea so the
+ * whole call workspace is one scroll surface.
+ */
+function CallMainPane(props: {
+  event: any;
+  setEvent: (e: any) => void;
+  contacts: Contact[];
+  saveEventField: (patch: Record<string, any>) => void | Promise<void>;
+  updateContactById: (id: string, patch: Record<string, any>) => void | Promise<void>;
+  addContact: () => void | Promise<void>;
+  removeContact: (id: string) => void | Promise<void>;
+  callType: string;
+  setCallType: (v: string) => void;
+  outcome: string;
+  setOutcome: (v: string) => void;
+  summary: string;
+  setSummary: (v: string) => void;
+  followUpAction: string;
+  setFollowUpAction: (v: string) => void;
+  followUpAt: string;
+  setFollowUpAt: (v: string) => void;
+}) {
+  return (
+    <ScrollArea className="h-full @container">
+      <div className="mx-auto max-w-4xl space-y-4 p-4 md:p-6 min-w-0">
+        {/* Event Snapshot card (was the left pane) */}
+        <section className="rounded-xl border bg-card overflow-hidden">
+          <header className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Event Snapshot
+            </h2>
+          </header>
+          <div className="p-3 md:p-4 space-y-3 @container">
+            <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
+              <Field
+                label="Event name"
+                value={props.event.event_name}
+                onSave={(v) => props.saveEventField({ event_name: v || props.event.event_name })}
+              />
+              <OrgNameField event={props.event} />
+            </div>
+
+            {/* Primary contact */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Primary contact
+                </Label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-1.5 text-xs"
+                  onClick={() => props.addContact()}
+                >
+                  <Plus className="h-3 w-3 mr-1" /> Add
+                </Button>
+              </div>
+              {props.contacts.length === 0 && (
+                <div className="rounded-lg border border-dashed bg-secondary/20 p-3 text-xs text-muted-foreground">
+                  No contacts yet. Click <span className="font-medium">Add</span> to capture the POC.
+                </div>
+              )}
+              <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-2">
+                {props.contacts.map((c) => (
+                  <ContactCard
+                    key={c.id}
+                    contact={c}
+                    onSave={(patch) => props.updateContactById(c.id, patch)}
+                    onRemove={() => props.removeContact(c.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
+              <Field
+                label="Contact role / title"
+                value={props.event.contact_role}
+                onSave={(v) => props.saveEventField({ contact_role: v || null })}
+              />
+              <YesNoMaybeField
+                label="Decision maker?"
+                value={props.event.decision_maker}
+                onSave={(v) => props.saveEventField({ decision_maker: v })}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-3 gap-3">
+              <Field
+                label="Event date"
+                value={props.event.event_date}
+                type="date"
+                onSave={(v) => props.saveEventField({ event_date: v || null })}
+              />
+              <Field
+                label="Registration time"
+                value={props.event.registration_time}
+                onSave={(v) => props.saveEventField({ registration_time: v || null })}
+                placeholder="e.g. 7:00 AM"
+              />
+              <Field
+                label="Tee off time"
+                value={props.event.tee_off_time ?? props.event.event_time}
+                onSave={(v) => props.saveEventField({ tee_off_time: v || null })}
+                placeholder="e.g. 8:30 AM"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-3 gap-3">
+              <Field
+                label="Golf course"
+                value={props.event.course}
+                onSave={(v) => props.saveEventField({ course: v || null })}
+              />
+              <Field
+                label="Est. golfers"
+                value={props.event.player_count}
+                onSave={(v) => props.saveEventField({ player_count: Number(v) || null })}
+                type="number"
+              />
+              <Field
+                label="Entry fee"
+                value={props.event.entry_fee}
+                onSave={(v) => props.saveEventField({ entry_fee: Number(v) || null })}
+                type="number"
+                prefix="$"
+              />
+            </div>
+
+            <Field
+              label="Event website / registration link"
+              value={props.event.event_website}
+              onSave={(v) => props.saveEventField({ event_website: v || null })}
+              placeholder="https://"
+            />
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
+              <Field
+                label="Stage"
+                value={props.event.stage}
+                type="select"
+                onSave={(v) => props.saveEventField({ stage: v })}
+              />
+              <Field
+                label="Event ID"
+                value={props.event.dixon_tournament_id}
+                onSave={(v) => props.saveEventField({ dixon_tournament_id: v || null })}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Discovery Capture (was the center pane) */}
+        <CallCenterPane
+          embedded
+          event={props.event}
+          setEvent={props.setEvent}
+          saveEventField={props.saveEventField}
+          callType={props.callType}
+          setCallType={props.setCallType}
+          outcome={props.outcome}
+          setOutcome={props.setOutcome}
+          summary={props.summary}
+          setSummary={props.setSummary}
+          followUpAction={props.followUpAction}
+          setFollowUpAction={props.setFollowUpAction}
+          followUpAt={props.followUpAt}
+          setFollowUpAt={props.setFollowUpAt}
+        />
+      </div>
+    </ScrollArea>
+  );
+}
 
 function CallLeftPane({
   event,
@@ -661,10 +794,10 @@ function CallLeftPane({
 function CallCenterPane({
   event, setEvent, saveEventField, callType, setCallType, outcome, setOutcome,
   summary, setSummary, followUpAction, setFollowUpAction, followUpAt, setFollowUpAt,
+  embedded = false,
 }: any) {
-  return (
-    <ScrollArea className="h-full @container">
-      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto min-w-0">
+  const body = (
+    <div className={embedded ? "space-y-4 min-w-0" : "p-4 md:p-6 space-y-4 max-w-3xl mx-auto min-w-0"}>
         <header>
           <h2 className="font-display text-xl font-semibold">Discovery Capture</h2>
           <p className="text-xs text-muted-foreground">
@@ -1034,9 +1167,10 @@ function CallCenterPane({
             </Button>
           </fieldset>
         </SectionCard>
-      </div>
-    </ScrollArea>
+    </div>
   );
+  if (embedded) return body;
+  return <ScrollArea className="h-full @container">{body}</ScrollArea>;
 }
 
 /** Grouped capture card with letter badge for sections A–E. */
