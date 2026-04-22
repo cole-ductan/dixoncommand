@@ -17,7 +17,7 @@ import { CallCockpit } from "@/components/CallCockpit";
 import { STAGES, type Stage, stageLabel } from "@/lib/stages";
 import { generateDbNoteLine } from "@/lib/dbNote";
 import { applyTemplate } from "@/lib/templating";
-import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map, PanelRightOpen, PanelRightClose } from "lucide-react";
+import { Phone, Copy, Sparkles, Save, Calendar, Mail, Flame, ChevronLeft, FileText, CheckCircle2, ListChecks, Map, PanelRightOpen, PanelRightClose, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { LEAD_SOURCES } from "@/lib/leadSource";
@@ -589,16 +589,26 @@ function CallMainPane(props: {
   followUpAt: string;
   setFollowUpAt: (v: string) => void;
 }) {
+  const [snapshotOpen, setSnapshotOpen] = useState(true);
   return (
     <ScrollArea className="h-full @container">
       <div className="space-y-4 p-4 md:p-6 min-w-0 w-full">
         {/* Event Snapshot card (was the left pane) */}
         <section className="rounded-xl border bg-card overflow-hidden">
-          <header className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setSnapshotOpen((v) => !v)}
+            className="flex w-full items-center justify-between border-b bg-secondary/30 px-3 py-2 text-left hover:bg-secondary/50 transition-colors"
+            aria-expanded={snapshotOpen}
+          >
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Event Snapshot
             </h2>
-          </header>
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform ${snapshotOpen ? "" : "-rotate-90"}`}
+            />
+          </button>
+          {snapshotOpen && (
           <div className="p-3 md:p-4 space-y-3 @container">
             <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
               <Field
@@ -717,6 +727,7 @@ function CallMainPane(props: {
               />
             </div>
           </div>
+          )}
         </section>
 
         {/* Discovery Capture (was the center pane) */}
@@ -1233,15 +1244,24 @@ function SectionCard({
   title: string;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(true);
   return (
     <section className="rounded-xl border bg-card overflow-hidden">
-      <header className="flex items-center gap-2 border-b bg-secondary/30 px-3 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 border-b bg-secondary/30 px-3 py-2 text-left hover:bg-secondary/50 transition-colors"
+        aria-expanded={open}
+      >
         <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground">
           {letter}
         </span>
-        <h3 className="font-display text-sm font-semibold">{title}</h3>
-      </header>
-      <div className="p-3 space-y-3">{children}</div>
+        <h3 className="font-display text-sm font-semibold flex-1">{title}</h3>
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`}
+        />
+      </button>
+      {open && <div className="p-3 space-y-3">{children}</div>}
     </section>
   );
 }
