@@ -699,7 +699,7 @@ function CallCenterPane({
 
         {/* SECTION A — BACKGROUND */}
         <SectionCard letter="A" title="Background">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
             <YesNoMaybeField
               label="Annual event?"
               value={event.is_annual_event === true ? "yes" : event.is_annual_event === false ? "no" : null}
@@ -712,7 +712,7 @@ function CallCenterPane({
               onSave={(v) => saveEventField({ years_running: v === "" ? null : Number(v) })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
             <Field
               label="Years organization has existed"
               type="number"
