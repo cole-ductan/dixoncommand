@@ -558,38 +558,59 @@ function LiveCallWorkspace() {
 
 /* ---------- Pane components (extracted for reuse on mobile + resizable desktop) ---------- */
 
-function CallLeftPane({ event, contact, saveEventField }: any) {
+function CallLeftPane({
+  event,
+  contacts,
+  saveEventField,
+  updateContactById,
+  addContact,
+  removeContact,
+}: {
+  event: any;
+  contacts: Contact[];
+  saveEventField: (patch: Record<string, any>) => void | Promise<void>;
+  updateContactById: (id: string, patch: Record<string, any>) => void | Promise<void>;
+  addContact: () => void | Promise<void>;
+  removeContact: (id: string) => void | Promise<void>;
+}) {
   return (
     <ScrollArea className="h-full">
       <div className="p-4 lg:pr-4 space-y-4">
-            <div>
-              <h2 className="font-display text-lg font-semibold">{event.event_name}</h2>
-              <div className="mt-1 text-xs text-muted-foreground">
-                {event.course || "—"}{event.event_date && ` · ${format(new Date(event.event_date), "MMM d, yyyy")}`}
-              </div>
+            <Field label="Event name" value={event.event_name} onSave={(v) => saveEventField({ event_name: v || event.event_name })} />
+            <div className="text-xs text-muted-foreground -mt-2">
+              {event.course || "—"}{event.event_date && ` · ${format(new Date(event.event_date), "MMM d, yyyy")}`}
             </div>
 
-            {contact && (
-              <div className="rounded-lg border bg-card p-3 space-y-1.5">
-                <div className="font-medium">{contact.name}</div>
-                {contact.phone && (
-                  <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 text-sm text-primary hover:underline">
-                    <Phone className="h-3.5 w-3.5" />{contact.phone}
-                  </a>
-                )}
-                {contact.email && (
-                  <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate">
-                    <Mail className="h-3.5 w-3.5" />{contact.email}
-                  </a>
-                )}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Contacts
+                </Label>
+                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => addContact()}>
+                  <Plus className="h-3 w-3 mr-1" /> Add
+                </Button>
               </div>
-            )}
+              {contacts.length === 0 && (
+                <div className="rounded-lg border border-dashed bg-secondary/20 p-3 text-xs text-muted-foreground">
+                  No contacts yet. Click <span className="font-medium">Add</span> to capture the POC.
+                </div>
+              )}
+              {contacts.map((c) => (
+                <ContactCard
+                  key={c.id}
+                  contact={c}
+                  onSave={(patch) => updateContactById(c.id, patch)}
+                  onRemove={() => removeContact(c.id)}
+                />
+              ))}
+            </div>
 
             <div className="grid grid-cols-2 gap-2">
               <Field label="Players" value={event.player_count} onSave={(v) => saveEventField({ player_count: Number(v) || null })} type="number" />
               <Field label="Entry fee" value={event.entry_fee} onSave={(v) => saveEventField({ entry_fee: Number(v) || null })} type="number" prefix="$" />
             </div>
             <Field label="Stage" value={event.stage} type="select" onSave={(v) => saveEventField({ stage: v })} />
+            <Field label="Event ID" value={event.dixon_tournament_id} onSave={(v) => saveEventField({ dixon_tournament_id: v || null })} />
             <Field label="Where we left off" value={event.where_left_off} onSave={(v) => saveEventField({ where_left_off: v })} type="textarea" />
             <Field label="Pain points" value={event.pain_points} onSave={(v) => saveEventField({ pain_points: v })} type="textarea" />
             <Field label="Funds use" value={event.funds_use} onSave={(v) => saveEventField({ funds_use: v })} />
