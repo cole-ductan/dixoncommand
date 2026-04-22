@@ -41,6 +41,7 @@ type EventCard = {
   where_left_off: string | null;
   notes: string | null;
   archived: boolean;
+  dixon_tournament_id: string | null;
 };
 
 // Stage groups
@@ -87,7 +88,7 @@ function PipelinePage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("events")
-      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes,archived")
+      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes,archived,dixon_tournament_id")
       .order("updated_at", { ascending: false });
     setEvents((data ?? []) as any);
     setLoading(false);
