@@ -17,6 +17,7 @@ import { Route as AppPipelineRouteImport } from './routes/_app/pipeline'
 import { Route as AppOffersRouteImport } from './routes/_app/offers'
 import { Route as AppNotesRouteImport } from './routes/_app/notes'
 import { Route as AppMyWeekRouteImport } from './routes/_app/my-week'
+import { Route as AppInboxRouteImport } from './routes/_app/inbox'
 import { Route as AppFollowUpsRouteImport } from './routes/_app/follow-ups'
 import { Route as AppFlyersRouteImport } from './routes/_app/flyers'
 import { Route as AppDixonRouteImport } from './routes/_app/dixon'
@@ -62,6 +63,11 @@ const AppMyWeekRoute = AppMyWeekRouteImport.update({
   path: '/my-week',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFollowUpsRoute = AppFollowUpsRouteImport.update({
   id: '/follow-ups',
   path: '/follow-ups',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/dixon': typeof AppDixonRoute
   '/flyers': typeof AppFlyersRoute
   '/follow-ups': typeof AppFollowUpsRoute
+  '/inbox': typeof AppInboxRoute
   '/my-week': typeof AppMyWeekRoute
   '/notes': typeof AppNotesRoute
   '/offers': typeof AppOffersRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/dixon': typeof AppDixonRoute
   '/flyers': typeof AppFlyersRoute
   '/follow-ups': typeof AppFollowUpsRoute
+  '/inbox': typeof AppInboxRoute
   '/my-week': typeof AppMyWeekRoute
   '/notes': typeof AppNotesRoute
   '/offers': typeof AppOffersRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/_app/dixon': typeof AppDixonRoute
   '/_app/flyers': typeof AppFlyersRoute
   '/_app/follow-ups': typeof AppFollowUpsRoute
+  '/_app/inbox': typeof AppInboxRoute
   '/_app/my-week': typeof AppMyWeekRoute
   '/_app/notes': typeof AppNotesRoute
   '/_app/offers': typeof AppOffersRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/dixon'
     | '/flyers'
     | '/follow-ups'
+    | '/inbox'
     | '/my-week'
     | '/notes'
     | '/offers'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/dixon'
     | '/flyers'
     | '/follow-ups'
+    | '/inbox'
     | '/my-week'
     | '/notes'
     | '/offers'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/_app/dixon'
     | '/_app/flyers'
     | '/_app/follow-ups'
+    | '/_app/inbox'
     | '/_app/my-week'
     | '/_app/notes'
     | '/_app/offers'
@@ -242,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMyWeekRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inbox': {
+      id: '/_app/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AppInboxRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/follow-ups': {
       id: '/_app/follow-ups'
       path: '/follow-ups'
@@ -285,6 +304,7 @@ interface AppRouteChildren {
   AppDixonRoute: typeof AppDixonRoute
   AppFlyersRoute: typeof AppFlyersRoute
   AppFollowUpsRoute: typeof AppFollowUpsRoute
+  AppInboxRoute: typeof AppInboxRoute
   AppMyWeekRoute: typeof AppMyWeekRoute
   AppNotesRoute: typeof AppNotesRoute
   AppOffersRoute: typeof AppOffersRoute
@@ -298,6 +318,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDixonRoute: AppDixonRoute,
   AppFlyersRoute: AppFlyersRoute,
   AppFollowUpsRoute: AppFollowUpsRoute,
+  AppInboxRoute: AppInboxRoute,
   AppMyWeekRoute: AppMyWeekRoute,
   AppNotesRoute: AppNotesRoute,
   AppOffersRoute: AppOffersRoute,
