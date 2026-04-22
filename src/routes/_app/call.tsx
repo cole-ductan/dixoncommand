@@ -576,46 +576,85 @@ function CallLeftPane({
   return (
     <ScrollArea className="h-full">
       <div className="p-4 lg:pr-4 space-y-4">
-            <Field label="Event name" value={event.event_name} onSave={(v) => saveEventField({ event_name: v || event.event_name })} />
-            <div className="text-xs text-muted-foreground -mt-2">
-              {event.course || "—"}{event.event_date && ` · ${format(new Date(event.event_date), "MMM d, yyyy")}`}
-            </div>
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Event Snapshot
+          </h2>
+        </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Contacts
-                </Label>
-                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => addContact()}>
-                  <Plus className="h-3 w-3 mr-1" /> Add
-                </Button>
-              </div>
-              {contacts.length === 0 && (
-                <div className="rounded-lg border border-dashed bg-secondary/20 p-3 text-xs text-muted-foreground">
-                  No contacts yet. Click <span className="font-medium">Add</span> to capture the POC.
-                </div>
-              )}
-              {contacts.map((c) => (
-                <ContactCard
-                  key={c.id}
-                  contact={c}
-                  onSave={(patch) => updateContactById(c.id, patch)}
-                  onRemove={() => removeContact(c.id)}
-                />
-              ))}
-            </div>
+        {/* Event identity */}
+        <Field label="Event name" value={event.event_name} onSave={(v) => saveEventField({ event_name: v || event.event_name })} />
+        <OrgNameField event={event} />
 
-            <div className="grid grid-cols-2 gap-2">
-              <Field label="Players" value={event.player_count} onSave={(v) => saveEventField({ player_count: Number(v) || null })} type="number" />
-              <Field label="Entry fee" value={event.entry_fee} onSave={(v) => saveEventField({ entry_fee: Number(v) || null })} type="number" prefix="$" />
-            </div>
-            <Field label="Stage" value={event.stage} type="select" onSave={(v) => saveEventField({ stage: v })} />
-            <Field label="Event ID" value={event.dixon_tournament_id} onSave={(v) => saveEventField({ dixon_tournament_id: v || null })} />
-            <Field label="Where we left off" value={event.where_left_off} onSave={(v) => saveEventField({ where_left_off: v })} type="textarea" />
-            <Field label="Pain points" value={event.pain_points} onSave={(v) => saveEventField({ pain_points: v })} type="textarea" />
-            <Field label="Funds use" value={event.funds_use} onSave={(v) => saveEventField({ funds_use: v })} />
+        {/* Primary contact */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Primary contact
+            </Label>
+            <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => addContact()}>
+              <Plus className="h-3 w-3 mr-1" /> Add
+            </Button>
           </div>
-        </ScrollArea>
+          {contacts.length === 0 && (
+            <div className="rounded-lg border border-dashed bg-secondary/20 p-3 text-xs text-muted-foreground">
+              No contacts yet. Click <span className="font-medium">Add</span> to capture the POC.
+            </div>
+          )}
+          {contacts.map((c) => (
+            <ContactCard
+              key={c.id}
+              contact={c}
+              onSave={(patch) => updateContactById(c.id, patch)}
+              onRemove={() => removeContact(c.id)}
+            />
+          ))}
+        </div>
+
+        {/* Contact role + decision maker — stored on the event for now */}
+        <Field
+          label="Contact role / title"
+          value={event.contact_role}
+          onSave={(v) => saveEventField({ contact_role: v || null })}
+        />
+        <YesNoMaybeField
+          label="Decision maker?"
+          value={event.decision_maker}
+          onSave={(v) => saveEventField({ decision_maker: v })}
+        />
+
+        {/* Schedule */}
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Event date" value={event.event_date} type="date" onSave={(v) => saveEventField({ event_date: v || null })} />
+          <Field label="Tee off time" value={event.tee_off_time ?? event.event_time} onSave={(v) => saveEventField({ tee_off_time: v || null })} placeholder="e.g. 8:30 AM" />
+        </div>
+        <Field
+          label="Registration time"
+          value={event.registration_time}
+          onSave={(v) => saveEventField({ registration_time: v || null })}
+          placeholder="e.g. 7:00 AM"
+        />
+
+        {/* Course + numbers */}
+        <Field label="Golf course" value={event.course} onSave={(v) => saveEventField({ course: v || null })} />
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Est. golfers" value={event.player_count} onSave={(v) => saveEventField({ player_count: Number(v) || null })} type="number" />
+          <Field label="Entry fee" value={event.entry_fee} onSave={(v) => saveEventField({ entry_fee: Number(v) || null })} type="number" prefix="$" />
+        </div>
+
+        {/* Website */}
+        <Field
+          label="Event website / registration link"
+          value={event.event_website}
+          onSave={(v) => saveEventField({ event_website: v || null })}
+          placeholder="https://"
+        />
+
+        {/* Pipeline */}
+        <Field label="Stage" value={event.stage} type="select" onSave={(v) => saveEventField({ stage: v })} />
+        <Field label="Event ID" value={event.dixon_tournament_id} onSave={(v) => saveEventField({ dixon_tournament_id: v || null })} />
+      </div>
+    </ScrollArea>
   );
 }
 
