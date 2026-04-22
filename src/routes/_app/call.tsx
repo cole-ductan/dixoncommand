@@ -74,6 +74,7 @@ function LiveCallWorkspace() {
   const [eventId, setEventId] = useState<string | undefined>(search.new ? undefined : search.eventId);
   const [event, setEvent] = useState<EventRow | null>(null);
   const [contact, setContact] = useState<Contact | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [scriptSections, setScriptSections] = useState<ScriptSection[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [templates, setTemplates] = useState<Tmpl[]>([]);
@@ -96,6 +97,7 @@ function LiveCallWorkspace() {
   const saveContactField = useCallback(async (patch: Record<string, any>) => {
     if (!contact) return;
     setContact({ ...contact, ...patch } as Contact);
+    setContacts((prev) => prev.map((c) => (c.id === contact.id ? { ...c, ...patch } as Contact : c)));
     const { error } = await supabase.from("contacts").update(patch as any).eq("id", contact.id);
     if (error) toast.error("Save failed: " + error.message);
   }, [contact]);
@@ -115,13 +117,28 @@ function LiveCallWorkspace() {
 
   // load selected event detail + contact
   useEffect(() => {
-    if (!eventId) { setEvent(null); setContact(null); return; }
+    if (!eventId) { setEvent(null); setContact(null); setContacts([]); return; }
     supabase.from("events").select("*").eq("id", eventId).maybeSingle().then(({ data }) => {
       setEvent(data);
-      if (data?.primary_contact_id) {
-        supabase.from("contacts").select("*").eq("id", data.primary_contact_id).maybeSingle().then(({ data: c }) => setContact(c as any));
+      // Load all contacts for the org (or just primary if no org)
+      const orgId = data?.organization_id;
+      if (orgId) {
+        supabase.from("contacts").select("*").eq("organization_id", orgId).order("created_at", { ascending: true })
+          .then(({ data: rows }) => {
+            const list = (rows ?? []) as Contact[];
+            setContacts(list);
+            const primary = list.find((c) => c.id === data?.primary_contact_id) ?? list[0] ?? null;
+            setContact(primary);
+          });
+      } else if (data?.primary_contact_id) {
+        supabase.from("contacts").select("*").eq("id", data.primary_contact_id).maybeSingle().then(({ data: c }) => {
+          const one = c ? [c as Contact] : [];
+          setContacts(one);
+          setContact((c as any) ?? null);
+        });
       } else {
         setContact(null);
+        setContacts([]);
       }
     });
     setForceNew(false);
