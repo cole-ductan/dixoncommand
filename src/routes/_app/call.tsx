@@ -870,6 +870,127 @@ function CheckRow({ label, checked, onChange }: { label: string; checked: boolea
   );
 }
 
+/** Yes / No / Maybe segmented control bound to a string column. */
+function YesNoMaybeField({
+  label,
+  value,
+  onSave,
+}: {
+  label: string;
+  value: string | null | undefined;
+  onSave: (v: string | null) => void | Promise<void>;
+}) {
+  const opts: { id: "yes" | "no" | "maybe"; label: string }[] = [
+    { id: "yes", label: "Yes" },
+    { id: "no", label: "No" },
+    { id: "maybe", label: "Maybe" },
+  ];
+  return (
+    <div className="grid gap-1">
+      <Label className="text-xs">{label}</Label>
+      <div className="inline-flex rounded-md border bg-background p-0.5 w-fit">
+        {opts.map((o) => {
+          const active = value === o.id;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => onSave(active ? null : o.id)}
+              className={`px-3 py-1 text-xs font-medium rounded transition ${
+                active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Multi-select chips bound to a TEXT[] column. */
+function ChipMultiSelect({
+  label,
+  options,
+  value,
+  onSave,
+}: {
+  label: string;
+  options: string[];
+  value: string[] | null | undefined;
+  onSave: (v: string[]) => void | Promise<void>;
+}) {
+  const selected = value ?? [];
+  const toggle = (opt: string) => {
+    const next = selected.includes(opt) ? selected.filter((s) => s !== opt) : [...selected, opt];
+    onSave(next);
+  };
+  return (
+    <div className="grid gap-1.5">
+      <Label className="text-xs">{label}</Label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => {
+          const active = selected.includes(opt);
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => toggle(opt)}
+              className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-foreground/80 hover:bg-secondary"
+              }`}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Edits the linked organization's name; falls back to read-only text if no org. */
+function OrgNameField({ event }: { event: any }) {
+  const [name, setName] = useState("");
+  const [orgId, setOrgId] = useState<string | null>(event.organization_id ?? null);
+  useEffect(() => {
+    setOrgId(event.organization_id ?? null);
+    if (event.organization_id) {
+      supabase
+        .from("organizations")
+        .select("name")
+        .eq("id", event.organization_id)
+        .maybeSingle()
+        .then(({ data }) => setName((data as any)?.name ?? ""));
+    } else {
+      setName("");
+    }
+  }, [event.organization_id]);
+
+  const save = async () => {
+    if (!orgId) return;
+    if (!name.trim()) return;
+    const { error } = await supabase.from("organizations").update({ name: name.trim() }).eq("id", orgId);
+    if (error) toast.error("Save failed: " + error.message);
+  };
+
+  return (
+    <div className="grid gap-1">
+      <Label className="text-xs">Organization / charity name</Label>
+      <Input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={save}
+        placeholder={orgId ? "Organization name" : "No organization linked"}
+        disabled={!orgId}
+      />
+    </div>
+  );
+}
+
 function ContactCard({
   contact,
   onSave,
