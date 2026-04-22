@@ -480,27 +480,58 @@ function LiveCallWorkspace() {
           tmplVars={tmplVars}
         />
       ) : (
-      /* Single merged pane — Event Snapshot + Discovery Capture together. Right rail lives in a slide-out sheet. */
+      /* Free mode: merged main pane + side pane (Script/Offers/Email) like Guided. */
       <div className="flex-1 min-h-0">
-        <CallMainPane
-          event={event}
-          setEvent={setEvent}
-          contacts={contacts}
-          saveEventField={saveEventField}
-          updateContactById={updateContactById}
-          addContact={addContact}
-          removeContact={removeContact}
-          callType={callType}
-          setCallType={setCallType}
-          outcome={outcome}
-          setOutcome={setOutcome}
-          summary={summary}
-          setSummary={setSummary}
-          followUpAction={followUpAction}
-          setFollowUpAction={setFollowUpAction}
-          followUpAt={followUpAt}
-          setFollowUpAt={setFollowUpAt}
-        />
+        {(() => {
+          const main = (
+            <CallMainPane
+              event={event}
+              setEvent={setEvent}
+              contacts={contacts}
+              saveEventField={saveEventField}
+              updateContactById={updateContactById}
+              addContact={addContact}
+              removeContact={removeContact}
+              callType={callType}
+              setCallType={setCallType}
+              outcome={outcome}
+              setOutcome={setOutcome}
+              summary={summary}
+              setSummary={setSummary}
+              followUpAction={followUpAction}
+              setFollowUpAction={setFollowUpAction}
+              followUpAt={followUpAt}
+              setFollowUpAt={setFollowUpAt}
+            />
+          );
+          const side = (
+            <CallRightPane
+              scriptSections={scriptSections}
+              setScriptSections={setScriptSections}
+              templates={templates}
+              tmplVars={tmplVars}
+              contact={contact}
+            />
+          );
+          return (
+            <>
+              {/* Mobile / tablet: main only (sheet handles side panel) */}
+              <div className="h-full lg:hidden">{main}</div>
+              {/* Desktop: resizable split when open, full-width main when closed */}
+              <div className="hidden lg:block h-full">
+                {freePaneOpen ? (
+                  <ResizablePanels2
+                    storageId="call-free-2pane-v1"
+                    left={<div className="h-full">{main}</div>}
+                    right={side}
+                  />
+                ) : (
+                  main
+                )}
+              </div>
+            </>
+          );
+        })()}
       </div>
       )}
 
