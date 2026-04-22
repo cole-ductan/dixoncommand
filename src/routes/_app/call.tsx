@@ -488,7 +488,16 @@ function LiveCallWorkspace() {
           />
         </div>
         <ResizablePanels3
-          left={<CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />}
+          left={
+            <CallLeftPane
+              event={event}
+              contacts={contacts}
+              saveEventField={saveEventField}
+              updateContactById={updateContactById}
+              addContact={addContact}
+              removeContact={removeContact}
+            />
+          }
           center={
             <CallCenterPane
               event={event}
