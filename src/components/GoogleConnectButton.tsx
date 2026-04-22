@@ -33,7 +33,9 @@ export function GoogleConnectButton() {
     try {
       const s = await statusFn();
       setStatus({ connected: s.connected, email: s.email });
-    } catch {
+    } catch (e) {
+      // Auth middleware throws a Response (401) when not authenticated.
+      // Treat any failure as "not connected" instead of bubbling up.
       setStatus({ connected: false, email: null });
     }
   };
