@@ -29,6 +29,8 @@ import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
 import { ResizablePanels3 } from "@/components/ResizablePanels3";
 import { ResizablePanels2 } from "@/components/ResizablePanels2";
+import { formatPhone } from "@/lib/phone";
+import { Plus, Trash2 } from "lucide-react";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
@@ -72,6 +74,7 @@ function LiveCallWorkspace() {
   const [eventId, setEventId] = useState<string | undefined>(search.new ? undefined : search.eventId);
   const [event, setEvent] = useState<EventRow | null>(null);
   const [contact, setContact] = useState<Contact | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [scriptSections, setScriptSections] = useState<ScriptSection[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [templates, setTemplates] = useState<Tmpl[]>([]);
@@ -94,9 +97,50 @@ function LiveCallWorkspace() {
   const saveContactField = useCallback(async (patch: Record<string, any>) => {
     if (!contact) return;
     setContact({ ...contact, ...patch } as Contact);
+    setContacts((prev) => prev.map((c) => (c.id === contact.id ? { ...c, ...patch } as Contact : c)));
     const { error } = await supabase.from("contacts").update(patch as any).eq("id", contact.id);
     if (error) toast.error("Save failed: " + error.message);
   }, [contact]);
+
+  const updateContactById = useCallback(async (id: string, patch: Record<string, any>) => {
+    setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } as Contact : c)));
+    if (contact?.id === id) setContact({ ...contact, ...patch } as Contact);
+    const { error } = await supabase.from("contacts").update(patch as any).eq("id", id);
+    if (error) toast.error("Save failed: " + error.message);
+  }, [contact]);
+
+  const addContact = useCallback(async () => {
+    if (!event || !user) return;
+    const { data, error } = await supabase
+      .from("contacts")
+      .insert({
+        user_id: user.id,
+        organization_id: event.organization_id ?? null,
+        name: "New contact",
+        email: null,
+        phone: null,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Couldn't add contact");
+      return;
+    }
+    setContacts((prev) => [...prev, data as Contact]);
+    toast.success("Contact added");
+  }, [event, user]);
+
+  const removeContact = useCallback(async (id: string) => {
+    setContacts((prev) => prev.filter((c) => c.id !== id));
+    if (contact?.id === id) {
+      setContact((prev) => {
+        const remaining = contacts.filter((c) => c.id !== id);
+        return remaining[0] ?? null;
+      });
+    }
+    const { error } = await supabase.from("contacts").delete().eq("id", id);
+    if (error) toast.error("Delete failed: " + error.message);
+  }, [contact, contacts]);
 
   // load all events for picker
   useEffect(() => {
@@ -113,13 +157,28 @@ function LiveCallWorkspace() {
 
   // load selected event detail + contact
   useEffect(() => {
-    if (!eventId) { setEvent(null); setContact(null); return; }
+    if (!eventId) { setEvent(null); setContact(null); setContacts([]); return; }
     supabase.from("events").select("*").eq("id", eventId).maybeSingle().then(({ data }) => {
       setEvent(data);
-      if (data?.primary_contact_id) {
-        supabase.from("contacts").select("*").eq("id", data.primary_contact_id).maybeSingle().then(({ data: c }) => setContact(c as any));
+      // Load all contacts for the org (or just primary if no org)
+      const orgId = data?.organization_id;
+      if (orgId) {
+        supabase.from("contacts").select("*").eq("organization_id", orgId).order("created_at", { ascending: true })
+          .then(({ data: rows }) => {
+            const list = (rows ?? []) as Contact[];
+            setContacts(list);
+            const primary = list.find((c) => c.id === data?.primary_contact_id) ?? list[0] ?? null;
+            setContact(primary);
+          });
+      } else if (data?.primary_contact_id) {
+        supabase.from("contacts").select("*").eq("id", data.primary_contact_id).maybeSingle().then(({ data: c }) => {
+          const one = c ? [c as Contact] : [];
+          setContacts(one);
+          setContact((c as any) ?? null);
+        });
       } else {
         setContact(null);
+        setContacts([]);
       }
     });
     setForceNew(false);
@@ -397,7 +456,14 @@ function LiveCallWorkspace() {
       <div className="flex-1 min-h-0 px-4 lg:px-6">
         {/* Mobile: stacked. Desktop: resizable */}
         <div className="lg:hidden grid grid-cols-1 divide-y h-full">
-          <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
+          <CallLeftPane
+            event={event}
+            contacts={contacts}
+            saveEventField={saveEventField}
+            updateContactById={updateContactById}
+            addContact={addContact}
+            removeContact={removeContact}
+          />
           <CallCenterPane
             event={event}
             setEvent={setEvent}
@@ -422,7 +488,16 @@ function LiveCallWorkspace() {
           />
         </div>
         <ResizablePanels3
-          left={<CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />}
+          left={
+            <CallLeftPane
+              event={event}
+              contacts={contacts}
+              saveEventField={saveEventField}
+              updateContactById={updateContactById}
+              addContact={addContact}
+              removeContact={removeContact}
+            />
+          }
           center={
             <CallCenterPane
               event={event}
@@ -483,38 +558,59 @@ function LiveCallWorkspace() {
 
 /* ---------- Pane components (extracted for reuse on mobile + resizable desktop) ---------- */
 
-function CallLeftPane({ event, contact, saveEventField }: any) {
+function CallLeftPane({
+  event,
+  contacts,
+  saveEventField,
+  updateContactById,
+  addContact,
+  removeContact,
+}: {
+  event: any;
+  contacts: Contact[];
+  saveEventField: (patch: Record<string, any>) => void | Promise<void>;
+  updateContactById: (id: string, patch: Record<string, any>) => void | Promise<void>;
+  addContact: () => void | Promise<void>;
+  removeContact: (id: string) => void | Promise<void>;
+}) {
   return (
     <ScrollArea className="h-full">
       <div className="p-4 lg:pr-4 space-y-4">
-            <div>
-              <h2 className="font-display text-lg font-semibold">{event.event_name}</h2>
-              <div className="mt-1 text-xs text-muted-foreground">
-                {event.course || "—"}{event.event_date && ` · ${format(new Date(event.event_date), "MMM d, yyyy")}`}
-              </div>
+            <Field label="Event name" value={event.event_name} onSave={(v) => saveEventField({ event_name: v || event.event_name })} />
+            <div className="text-xs text-muted-foreground -mt-2">
+              {event.course || "—"}{event.event_date && ` · ${format(new Date(event.event_date), "MMM d, yyyy")}`}
             </div>
 
-            {contact && (
-              <div className="rounded-lg border bg-card p-3 space-y-1.5">
-                <div className="font-medium">{contact.name}</div>
-                {contact.phone && (
-                  <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 text-sm text-primary hover:underline">
-                    <Phone className="h-3.5 w-3.5" />{contact.phone}
-                  </a>
-                )}
-                {contact.email && (
-                  <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate">
-                    <Mail className="h-3.5 w-3.5" />{contact.email}
-                  </a>
-                )}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Contacts
+                </Label>
+                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => addContact()}>
+                  <Plus className="h-3 w-3 mr-1" /> Add
+                </Button>
               </div>
-            )}
+              {contacts.length === 0 && (
+                <div className="rounded-lg border border-dashed bg-secondary/20 p-3 text-xs text-muted-foreground">
+                  No contacts yet. Click <span className="font-medium">Add</span> to capture the POC.
+                </div>
+              )}
+              {contacts.map((c) => (
+                <ContactCard
+                  key={c.id}
+                  contact={c}
+                  onSave={(patch) => updateContactById(c.id, patch)}
+                  onRemove={() => removeContact(c.id)}
+                />
+              ))}
+            </div>
 
             <div className="grid grid-cols-2 gap-2">
               <Field label="Players" value={event.player_count} onSave={(v) => saveEventField({ player_count: Number(v) || null })} type="number" />
               <Field label="Entry fee" value={event.entry_fee} onSave={(v) => saveEventField({ entry_fee: Number(v) || null })} type="number" prefix="$" />
             </div>
             <Field label="Stage" value={event.stage} type="select" onSave={(v) => saveEventField({ stage: v })} />
+            <Field label="Event ID" value={event.dixon_tournament_id} onSave={(v) => saveEventField({ dixon_tournament_id: v || null })} />
             <Field label="Where we left off" value={event.where_left_off} onSave={(v) => saveEventField({ where_left_off: v })} type="textarea" />
             <Field label="Pain points" value={event.pain_points} onSave={(v) => saveEventField({ pain_points: v })} type="textarea" />
             <Field label="Funds use" value={event.funds_use} onSave={(v) => saveEventField({ funds_use: v })} />
@@ -735,6 +831,69 @@ function CheckRow({ label, checked, onChange }: { label: string; checked: boolea
   );
 }
 
+function ContactCard({
+  contact,
+  onSave,
+  onRemove,
+}: {
+  contact: Contact;
+  onSave: (patch: Record<string, any>) => void | Promise<void>;
+  onRemove: () => void | Promise<void>;
+}) {
+  const [name, setName] = useState(contact.name ?? "");
+  const [phone, setPhone] = useState(contact.phone ?? "");
+  const [email, setEmail] = useState(contact.email ?? "");
+  useEffect(() => { setName(contact.name ?? ""); }, [contact.name]);
+  useEffect(() => { setPhone(contact.phone ?? ""); }, [contact.phone]);
+  useEffect(() => { setEmail(contact.email ?? ""); }, [contact.email]);
+
+  return (
+    <div className="rounded-lg border bg-card p-3 space-y-2">
+      <div className="flex items-start gap-2">
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => name !== (contact.name ?? "") && onSave({ name: name.trim() || "New contact" })}
+          placeholder="Contact name"
+          className="h-8 text-sm font-medium flex-1"
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+          onClick={() => onRemove()}
+          title="Remove contact"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Input
+          value={phone}
+          type="tel"
+          inputMode="tel"
+          onChange={(e) => setPhone(formatPhone(e.target.value))}
+          onBlur={() => phone !== (contact.phone ?? "") && onSave({ phone: phone || null })}
+          placeholder="(555) 010-1000"
+          className="h-7 text-xs"
+        />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Input
+          value={email}
+          type="email"
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => email !== (contact.email ?? "") && onSave({ email: email.trim() || null })}
+          placeholder="contact@org.com"
+          className="h-7 text-xs"
+        />
+      </div>
+    </div>
+  );
+}
+
 function Field({
   label, value, onSave, type = "text", prefix,
 }: {
@@ -808,6 +967,7 @@ function InlineNewLead({
   const [eventDate, setEventDate] = useState("");
   const [playerCount, setPlayerCount] = useState("");
   const [leadSource, setLeadSource] = useState<string>("");
+  const [tournamentId, setTournamentId] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -816,17 +976,21 @@ function InlineNewLead({
       toast.error("Still connecting — try again in a second");
       return;
     }
-    if (!eventName.trim() || !orgName.trim()) {
-      toast.error("Organization and Event name are required");
+    if (!eventName.trim()) {
+      toast.error("Event name is required");
       return;
     }
     setSaving(true);
     try {
-      const { data: org, error: oErr } = await supabase
-        .from("organizations")
-        .insert({ user_id: userId, name: orgName.trim() })
-        .select().single();
-      if (oErr) throw oErr;
+      let orgId: string | null = null;
+      if (orgName.trim()) {
+        const { data: org, error: oErr } = await supabase
+          .from("organizations")
+          .insert({ user_id: userId, name: orgName.trim() })
+          .select().single();
+        if (oErr) throw oErr;
+        orgId = org.id;
+      }
 
       let contactId: string | null = null;
       if (contactName.trim()) {
@@ -834,7 +998,7 @@ function InlineNewLead({
           .from("contacts")
           .insert({
             user_id: userId,
-            organization_id: org.id,
+            organization_id: orgId,
             name: contactName.trim(),
             email: contactEmail.trim() || null,
             phone: contactPhone.trim() || null,
@@ -848,13 +1012,14 @@ function InlineNewLead({
         .from("events")
         .insert({
           user_id: userId,
-          organization_id: org.id,
+          organization_id: orgId,
           primary_contact_id: contactId,
           event_name: eventName.trim(),
           course: course.trim() || null,
           event_date: eventDate || null,
           player_count: playerCount.trim() ? Number(playerCount) : null,
           lead_source: leadSource || null,
+          dixon_tournament_id: tournamentId.trim() || null,
           notes: notes.trim() || null,
           stage: "new_lead",
         })
@@ -881,7 +1046,12 @@ function InlineNewLead({
 
       <div className="grid gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="il-org" className="text-xs">Organization *</Label>
+          <Label htmlFor="il-event" className="text-xs">Event name *</Label>
+          <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-org" className="text-xs">Organization</Label>
           <Input id="il-org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
         </div>
 
@@ -892,17 +1062,12 @@ function InlineNewLead({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="il-phone" className="text-xs">Phone</Label>
-            <Input id="il-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
+            <Input id="il-phone" type="tel" inputMode="tel" value={contactPhone} onChange={(e) => setContactPhone(formatPhone(e.target.value))} placeholder="(555) 010-1000" />
           </div>
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="il-email" className="text-xs">Email</Label>
           <Input id="il-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
-        </div>
-
-        <div className="grid gap-1.5">
-          <Label htmlFor="il-event" className="text-xs">Event name *</Label>
-          <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -930,6 +1095,11 @@ function InlineNewLead({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-eventid" className="text-xs">Event ID</Label>
+          <Input id="il-eventid" value={tournamentId} onChange={(e) => setTournamentId(e.target.value)} placeholder="e.g. Dixon tournament ID" />
         </div>
 
         <div className="grid gap-1.5">
