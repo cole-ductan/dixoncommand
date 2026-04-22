@@ -574,8 +574,8 @@ function CallLeftPane({
   removeContact: (id: string) => void | Promise<void>;
 }) {
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4 lg:pr-4 space-y-4">
+    <ScrollArea className="h-full @container">
+      <div className="p-4 lg:pr-4 space-y-4 min-w-0">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Event Snapshot
@@ -624,7 +624,7 @@ function CallLeftPane({
         />
 
         {/* Schedule */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 @[260px]:grid-cols-2 gap-2">
           <Field label="Event date" value={event.event_date} type="date" onSave={(v) => saveEventField({ event_date: v || null })} />
           <Field label="Tee off time" value={event.tee_off_time ?? event.event_time} onSave={(v) => saveEventField({ tee_off_time: v || null })} placeholder="e.g. 8:30 AM" />
         </div>
@@ -637,7 +637,7 @@ function CallLeftPane({
 
         {/* Course + numbers */}
         <Field label="Golf course" value={event.course} onSave={(v) => saveEventField({ course: v || null })} />
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 @[260px]:grid-cols-2 gap-2">
           <Field label="Est. golfers" value={event.player_count} onSave={(v) => saveEventField({ player_count: Number(v) || null })} type="number" />
           <Field label="Entry fee" value={event.entry_fee} onSave={(v) => saveEventField({ entry_fee: Number(v) || null })} type="number" prefix="$" />
         </div>
