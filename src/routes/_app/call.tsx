@@ -934,13 +934,14 @@ function ContactCard({
 }
 
 function Field({
-  label, value, onSave, type = "text", prefix,
+  label, value, onSave, type = "text", prefix, placeholder,
 }: {
   label: string;
   value: any;
   onSave: (v: any) => void;
-  type?: "text" | "number" | "textarea" | "select";
+  type?: "text" | "number" | "textarea" | "select" | "date";
   prefix?: string;
+  placeholder?: string;
 }) {
   const [v, setV] = useState<string>(value == null ? "" : String(value));
   useEffect(() => { setV(value == null ? "" : String(value)); }, [value]);
@@ -968,6 +969,7 @@ function Field({
           value={v}
           onChange={(e) => setV(e.target.value)}
           onBlur={() => v !== String(value ?? "") && onSave(v)}
+          placeholder={placeholder}
         />
       </div>
     );
@@ -979,11 +981,12 @@ function Field({
       <div className="relative">
         {prefix && <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">{prefix}</span>}
         <Input
-          type={type}
+          type={type === "date" ? "date" : type}
           className={prefix ? "pl-5" : ""}
           value={v}
           onChange={(e) => setV(e.target.value)}
           onBlur={() => v !== String(value ?? "") && onSave(v)}
+          placeholder={placeholder}
          />
       </div>
     </div>
