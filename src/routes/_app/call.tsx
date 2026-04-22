@@ -664,135 +664,401 @@ function CallCenterPane({
 }: any) {
   return (
     <ScrollArea className="h-full">
-          <div className="p-4 md:p-6 space-y-5 max-w-3xl mx-auto">
-            <header>
-              <h2 className="font-display text-xl font-semibold">Call Capture</h2>
-              <p className="text-xs text-muted-foreground">Tick what happened. Everything saves to the lead immediately.</p>
-            </header>
+      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
+        <header>
+          <h2 className="font-display text-xl font-semibold">Discovery Capture</h2>
+          <p className="text-xs text-muted-foreground">
+            Walk through these grouped sections during the call. Everything saves to the lead immediately.
+          </p>
+        </header>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-1.5">
-                <Label>Call type</Label>
-                <Select value={callType} onValueChange={setCallType}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["Discovery Call", "Voicemail", "Follow-Up", "CGT Walkthrough", "Booking Confirm", "Check-In"].map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <Label>Outcome</Label>
-                <Select value={outcome} onValueChange={setOutcome}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["connected", "voicemail", "no_answer", "wrong_number", "not_interested", "booked", "follow_up"].map((o) => (
-                      <SelectItem key={o} value={o}>{o.replace("_", " ")}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <fieldset className="rounded-lg border bg-secondary/30 p-3">
-              <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest</legend>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  ["interest_amateur_endorsement", "Amateur Endorsement"],
-                  ["interest_par3", "Par 3 (Dixon Challenge)"],
-                  ["interest_par5", "Par 5 (Aurelius Challenge)"],
-                  ["interest_cgt", "CGT Platform"],
-                  ["interest_custom_products", "Custom Products"],
-                  ["interest_auction", "Auction Referral"],
-                ].map(([k, l]) => (
-                  <CheckRow
-                    key={k}
-                    label={l}
-                    checked={!!event[k]}
-                    onChange={(v) => {
-                      const patch: Record<string, any> = { [k]: v };
-                      // When toggling ON, append an "Interested in ... — needs follow-up" line to notes (deduped)
-                      if (v && INTEREST_LABELS[k] && !event[k]) {
-                        patch.notes = appendInterestNote(event.notes, INTEREST_LABELS[k]);
-                      }
-                      saveEventField(patch);
-                    }}
-                  />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Call type</Label>
+            <Select value={callType} onValueChange={setCallType}>
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["Discovery Call", "Voicemail", "Follow-Up", "CGT Walkthrough", "Booking Confirm", "Check-In"].map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
-              </div>
-            </fieldset>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Outcome</Label>
+            <Select value={outcome} onValueChange={setOutcome}>
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["connected", "voicemail", "no_answer", "wrong_number", "not_interested", "booked", "follow_up"].map((o) => (
+                  <SelectItem key={o} value={o}>{o.replace("_", " ")}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-            <fieldset className="rounded-lg border bg-secondary/30 p-3">
-              <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Booked / Sent</legend>
-              <div className="grid grid-cols-2 gap-2">
-                <CheckRow label="AE Sent" checked={event.amateur_endorsement_sent} onChange={(v) => saveEventField({ amateur_endorsement_sent: v })} />
-                <CheckRow label="Par 3 Booked" checked={event.par3_booked} onChange={(v) => saveEventField({ par3_booked: v })} />
-                <CheckRow label="Par 5 Booked" checked={event.par5_booked} onChange={(v) => saveEventField({ par5_booked: v })} />
-                <CheckRow label="CGT Created" checked={event.cgt_created} onChange={(v) => saveEventField({ cgt_created: v })} />
-                <CheckRow label="Custom Products Sold" checked={event.custom_products_sold} onChange={(v) => saveEventField({ custom_products_sold: v })} />
-                <CheckRow label="Auction Referred" checked={event.auction_referred} onChange={(v) => saveEventField({ auction_referred: v })} />
-              </div>
-              {event.cgt_created && (
-                <div className="mt-2 grid gap-1.5">
-                  <Label className="text-xs">CGT URL</Label>
-                  <Input value={event.cgt_url ?? ""} onChange={(e) => setEvent({ ...event, cgt_url: e.target.value })} onBlur={(e) => saveEventField({ cgt_url: e.target.value })} placeholder="https://charitygolftoday.com/..." />
-                </div>
-              )}
-            </fieldset>
+        {/* SECTION A — BACKGROUND */}
+        <SectionCard letter="A" title="Background">
+          <div className="grid grid-cols-2 gap-3">
+            <YesNoMaybeField
+              label="Annual event?"
+              value={event.is_annual_event === true ? "yes" : event.is_annual_event === false ? "no" : null}
+              onSave={(v) => saveEventField({ is_annual_event: v === "yes" ? true : v === "no" ? false : null })}
+            />
+            <Field
+              label="Years event has run"
+              type="number"
+              value={event.years_running}
+              onSave={(v) => saveEventField({ years_running: v === "" ? null : Number(v) })}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label="Years organization has existed"
+              type="number"
+              value={event.org_age_years}
+              onSave={(v) => saveEventField({ org_age_years: v === "" ? null : Number(v) })}
+            />
+            <Field
+              label="Years contact involved"
+              type="number"
+              value={event.contact_years_involved}
+              onSave={(v) => saveEventField({ contact_years_involved: v === "" ? null : Number(v) })}
+            />
+          </div>
+          <Field
+            label="Years contact in charge of tournament"
+            type="number"
+            value={event.contact_years_in_charge}
+            onSave={(v) => saveEventField({ contact_years_in_charge: v === "" ? null : Number(v) })}
+          />
+          <Field
+            label="How did they get involved?"
+            type="textarea"
+            value={event.contact_how_involved}
+            onSave={(v) => saveEventField({ contact_how_involved: v || null })}
+          />
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Funds raised — specific use or general?</Label>
+            <Select
+              value={event.funds_use_type ?? ""}
+              onValueChange={(v) => saveEventField({ funds_use_type: v || null })}
+            >
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="specific">Specific use</SelectItem>
+                <SelectItem value="general">General use</SelectItem>
+                <SelectItem value="unknown">Not sure yet</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Field
+            label="Notes on funds use"
+            type="textarea"
+            value={event.funds_use_notes ?? event.funds_use}
+            onSave={(v) => saveEventField({ funds_use_notes: v || null })}
+          />
+          <Field
+            label="Overall goal this year"
+            type="textarea"
+            value={event.overall_goal}
+            onSave={(v) => saveEventField({ overall_goal: v || null })}
+          />
+        </SectionCard>
 
-            <fieldset className="rounded-lg border bg-secondary/30 p-3 space-y-2">
-              <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Check details</legend>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-1">
-                  <Label className="text-xs">Payable to</Label>
-                  <Input defaultValue={event.check_payable_to ?? ""} onBlur={(e) => saveEventField({ check_payable_to: e.target.value })} />
-                </div>
-                <div className="grid gap-1">
-                  <Label className="text-xs">Mail to</Label>
-                  <Input defaultValue={event.check_mail_to ?? ""} onBlur={(e) => saveEventField({ check_mail_to: e.target.value })} />
-                </div>
+        {/* SECTION B — EVENT FLOW */}
+        <SectionCard letter="B" title="Event Flow">
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label="Registration opens"
+              value={event.registration_opens_at ?? event.registration_time}
+              onSave={(v) => saveEventField({ registration_opens_at: v || null })}
+              placeholder="e.g. 7:00 AM"
+            />
+            <Field
+              label="Tee off time"
+              value={event.tee_off_time ?? event.event_time}
+              onSave={(v) => saveEventField({ tee_off_time: v || null })}
+              placeholder="e.g. 8:30 AM"
+            />
+          </div>
+          <Field
+            label="What is sold at registration?"
+            type="textarea"
+            value={event.registration_sales}
+            onSave={(v) => saveEventField({ registration_sales: v || null })}
+          />
+          <Field
+            label="Games currently run on the course"
+            type="textarea"
+            value={event.course_games}
+            onSave={(v) => saveEventField({ course_games: v || null })}
+          />
+          <YesNoMaybeField
+            label="Any games require an extra donation?"
+            value={event.extra_donation_games === true ? "yes" : event.extra_donation_games === false ? "no" : null}
+            onSave={(v) =>
+              saveEventField({ extra_donation_games: v === "yes" ? true : v === "no" ? false : null })
+            }
+          />
+          <Field
+            label="Extra donation game notes"
+            type="textarea"
+            value={event.extra_donation_notes}
+            onSave={(v) => saveEventField({ extra_donation_notes: v || null })}
+          />
+          <Field
+            label="What happens after the round?"
+            type="textarea"
+            value={event.post_round_activities}
+            onSave={(v) => saveEventField({ post_round_activities: v || null })}
+          />
+          <Field
+            label="Other fundraising activities outside golf"
+            type="textarea"
+            value={event.extra_fundraising}
+            onSave={(v) => saveEventField({ extra_fundraising: v || null })}
+          />
+        </SectionCard>
+
+        {/* SECTION C — REVENUE + SPONSORSHIP */}
+        <SectionCard letter="C" title="Revenue + Sponsorship">
+          <ChipMultiSelect
+            label="Revenue sources"
+            options={[
+              "sponsorships", "golfer fees", "raffles", "auctions", "mulligans",
+              "on-course games", "donations", "merch", "other",
+            ]}
+            value={event.revenue_sources}
+            onSave={(v) => saveEventField({ revenue_sources: v })}
+          />
+          <Field
+            label="What do current sponsorships look like?"
+            type="textarea"
+            value={event.sponsorship_details}
+            onSave={(v) => saveEventField({ sponsorship_details: v || null })}
+          />
+          <Field
+            label="Who secures donated prizes?"
+            value={event.prize_donor_lead}
+            onSave={(v) => saveEventField({ prize_donor_lead: v || null })}
+          />
+          <Field
+            label="Types of prizes / donations usually collected"
+            type="textarea"
+            value={event.prize_types}
+            onSave={(v) => saveEventField({ prize_types: v || null })}
+          />
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Registration & payment processing</Label>
+            <Select
+              value={event.registration_method ?? ""}
+              onValueChange={(v) => saveEventField({ registration_method: v || null })}
+            >
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="paper">Paper / mail-in</SelectItem>
+                <SelectItem value="email">Email</SelectItem>
+                <SelectItem value="website">Own website</SelectItem>
+                <SelectItem value="eventbrite">Eventbrite</SelectItem>
+                <SelectItem value="givebutter">Givebutter</SelectItem>
+                <SelectItem value="cgt">Charity Golf Today</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Field
+            label="Payment processor notes"
+            type="textarea"
+            value={event.payment_processor_notes}
+            onSave={(v) => saveEventField({ payment_processor_notes: v || null })}
+          />
+          <YesNoMaybeField
+            label="Budget for player gifts?"
+            value={event.has_player_gift_budget}
+            onSave={(v) => saveEventField({ has_player_gift_budget: v })}
+          />
+          <Field
+            label="Player gift budget amount"
+            value={event.player_gift_budget}
+            onSave={(v) => saveEventField({ player_gift_budget: v || null })}
+            placeholder="$ amount or per-player"
+          />
+          <Field
+            label="Items usually purchased for players"
+            type="textarea"
+            value={event.player_gift_items}
+            onSave={(v) => saveEventField({ player_gift_items: v || null })}
+          />
+        </SectionCard>
+
+        {/* SECTION D — PAIN POINTS + FIT */}
+        <SectionCard letter="D" title="Pain Points + Fit">
+          <Field
+            label="Hardest part about running the event"
+            type="textarea"
+            value={event.hardest_part ?? event.pain_points}
+            onSave={(v) => saveEventField({ hardest_part: v || null })}
+          />
+          <ChipMultiSelect
+            label="Pain points"
+            options={[
+              "sponsors", "golfer turnout", "logistics", "volunteers",
+              "fundraising", "player engagement", "prizes/gifts", "admin",
+              "payments", "other",
+            ]}
+            value={event.pain_point_chips}
+            onSave={(v) => saveEventField({ pain_point_chips: v })}
+          />
+          <ChipMultiSelect
+            label="Opportunity flags"
+            options={["AE", "Par 3", "Par 5", "CGT", "Custom Products", "Auction Referral"]}
+            value={event.opportunity_flags}
+            onSave={(v) => saveEventField({ opportunity_flags: v })}
+          />
+        </SectionCard>
+
+        {/* SECTION E — CALL OUTCOME */}
+        <SectionCard letter="E" title="Call Outcome">
+          <fieldset className="rounded-lg border bg-secondary/30 p-3">
+            <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                ["interest_amateur_endorsement", "Amateur Endorsement"],
+                ["interest_par3", "Par 3 (Dixon Challenge)"],
+                ["interest_par5", "Par 5 (Aurelius Challenge)"],
+                ["interest_cgt", "CGT Platform"],
+                ["interest_custom_products", "Custom Products"],
+                ["interest_auction", "Auction Referral"],
+              ].map(([k, l]) => (
+                <CheckRow
+                  key={k}
+                  label={l}
+                  checked={!!event[k]}
+                  onChange={(v) => {
+                    const patch: Record<string, any> = { [k]: v };
+                    if (v && INTEREST_LABELS[k] && !event[k]) {
+                      patch.notes = appendInterestNote(event.notes, INTEREST_LABELS[k]);
+                    }
+                    saveEventField(patch);
+                  }}
+                />
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="rounded-lg border bg-secondary/30 p-3">
+            <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Booked / Sent</legend>
+            <div className="grid grid-cols-2 gap-2">
+              <CheckRow label="AE Sent" checked={event.amateur_endorsement_sent} onChange={(v) => saveEventField({ amateur_endorsement_sent: v })} />
+              <CheckRow label="Par 3 Booked" checked={event.par3_booked} onChange={(v) => saveEventField({ par3_booked: v })} />
+              <CheckRow label="Par 5 Booked" checked={event.par5_booked} onChange={(v) => saveEventField({ par5_booked: v })} />
+              <CheckRow label="CGT Created" checked={event.cgt_created} onChange={(v) => saveEventField({ cgt_created: v })} />
+              <CheckRow label="Custom Products Sold" checked={event.custom_products_sold} onChange={(v) => saveEventField({ custom_products_sold: v })} />
+              <CheckRow label="Auction Referred" checked={event.auction_referred} onChange={(v) => saveEventField({ auction_referred: v })} />
+            </div>
+            {event.cgt_created && (
+              <div className="mt-2 grid gap-1.5">
+                <Label className="text-xs">CGT URL</Label>
+                <Input value={event.cgt_url ?? ""} onChange={(e) => setEvent({ ...event, cgt_url: e.target.value })} onBlur={(e) => saveEventField({ cgt_url: e.target.value })} placeholder="https://charitygolftoday.com/..." />
+              </div>
+            )}
+          </fieldset>
+
+          <fieldset className="rounded-lg border bg-secondary/30 p-3 space-y-2">
+            <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Check details</legend>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1">
+                <Label className="text-xs">Payable to</Label>
+                <Input defaultValue={event.check_payable_to ?? ""} onBlur={(e) => saveEventField({ check_payable_to: e.target.value })} />
               </div>
               <div className="grid gap-1">
-                <Label className="text-xs">Address</Label>
-                <Input defaultValue={event.check_address ?? ""} onBlur={(e) => saveEventField({ check_address: e.target.value })} />
+                <Label className="text-xs">Mail to</Label>
+                <Input defaultValue={event.check_mail_to ?? ""} onBlur={(e) => saveEventField({ check_mail_to: e.target.value })} />
               </div>
-            </fieldset>
-
-            <div className="grid gap-1.5">
-              <Label>Call summary</Label>
-              <Textarea rows={4} value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="What happened on this call? Key quotes, objections, decisions…" />
             </div>
+            <div className="grid gap-1">
+              <Label className="text-xs">Address</Label>
+              <Input defaultValue={event.check_address ?? ""} onBlur={(e) => saveEventField({ check_address: e.target.value })} />
+            </div>
+          </fieldset>
 
-            <fieldset className="rounded-lg border bg-secondary/30 p-3 space-y-2">
-              <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5"><Calendar className="h-3 w-3" />Schedule follow-up</span>
-              </legend>
-              <NextActionPicker value={followUpAction} onChange={setFollowUpAction} />
-              <DateTimePicker value={followUpAt} onChange={setFollowUpAt} placeholder="Pick follow-up date" />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="w-full"
-                disabled={!followUpAt || !followUpAction}
-                onClick={() => {
-                  openGCal({
-                    title: `${followUpAction}${event ? ` — ${event.event_name}` : ""}`,
-                    details: [
-                      event?.event_name && `Lead: ${event.event_name}`,
-                      event?.course && `Course: ${event.course}`,
-                      summary && `\nNotes:\n${summary}`,
-                    ].filter(Boolean).join("\n"),
-                    start: new Date(followUpAt),
-                  });
-                }}
-              >
-                <Calendar className="mr-1.5 h-3.5 w-3.5" /> Add to Google Calendar
-              </Button>
-            </fieldset>
+          <Field
+            label="Objections / concerns"
+            type="textarea"
+            value={event.objections}
+            onSave={(v) => saveEventField({ objections: v || null })}
+          />
+          <Field
+            label="Where we left off"
+            type="textarea"
+            value={event.where_left_off}
+            onSave={(v) => saveEventField({ where_left_off: v || null })}
+          />
+
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Call summary</Label>
+            <Textarea
+              rows={4}
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              placeholder="What happened on this call? Key quotes, objections, decisions…"
+            />
           </div>
-        </ScrollArea>
+
+          <fieldset className="rounded-lg border bg-secondary/30 p-3 space-y-2">
+            <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5"><Calendar className="h-3 w-3" />Schedule follow-up</span>
+            </legend>
+            <NextActionPicker value={followUpAction} onChange={setFollowUpAction} />
+            <DateTimePicker value={followUpAt} onChange={setFollowUpAt} placeholder="Pick follow-up date" />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-full"
+              disabled={!followUpAt || !followUpAction}
+              onClick={() => {
+                openGCal({
+                  title: `${followUpAction}${event ? ` — ${event.event_name}` : ""}`,
+                  details: [
+                    event?.event_name && `Lead: ${event.event_name}`,
+                    event?.course && `Course: ${event.course}`,
+                    summary && `\nNotes:\n${summary}`,
+                  ].filter(Boolean).join("\n"),
+                  start: new Date(followUpAt),
+                });
+              }}
+            >
+              <Calendar className="mr-1.5 h-3.5 w-3.5" /> Add to Google Calendar
+            </Button>
+          </fieldset>
+        </SectionCard>
+      </div>
+    </ScrollArea>
+  );
+}
+
+/** Grouped capture card with letter badge for sections A–E. */
+function SectionCard({
+  letter,
+  title,
+  children,
+}: {
+  letter: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border bg-card overflow-hidden">
+      <header className="flex items-center gap-2 border-b bg-secondary/30 px-3 py-2">
+        <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground">
+          {letter}
+        </span>
+        <h3 className="font-display text-sm font-semibold">{title}</h3>
+      </header>
+      <div className="p-3 space-y-3">{children}</div>
+    </section>
   );
 }
 
