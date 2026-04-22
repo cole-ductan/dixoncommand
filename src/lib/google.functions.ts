@@ -158,3 +158,156 @@ export const sendGmail = createServerFn({ method: "POST" })
 
     return { success: true, messageId: sent.id, threadId: sent.threadId };
   });
+
+/* ------------------------------------------------------------------ *
+ * Gmail: list inbox messages
+ * ------------------------------------------------------------------ */
+
+const ListGmailSchema = z.object({
+  maxResults: z.number().int().min(1).max(50).optional(),
+  q: z.string().max(500).optional(),
+});
+
+type GmailListItem = {
+  id: string;
+  threadId: string;
+  snippet: string;
+  subject: string;
+  from: string;
+  date: string;
+  unread: boolean;
+};
+
+function decodeHeader(value?: string) {
+  if (!value) return "";
+  // Quick decode of RFC 2047 base64 / Q-encoded segments
+  return value.replace(/=\?UTF-8\?B\?([^?]+)\?=/gi, (_, b64) => {
+    try {
+      return Buffer.from(b64, "base64").toString("utf8");
+    } catch {
+      return _;
+    }
+  });
+}
+
+export const listGmailMessages = createServerFn({ method: "POST" })
+  .middleware([withSupabaseSession])
+  .inputValidator((input) => ListGmailSchema.parse(input ?? {}))
+  .handler(async ({ data, context }): Promise<{ messages: GmailListItem[] }> => {
+    const accessToken = await getValidAccessToken(context.userId);
+    if (!accessToken) return { messages: [] };
+
+    const params = new URLSearchParams({
+      maxResults: String(data.maxResults ?? 20),
+      q: data.q ?? "in:inbox",
+    });
+
+    const listRes = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages?${params}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!listRes.ok) {
+      const text = await listRes.text();
+      throw new Error(`Gmail list failed [${listRes.status}]: ${text}`);
+    }
+    const list = (await listRes.json()) as { messages?: { id: string; threadId: string }[] };
+    const ids = list.messages ?? [];
+
+    const detailed = await Promise.all(
+      ids.map(async (m) => {
+        const r = await fetch(
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        );
+        if (!r.ok) return null;
+        const msg = (await r.json()) as {
+          id: string;
+          threadId: string;
+          snippet?: string;
+          labelIds?: string[];
+          payload?: { headers?: { name: string; value: string }[] };
+        };
+        const headers = msg.payload?.headers ?? [];
+        const h = (n: string) => headers.find((x) => x.name.toLowerCase() === n.toLowerCase())?.value;
+        return {
+          id: msg.id,
+          threadId: msg.threadId,
+          snippet: msg.snippet ?? "",
+          subject: decodeHeader(h("Subject")) || "(no subject)",
+          from: decodeHeader(h("From")) || "",
+          date: h("Date") ?? "",
+          unread: (msg.labelIds ?? []).includes("UNREAD"),
+        } satisfies GmailListItem;
+      }),
+    );
+    return { messages: detailed.filter((x): x is GmailListItem => x !== null) };
+  });
+
+/* ------------------------------------------------------------------ *
+ * Calendar: list upcoming events
+ * ------------------------------------------------------------------ */
+
+const ListCalSchema = z.object({
+  timeMin: z.string().optional(),
+  timeMax: z.string().optional(),
+  maxResults: z.number().int().min(1).max(250).optional(),
+});
+
+type CalEvent = {
+  id: string;
+  summary: string;
+  description: string | null;
+  start: string | null;
+  end: string | null;
+  allDay: boolean;
+  location: string | null;
+  htmlLink: string | null;
+};
+
+export const listCalendarEvents = createServerFn({ method: "POST" })
+  .middleware([withSupabaseSession])
+  .inputValidator((input) => ListCalSchema.parse(input ?? {}))
+  .handler(async ({ data, context }): Promise<{ events: CalEvent[] }> => {
+    const accessToken = await getValidAccessToken(context.userId);
+    if (!accessToken) return { events: [] };
+
+    const timeMin = data.timeMin ?? new Date().toISOString();
+    const params = new URLSearchParams({
+      timeMin,
+      maxResults: String(data.maxResults ?? 50),
+      singleEvents: "true",
+      orderBy: "startTime",
+    });
+    if (data.timeMax) params.set("timeMax", data.timeMax);
+
+    const res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Calendar list failed [${res.status}]: ${text}`);
+    }
+    const json = (await res.json()) as {
+      items?: {
+        id: string;
+        summary?: string;
+        description?: string;
+        start?: { dateTime?: string; date?: string };
+        end?: { dateTime?: string; date?: string };
+        location?: string;
+        htmlLink?: string;
+      }[];
+    };
+    const events: CalEvent[] = (json.items ?? []).map((e) => ({
+      id: e.id,
+      summary: e.summary ?? "(no title)",
+      description: e.description ?? null,
+      start: e.start?.dateTime ?? e.start?.date ?? null,
+      end: e.end?.dateTime ?? e.end?.date ?? null,
+      allDay: !e.start?.dateTime,
+      location: e.location ?? null,
+      htmlLink: e.htmlLink ?? null,
+    }));
+    return { events };
+  });
