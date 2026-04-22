@@ -34,15 +34,15 @@ export function ResizablePanels3({
       className={className}
     >
       <ResizablePanel id="pane-left" defaultSize="22%" minSize="200px" maxSize="40%">
-        {left}
+        <div className="h-full min-w-0 overflow-hidden">{left}</div>
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel id="pane-center" defaultSize="53%" minSize="30%">
-        {center}
+        <div className="h-full min-w-0 overflow-hidden">{center}</div>
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel id="pane-right" defaultSize="25%" minSize="220px" maxSize="45%">
-        {right}
+        <div className="h-full min-w-0 overflow-hidden">{right}</div>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

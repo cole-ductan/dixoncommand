@@ -574,8 +574,8 @@ function CallLeftPane({
   removeContact: (id: string) => void | Promise<void>;
 }) {
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4 lg:pr-4 space-y-4">
+    <ScrollArea className="h-full @container">
+      <div className="p-4 lg:pr-4 space-y-4 min-w-0">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Event Snapshot
@@ -624,7 +624,7 @@ function CallLeftPane({
         />
 
         {/* Schedule */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 @[260px]:grid-cols-2 gap-2">
           <Field label="Event date" value={event.event_date} type="date" onSave={(v) => saveEventField({ event_date: v || null })} />
           <Field label="Tee off time" value={event.tee_off_time ?? event.event_time} onSave={(v) => saveEventField({ tee_off_time: v || null })} placeholder="e.g. 8:30 AM" />
         </div>
@@ -637,7 +637,7 @@ function CallLeftPane({
 
         {/* Course + numbers */}
         <Field label="Golf course" value={event.course} onSave={(v) => saveEventField({ course: v || null })} />
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 @[260px]:grid-cols-2 gap-2">
           <Field label="Est. golfers" value={event.player_count} onSave={(v) => saveEventField({ player_count: Number(v) || null })} type="number" />
           <Field label="Entry fee" value={event.entry_fee} onSave={(v) => saveEventField({ entry_fee: Number(v) || null })} type="number" prefix="$" />
         </div>
@@ -663,8 +663,8 @@ function CallCenterPane({
   summary, setSummary, followUpAction, setFollowUpAction, followUpAt, setFollowUpAt,
 }: any) {
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
+    <ScrollArea className="h-full @container">
+      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto min-w-0">
         <header>
           <h2 className="font-display text-xl font-semibold">Discovery Capture</h2>
           <p className="text-xs text-muted-foreground">
@@ -672,7 +672,7 @@ function CallCenterPane({
           </p>
         </header>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
           <div className="grid gap-1.5">
             <Label className="text-xs">Call type</Label>
             <Select value={callType} onValueChange={setCallType}>
@@ -699,7 +699,7 @@ function CallCenterPane({
 
         {/* SECTION A — BACKGROUND */}
         <SectionCard letter="A" title="Background">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
             <YesNoMaybeField
               label="Annual event?"
               value={event.is_annual_event === true ? "yes" : event.is_annual_event === false ? "no" : null}
@@ -712,7 +712,7 @@ function CallCenterPane({
               onSave={(v) => saveEventField({ years_running: v === "" ? null : Number(v) })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
             <Field
               label="Years organization has existed"
               type="number"
@@ -768,7 +768,7 @@ function CallCenterPane({
 
         {/* SECTION B — EVENT FLOW */}
         <SectionCard letter="B" title="Event Flow">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
             <Field
               label="Registration opens"
               value={event.registration_opens_at ?? event.registration_time}
@@ -922,7 +922,7 @@ function CallCenterPane({
         <SectionCard letter="E" title="Call Outcome">
           <fieldset className="rounded-lg border bg-secondary/30 p-3">
             <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interest</legend>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 @[360px]:grid-cols-2 gap-2">
               {[
                 ["interest_amateur_endorsement", "Amateur Endorsement"],
                 ["interest_par3", "Par 3 (Dixon Challenge)"],
@@ -949,7 +949,7 @@ function CallCenterPane({
 
           <fieldset className="rounded-lg border bg-secondary/30 p-3">
             <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Booked / Sent</legend>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 @[360px]:grid-cols-2 gap-2">
               <CheckRow label="AE Sent" checked={event.amateur_endorsement_sent} onChange={(v) => saveEventField({ amateur_endorsement_sent: v })} />
               <CheckRow label="Par 3 Booked" checked={event.par3_booked} onChange={(v) => saveEventField({ par3_booked: v })} />
               <CheckRow label="Par 5 Booked" checked={event.par5_booked} onChange={(v) => saveEventField({ par5_booked: v })} />
@@ -967,7 +967,7 @@ function CallCenterPane({
 
           <fieldset className="rounded-lg border bg-secondary/30 p-3 space-y-2">
             <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Check details</legend>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 @[360px]:grid-cols-2 gap-3">
               <div className="grid gap-1">
                 <Label className="text-xs">Payable to</Label>
                 <Input defaultValue={event.check_payable_to ?? ""} onBlur={(e) => saveEventField({ check_payable_to: e.target.value })} />
