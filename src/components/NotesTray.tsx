@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   StickyNote, X, Save, Trash2, Pin, PinOff, Calendar as CalIcon, Plus, Search,
+  Pencil,
 } from "lucide-react";
 import { useNotesUi } from "@/lib/notesStore";
 import { DateTimePicker } from "@/components/DateTimePicker";
@@ -34,6 +35,43 @@ export function NotesTray() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+
+  // Inline edit state for saved notes
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+
+  const startEdit = (n: Note) => {
+    setEditingId(n.id);
+    setEditTitle(n.title ?? "");
+    setEditBody(n.body);
+  };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditTitle("");
+    setEditBody("");
+  };
+  const saveEdit = async () => {
+    if (!editingId) return;
+    if (!editTitle.trim() && !editBody.trim()) {
+      toast.error("Title or body required");
+      return;
+    }
+    const { error } = await supabase
+      .from("notes")
+      .update({
+        title: editTitle.trim() || null,
+        body: editBody.trim(),
+      })
+      .eq("id", editingId);
+    if (error) {
+      toast.error("Update failed: " + error.message);
+      return;
+    }
+    toast.success("Note updated");
+    cancelEdit();
+    await load();
+  };
 
   // Calendar-saving state per draft
   const [saveToCalendar, setSaveToCalendar] = useState(false);
@@ -270,6 +308,31 @@ export function NotesTray() {
             )}
             {filtered.map((n) => (
               <article key={n.id} className="rounded-md border bg-card p-2.5 space-y-1.5">
+                {editingId === n.id ? (
+                  <div className="space-y-2">
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Title"
+                      className="h-8 text-sm font-medium"
+                    />
+                    <Textarea
+                      value={editBody}
+                      onChange={(e) => setEditBody(e.target.value)}
+                      rows={5}
+                      className="text-sm"
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="flex-1 h-7 text-xs" onClick={cancelEdit}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" className="flex-1 h-7 text-xs" onClick={saveEdit}>
+                        <Save className="mr-1 h-3 w-3" /> Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                <>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     {n.title && <div className="font-medium text-sm truncate">{n.title}</div>}
@@ -284,6 +347,13 @@ export function NotesTray() {
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5">
+                    <button
+                      onClick={() => startEdit(n)}
+                      className="rounded p-1 hover:bg-secondary"
+                      title="Edit"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
                     <button
                       onClick={() => togglePin(n.id, n.pinned)}
                       className="rounded p-1 hover:bg-secondary"
@@ -326,6 +396,8 @@ export function NotesTray() {
                   <pre className="whitespace-pre-wrap font-sans text-xs text-foreground/80 leading-relaxed">
                     {n.body}
                   </pre>
+                )}
+                </>
                 )}
               </article>
             ))}
