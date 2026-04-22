@@ -18,6 +18,7 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { LEAD_SOURCES } from "@/lib/leadSource";
+import { formatPhone } from "@/lib/phone";
 
 export function AddLeadDialog({
   trigger,
@@ -50,6 +51,7 @@ export function AddLeadDialog({
   const [eventDate, setEventDate] = useState(defaultDate ?? "");
   const [playerCount, setPlayerCount] = useState("");
   const [leadSource, setLeadSource] = useState<string>("");
+  const [eventId, setEventId] = useState("");
   const [notes, setNotes] = useState("");
 
   // Sync defaultDate when dialog opens
@@ -59,22 +61,26 @@ export function AddLeadDialog({
 
   const reset = () => {
     setOrgName(""); setContactName(""); setContactEmail(""); setContactPhone("");
-    setEventName(""); setCourse(""); setEventDate(""); setPlayerCount(""); setLeadSource(""); setNotes("");
+    setEventName(""); setCourse(""); setEventDate(""); setPlayerCount(""); setLeadSource(""); setEventId(""); setNotes("");
   };
 
   const submit = async () => {
     if (!user) return;
-    if (!eventName.trim() || !orgName.trim()) {
-      toast.error("Organization and Event name are required");
+    if (!eventName.trim()) {
+      toast.error("Event name is required");
       return;
     }
     setSaving(true);
     try {
-      const { data: org, error: oErr } = await supabase
-        .from("organizations")
-        .insert({ user_id: user.id, name: orgName.trim() })
-        .select().single();
-      if (oErr) throw oErr;
+      let orgId: string | null = null;
+      if (orgName.trim()) {
+        const { data: org, error: oErr } = await supabase
+          .from("organizations")
+          .insert({ user_id: user.id, name: orgName.trim() })
+          .select().single();
+        if (oErr) throw oErr;
+        orgId = org.id;
+      }
 
       let contactId: string | null = null;
       if (contactName.trim()) {
@@ -82,7 +88,7 @@ export function AddLeadDialog({
           .from("contacts")
           .insert({
             user_id: user.id,
-            organization_id: org.id,
+            organization_id: orgId,
             name: contactName.trim(),
             email: contactEmail.trim() || null,
             phone: contactPhone.trim() || null,
@@ -96,13 +102,14 @@ export function AddLeadDialog({
         .from("events")
         .insert({
           user_id: user.id,
-          organization_id: org.id,
+          organization_id: orgId,
           primary_contact_id: contactId,
           event_name: eventName.trim(),
           course: course.trim() || null,
           event_date: eventDate || null,
           player_count: playerCount.trim() ? Number(playerCount) : null,
           lead_source: leadSource || null,
+          dixon_tournament_id: eventId.trim() || null,
           notes: notes.trim() || null,
           stage: "new_lead",
         })
