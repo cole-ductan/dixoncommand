@@ -16,6 +16,7 @@ import {
   getGoogleStatus,
   disconnectGoogle,
 } from "@/lib/google.functions";
+import { useAuth } from "@/hooks/useAuth";
 
 type Status = { connected: boolean; email: string | null };
 
@@ -23,6 +24,7 @@ export function GoogleConnectButton() {
   const startFn = useServerFn(startGoogleOAuth);
   const statusFn = useServerFn(getGoogleStatus);
   const disconnectFn = useServerFn(disconnectGoogle);
+  const { session, loading: authLoading } = useAuth();
 
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,9 +39,17 @@ export function GoogleConnectButton() {
   };
 
   useEffect(() => {
+    // Only call the server fn once we have an authenticated session,
+    // otherwise the auth middleware throws a Response (401) and surfaces
+    // as an unhandled "[object Response]" runtime error.
+    if (authLoading) return;
+    if (!session) {
+      setStatus({ connected: false, email: null });
+      return;
+    }
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, session?.access_token]);
 
   const connect = async () => {
     setBusy(true);
