@@ -1,19 +1,31 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2, FileText, StickyNote, Globe } from "lucide-react";
+import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, Flag, CalendarRange, Package, Loader2, FileText, StickyNote, Globe, Mail, Plus, UserPlus, CalendarPlus, Users } from "lucide-react";
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { PendingEmailTray } from "@/components/PendingEmailTray";
 import { NotesTray } from "@/components/NotesTray";
 import { GoogleConnectButton } from "@/components/GoogleConnectButton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { useNotesUi } from "@/lib/notesStore";
+import { openGCal } from "@/lib/gcal";
 
 export function AppShell() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { location } = useRouterState();
+  const { setOpen: setNotesOpen, setView: setNotesView } = useNotesUi();
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -35,6 +47,8 @@ export function AppShell() {
     { to: "/call", label: "Live Call", Icon: Phone },
     { to: "/pipeline", label: "Pipeline", Icon: KanbanSquare },
     { to: "/follow-ups", label: "Follow-Ups", Icon: CalendarClock },
+    { to: "/inbox", label: "Inbox", Icon: Mail },
+    { to: "/calendar", label: "Calendar", Icon: CalendarRange },
     { to: "/my-week", label: "My Week", Icon: CalendarRange },
     { to: "/playbook", label: "Playbook", Icon: BookOpen },
     { to: "/offers", label: "Offers & Products", Icon: Package },
@@ -84,7 +98,45 @@ export function AppShell() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2 shrink-0">
-            <AddLeadDialog trigger={<Button size="sm" variant="outline"><span className="text-base leading-none">+</span></Button>} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" aria-label="Quick add">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="text-xs">Quick add</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setAddLeadOpen(true); }}>
+                  <UserPlus className="h-4 w-4" /> Add Lead
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setAddLeadOpen(true); }}>
+                  <CalendarPlus className="h-4 w-4" /> Add Event
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    openGCal({ title: "Meeting", start: new Date() });
+                  }}
+                >
+                  <Users className="h-4 w-4" /> Add Meeting
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setNotesView("compose");
+                    setNotesOpen(true);
+                  }}
+                >
+                  <StickyNote className="h-4 w-4" /> Reminder / Note
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <AddLeadDialog
+              trigger={null}
+              open={addLeadOpen}
+              onOpenChange={setAddLeadOpen}
+            />
             <Button asChild size="sm" variant="default">
               <Link to="/call" search={{ new: "1" } as any}><Phone className="mr-1 h-3.5 w-3.5" />Call</Link>
             </Button>
