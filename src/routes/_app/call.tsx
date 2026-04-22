@@ -589,16 +589,26 @@ function CallMainPane(props: {
   followUpAt: string;
   setFollowUpAt: (v: string) => void;
 }) {
+  const [snapshotOpen, setSnapshotOpen] = useState(true);
   return (
     <ScrollArea className="h-full @container">
       <div className="space-y-4 p-4 md:p-6 min-w-0 w-full">
         {/* Event Snapshot card (was the left pane) */}
         <section className="rounded-xl border bg-card overflow-hidden">
-          <header className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setSnapshotOpen((v) => !v)}
+            className="flex w-full items-center justify-between border-b bg-secondary/30 px-3 py-2 text-left hover:bg-secondary/50 transition-colors"
+            aria-expanded={snapshotOpen}
+          >
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Event Snapshot
             </h2>
-          </header>
+            <ChevronDown
+              className={`h-4 w-4 text-muted-foreground transition-transform ${snapshotOpen ? "" : "-rotate-90"}`}
+            />
+          </button>
+          {snapshotOpen && (
           <div className="p-3 md:p-4 space-y-3 @container">
             <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
               <Field
