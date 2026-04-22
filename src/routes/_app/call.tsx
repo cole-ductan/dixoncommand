@@ -727,6 +727,7 @@ function CallMainPane(props: {
               />
             </div>
           </div>
+          )}
         </section>
 
         {/* Discovery Capture (was the center pane) */}
