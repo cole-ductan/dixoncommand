@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mail, X, FileText, Sparkles, Trash2, Send } from "lucide-react";
+import { Mail, X, FileText, Sparkles, Trash2, Send, ExternalLink, Loader2 } from "lucide-react";
 import { usePendingTray, buildGmailComposeUrl, type TrayItem } from "@/lib/pendingTrayStore";
 import { cn } from "@/lib/utils";
+import { sendGmail } from "@/lib/google.functions";
+import { toast } from "sonner";
 
 export function PendingEmailTray() {
   const { items, to, subject, body, open, setOpen, setTo, setSubject, setBody, remove, clear, add } =
     usePendingTray();
+  const sendGmailFn = useServerFn(sendGmail);
+  const [sending, setSending] = useState(false);
 
   const count = items.length;
 
@@ -55,9 +60,33 @@ export function PendingEmailTray() {
     setBody(parts.join("\n"));
   };
 
-  const sendViaGmail = () => {
+  const openInGmailWeb = () => {
     const url = buildGmailComposeUrl({ to, subject, body });
     window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const sendViaApi = async () => {
+    if (!to.trim() || !subject.trim() || !body.trim()) {
+      toast.error("Please fill in To, Subject, and Body before sending.");
+      return;
+    }
+    setSending(true);
+    try {
+      await sendGmailFn({ data: { to: to.trim(), subject: subject.trim(), body } });
+      toast.success(`Email sent to ${to.trim()}`);
+      clear();
+      setTo("");
+      setOpen(false);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to send email";
+      if (msg.includes("not connected")) {
+        toast.error("Connect your Google account first (top-right of the header).");
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setSending(false);
+    }
   };
 
   if (!open && count === 0) return null;
@@ -188,8 +217,22 @@ export function PendingEmailTray() {
         >
           <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Discard
         </Button>
-        <Button size="sm" className="flex-1" onClick={sendViaGmail} disabled={!subject && !body}>
-          <Send className="mr-1.5 h-3.5 w-3.5" /> Send via Gmail
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={openInGmailWeb}
+          disabled={!subject && !body}
+          title="Open in Gmail tab to review before sending"
+        >
+          <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Open
+        </Button>
+        <Button size="sm" className="flex-1" onClick={sendViaApi} disabled={sending || (!subject && !body)}>
+          {sending ? (
+            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Send className="mr-1.5 h-3.5 w-3.5" />
+          )}
+          {sending ? "Sending…" : "Send"}
         </Button>
       </div>
     </div>
