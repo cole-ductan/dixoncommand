@@ -456,7 +456,14 @@ function LiveCallWorkspace() {
       <div className="flex-1 min-h-0 px-4 lg:px-6">
         {/* Mobile: stacked. Desktop: resizable */}
         <div className="lg:hidden grid grid-cols-1 divide-y h-full">
-          <CallLeftPane event={event} contact={contact} saveEventField={saveEventField} />
+          <CallLeftPane
+            event={event}
+            contacts={contacts}
+            saveEventField={saveEventField}
+            updateContactById={updateContactById}
+            addContact={addContact}
+            removeContact={removeContact}
+          />
           <CallCenterPane
             event={event}
             setEvent={setEvent}
