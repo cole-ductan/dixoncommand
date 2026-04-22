@@ -529,6 +529,181 @@ function LiveCallWorkspace() {
 
 /* ---------- Pane components (extracted for reuse on mobile + resizable desktop) ---------- */
 
+/**
+ * Merged main pane: Event Snapshot (formerly the left rail) on top, followed by
+ * the full Discovery Capture flow. Renders inside a single ScrollArea so the
+ * whole call workspace is one scroll surface.
+ */
+function CallMainPane(props: {
+  event: any;
+  setEvent: (e: any) => void;
+  contacts: Contact[];
+  saveEventField: (patch: Record<string, any>) => void | Promise<void>;
+  updateContactById: (id: string, patch: Record<string, any>) => void | Promise<void>;
+  addContact: () => void | Promise<void>;
+  removeContact: (id: string) => void | Promise<void>;
+  callType: string;
+  setCallType: (v: string) => void;
+  outcome: string;
+  setOutcome: (v: string) => void;
+  summary: string;
+  setSummary: (v: string) => void;
+  followUpAction: string;
+  setFollowUpAction: (v: string) => void;
+  followUpAt: string;
+  setFollowUpAt: (v: string) => void;
+}) {
+  return (
+    <ScrollArea className="h-full @container">
+      <div className="mx-auto max-w-4xl space-y-4 p-4 md:p-6 min-w-0">
+        {/* Event Snapshot card (was the left pane) */}
+        <section className="rounded-xl border bg-card overflow-hidden">
+          <header className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Event Snapshot
+            </h2>
+          </header>
+          <div className="p-3 md:p-4 space-y-3 @container">
+            <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
+              <Field
+                label="Event name"
+                value={props.event.event_name}
+                onSave={(v) => props.saveEventField({ event_name: v || props.event.event_name })}
+              />
+              <OrgNameField event={props.event} />
+            </div>
+
+            {/* Primary contact */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Primary contact
+                </Label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-1.5 text-xs"
+                  onClick={() => props.addContact()}
+                >
+                  <Plus className="h-3 w-3 mr-1" /> Add
+                </Button>
+              </div>
+              {props.contacts.length === 0 && (
+                <div className="rounded-lg border border-dashed bg-secondary/20 p-3 text-xs text-muted-foreground">
+                  No contacts yet. Click <span className="font-medium">Add</span> to capture the POC.
+                </div>
+              )}
+              <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-2">
+                {props.contacts.map((c) => (
+                  <ContactCard
+                    key={c.id}
+                    contact={c}
+                    onSave={(patch) => props.updateContactById(c.id, patch)}
+                    onRemove={() => props.removeContact(c.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
+              <Field
+                label="Contact role / title"
+                value={props.event.contact_role}
+                onSave={(v) => props.saveEventField({ contact_role: v || null })}
+              />
+              <YesNoMaybeField
+                label="Decision maker?"
+                value={props.event.decision_maker}
+                onSave={(v) => props.saveEventField({ decision_maker: v })}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-3 gap-3">
+              <Field
+                label="Event date"
+                value={props.event.event_date}
+                type="date"
+                onSave={(v) => props.saveEventField({ event_date: v || null })}
+              />
+              <Field
+                label="Registration time"
+                value={props.event.registration_time}
+                onSave={(v) => props.saveEventField({ registration_time: v || null })}
+                placeholder="e.g. 7:00 AM"
+              />
+              <Field
+                label="Tee off time"
+                value={props.event.tee_off_time ?? props.event.event_time}
+                onSave={(v) => props.saveEventField({ tee_off_time: v || null })}
+                placeholder="e.g. 8:30 AM"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-3 gap-3">
+              <Field
+                label="Golf course"
+                value={props.event.course}
+                onSave={(v) => props.saveEventField({ course: v || null })}
+              />
+              <Field
+                label="Est. golfers"
+                value={props.event.player_count}
+                onSave={(v) => props.saveEventField({ player_count: Number(v) || null })}
+                type="number"
+              />
+              <Field
+                label="Entry fee"
+                value={props.event.entry_fee}
+                onSave={(v) => props.saveEventField({ entry_fee: Number(v) || null })}
+                type="number"
+                prefix="$"
+              />
+            </div>
+
+            <Field
+              label="Event website / registration link"
+              value={props.event.event_website}
+              onSave={(v) => props.saveEventField({ event_website: v || null })}
+              placeholder="https://"
+            />
+
+            <div className="grid grid-cols-1 @[520px]:grid-cols-2 gap-3">
+              <Field
+                label="Stage"
+                value={props.event.stage}
+                type="select"
+                onSave={(v) => props.saveEventField({ stage: v })}
+              />
+              <Field
+                label="Event ID"
+                value={props.event.dixon_tournament_id}
+                onSave={(v) => props.saveEventField({ dixon_tournament_id: v || null })}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Discovery Capture (was the center pane) */}
+        <CallCenterPane
+          event={props.event}
+          setEvent={props.setEvent}
+          saveEventField={props.saveEventField}
+          callType={props.callType}
+          setCallType={props.setCallType}
+          outcome={props.outcome}
+          setOutcome={props.setOutcome}
+          summary={props.summary}
+          setSummary={props.setSummary}
+          followUpAction={props.followUpAction}
+          setFollowUpAction={props.setFollowUpAction}
+          followUpAt={props.followUpAt}
+          setFollowUpAt={props.setFollowUpAt}
+        />
+      </div>
+    </ScrollArea>
+  );
+}
+
 function CallLeftPane({
   event,
   contacts,
