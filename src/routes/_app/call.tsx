@@ -663,8 +663,8 @@ function CallCenterPane({
   summary, setSummary, followUpAction, setFollowUpAction, followUpAt, setFollowUpAt,
 }: any) {
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
+    <ScrollArea className="h-full @container">
+      <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto min-w-0">
         <header>
           <h2 className="font-display text-xl font-semibold">Discovery Capture</h2>
           <p className="text-xs text-muted-foreground">
@@ -672,7 +672,7 @@ function CallCenterPane({
           </p>
         </header>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 @[420px]:grid-cols-2 gap-3">
           <div className="grid gap-1.5">
             <Label className="text-xs">Call type</Label>
             <Select value={callType} onValueChange={setCallType}>
