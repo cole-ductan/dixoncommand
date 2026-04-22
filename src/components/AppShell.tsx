@@ -8,6 +8,7 @@ import { Phone, LayoutDashboard, KanbanSquare, CalendarClock, BookOpen, LogOut, 
 import { AddLeadDialog } from "@/components/AddLeadDialog";
 import { PendingEmailTray } from "@/components/PendingEmailTray";
 import { NotesTray } from "@/components/NotesTray";
+import { GoogleConnectButton } from "@/components/GoogleConnectButton";
 
 export function AppShell() {
   const { user, loading } = useAuth();
@@ -86,6 +87,7 @@ export function AppShell() {
             <Button asChild size="sm" variant="default">
               <Link to="/call" search={{ new: "1" } as any}><Phone className="mr-1 h-3.5 w-3.5" />Call</Link>
             </Button>
+            <GoogleConnectButton />
             <div className="hidden md:flex items-center gap-2 border-l pl-2 ml-1">
               <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
               <Button
