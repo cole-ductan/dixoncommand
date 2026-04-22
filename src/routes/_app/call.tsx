@@ -1180,9 +1180,10 @@ function CallCenterPane({
             </Button>
           </fieldset>
         </SectionCard>
-      </div>
-    </ScrollArea>
+    </div>
   );
+  if (embedded) return body;
+  return <ScrollArea className="h-full @container">{body}</ScrollArea>;
 }
 
 /** Grouped capture card with letter badge for sections A–E. */
