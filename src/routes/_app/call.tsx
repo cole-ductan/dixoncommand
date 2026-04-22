@@ -810,6 +810,7 @@ function InlineNewLead({
   const [eventDate, setEventDate] = useState("");
   const [playerCount, setPlayerCount] = useState("");
   const [leadSource, setLeadSource] = useState<string>("");
+  const [tournamentId, setTournamentId] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -818,17 +819,21 @@ function InlineNewLead({
       toast.error("Still connecting — try again in a second");
       return;
     }
-    if (!eventName.trim() || !orgName.trim()) {
-      toast.error("Organization and Event name are required");
+    if (!eventName.trim()) {
+      toast.error("Event name is required");
       return;
     }
     setSaving(true);
     try {
-      const { data: org, error: oErr } = await supabase
-        .from("organizations")
-        .insert({ user_id: userId, name: orgName.trim() })
-        .select().single();
-      if (oErr) throw oErr;
+      let orgId: string | null = null;
+      if (orgName.trim()) {
+        const { data: org, error: oErr } = await supabase
+          .from("organizations")
+          .insert({ user_id: userId, name: orgName.trim() })
+          .select().single();
+        if (oErr) throw oErr;
+        orgId = org.id;
+      }
 
       let contactId: string | null = null;
       if (contactName.trim()) {
@@ -836,7 +841,7 @@ function InlineNewLead({
           .from("contacts")
           .insert({
             user_id: userId,
-            organization_id: org.id,
+            organization_id: orgId,
             name: contactName.trim(),
             email: contactEmail.trim() || null,
             phone: contactPhone.trim() || null,
@@ -850,13 +855,14 @@ function InlineNewLead({
         .from("events")
         .insert({
           user_id: userId,
-          organization_id: org.id,
+          organization_id: orgId,
           primary_contact_id: contactId,
           event_name: eventName.trim(),
           course: course.trim() || null,
           event_date: eventDate || null,
           player_count: playerCount.trim() ? Number(playerCount) : null,
           lead_source: leadSource || null,
+          dixon_tournament_id: tournamentId.trim() || null,
           notes: notes.trim() || null,
           stage: "new_lead",
         })
