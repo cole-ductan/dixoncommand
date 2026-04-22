@@ -889,7 +889,12 @@ function InlineNewLead({
 
       <div className="grid gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="il-org" className="text-xs">Organization *</Label>
+          <Label htmlFor="il-event" className="text-xs">Event name *</Label>
+          <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-org" className="text-xs">Organization</Label>
           <Input id="il-org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
         </div>
 
@@ -900,17 +905,12 @@ function InlineNewLead({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="il-phone" className="text-xs">Phone</Label>
-            <Input id="il-phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
+            <Input id="il-phone" type="tel" inputMode="tel" value={contactPhone} onChange={(e) => setContactPhone(formatPhone(e.target.value))} placeholder="(555) 010-1000" />
           </div>
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="il-email" className="text-xs">Email</Label>
           <Input id="il-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
-        </div>
-
-        <div className="grid gap-1.5">
-          <Label htmlFor="il-event" className="text-xs">Event name *</Label>
-          <Input id="il-event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -938,6 +938,11 @@ function InlineNewLead({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="il-eventid" className="text-xs">Event ID</Label>
+          <Input id="il-eventid" value={tournamentId} onChange={(e) => setTournamentId(e.target.value)} placeholder="e.g. Dixon tournament ID" />
         </div>
 
         <div className="grid gap-1.5">
