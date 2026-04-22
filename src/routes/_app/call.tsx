@@ -102,6 +102,46 @@ function LiveCallWorkspace() {
     if (error) toast.error("Save failed: " + error.message);
   }, [contact]);
 
+  const updateContactById = useCallback(async (id: string, patch: Record<string, any>) => {
+    setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } as Contact : c)));
+    if (contact?.id === id) setContact({ ...contact, ...patch } as Contact);
+    const { error } = await supabase.from("contacts").update(patch as any).eq("id", id);
+    if (error) toast.error("Save failed: " + error.message);
+  }, [contact]);
+
+  const addContact = useCallback(async () => {
+    if (!event || !user) return;
+    const { data, error } = await supabase
+      .from("contacts")
+      .insert({
+        user_id: user.id,
+        organization_id: event.organization_id ?? null,
+        name: "New contact",
+        email: null,
+        phone: null,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Couldn't add contact");
+      return;
+    }
+    setContacts((prev) => [...prev, data as Contact]);
+    toast.success("Contact added");
+  }, [event, user]);
+
+  const removeContact = useCallback(async (id: string) => {
+    setContacts((prev) => prev.filter((c) => c.id !== id));
+    if (contact?.id === id) {
+      setContact((prev) => {
+        const remaining = contacts.filter((c) => c.id !== id);
+        return remaining[0] ?? null;
+      });
+    }
+    const { error } = await supabase.from("contacts").delete().eq("id", id);
+    if (error) toast.error("Delete failed: " + error.message);
+  }, [contact, contacts]);
+
   // load all events for picker
   useEffect(() => {
     supabase.from("events").select("*").eq("archived", false).order("updated_at", { ascending: false }).then(({ data }) => {
