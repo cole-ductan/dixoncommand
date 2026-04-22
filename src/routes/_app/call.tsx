@@ -1064,7 +1064,7 @@ function SectionCard({
 
 function CallRightPane({ scriptSections, setScriptSections, templates, tmplVars, contact }: any) {
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full @container">
       <div className="p-4 lg:pl-4 min-w-0">
             <Tabs defaultValue="script" className="w-full">
               <TabsList className="w-full grid grid-cols-3">
