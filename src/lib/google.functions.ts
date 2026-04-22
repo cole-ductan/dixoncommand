@@ -43,6 +43,12 @@ export const startGoogleOAuth = createServerFn({ method: "POST" })
 export const getGoogleStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    // Defensive: middleware guarantees context.userId, but if anything
+    // upstream changes, return a safe "not connected" payload instead of
+    // letting an unhandled Response bubble up to the client.
+    if (!context?.userId) {
+      return { connected: false, email: null, scope: null, updatedAt: null };
+    }
     const { data, error } = await supabaseAdmin
       .from("google_tokens")
       .select("google_email, scope, updated_at")
