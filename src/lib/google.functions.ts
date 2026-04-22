@@ -1,7 +1,7 @@
 // Server functions for Google OAuth + Gmail send (callable from client).
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { withSupabaseSession } from "@/integrations/supabase/serverfn-auth";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   GOOGLE_SCOPE_STRING,
@@ -16,7 +16,7 @@ const StartSchema = z.object({
 
 /** Build the Google OAuth consent URL for the current user. */
 export const startGoogleOAuth = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseSession])
   .inputValidator((input) => StartSchema.parse(input))
   .handler(async ({ data, context }) => {
     const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
@@ -41,7 +41,7 @@ export const startGoogleOAuth = createServerFn({ method: "POST" })
 
 /** Get the user's current Google connection status. */
 export const getGoogleStatus = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseSession])
   .handler(async ({ context }) => {
     // Defensive: middleware guarantees context.userId, but if anything
     // upstream changes, return a safe "not connected" payload instead of
@@ -65,7 +65,7 @@ export const getGoogleStatus = createServerFn({ method: "GET" })
 
 /** Disconnect: delete tokens. */
 export const disconnectGoogle = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseSession])
   .handler(async ({ context }) => {
     const { error } = await supabaseAdmin
       .from("google_tokens")
@@ -107,7 +107,7 @@ function encodeRfc2822(to: string, fromEmail: string, subject: string, body: str
 
 /** Send an email via Gmail API using the user's connected account. */
 export const sendGmail = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([withSupabaseSession])
   .inputValidator((input) => SendSchema.parse(input))
   .handler(async ({ data, context }) => {
     const accessToken = await getValidAccessToken(context.userId);
