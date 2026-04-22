@@ -685,6 +685,7 @@ function CallMainPane(props: {
 
         {/* Discovery Capture (was the center pane) */}
         <CallCenterPane
+          embedded
           event={props.event}
           setEvent={props.setEvent}
           saveEventField={props.saveEventField}
