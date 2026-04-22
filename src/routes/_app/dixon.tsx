@@ -16,20 +16,26 @@ const DIXON_PAGES: { label: string; path: string; group: string }[] = [
   { group: "Scheduling", label: "Call Schedule", path: "/call_schedule.php" },
   { group: "Calling", label: "Calling Mode", path: "/calling_mode.php" },
   { group: "Calling", label: "Today's Calls", path: "/calling_mode_todays_calls.php" },
-  { group: "Operations", label: "Territory Info", path: "/territory_info.php" },
+  { group: "Operations", label: "Manage Courses", path: "/list_manage_courses.php" },
   { group: "Operations", label: "List Packing for Events", path: "/list_packing_for_events.php" },
   { group: "Orders", label: "Custom Order", path: "/custom_order_n.php" },
   { group: "Orders", label: "Logo Ball Order — New", path: "/logo_ball_order_create_new.php" },
 ];
 
+const STORAGE_KEY = "dixon:lastPath";
+
 function DixonEmbedPage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [currentPath, setCurrentPath] = useState<string>("/index.php");
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window === "undefined") return "/index.php";
+    return sessionStorage.getItem(STORAGE_KEY) || "/index.php";
+  });
 
   const proxyUrl = `${PROXY_BASE}${currentPath}`;
 
   const navigate = (path: string) => {
     setCurrentPath(path);
+    if (typeof window !== "undefined") sessionStorage.setItem(STORAGE_KEY, path);
     if (iframeRef.current) {
       iframeRef.current.src = `${PROXY_BASE}${path}`;
     }
