@@ -591,7 +591,7 @@ function CallMainPane(props: {
 }) {
   return (
     <ScrollArea className="h-full @container">
-      <div className="mx-auto max-w-4xl space-y-4 p-4 md:p-6 min-w-0">
+      <div className="space-y-4 p-4 md:p-6 min-w-0 w-full">
         {/* Event Snapshot card (was the left pane) */}
         <section className="rounded-xl border bg-card overflow-hidden">
           <header className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
