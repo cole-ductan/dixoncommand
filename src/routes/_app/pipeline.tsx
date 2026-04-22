@@ -41,6 +41,7 @@ type EventCard = {
   where_left_off: string | null;
   notes: string | null;
   archived: boolean;
+  dixon_tournament_id: string | null;
 };
 
 // Stage groups
@@ -87,7 +88,7 @@ function PipelinePage() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("events")
-      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes,archived")
+      .select("id,event_name,stage,course,event_date,hot_lead,player_count,entry_fee,where_left_off,notes,archived,dixon_tournament_id")
       .order("updated_at", { ascending: false });
     setEvents((data ?? []) as any);
     setLoading(false);
@@ -278,6 +279,16 @@ function PipelinePage() {
                       value={open.where_left_off ?? ""}
                       onSave={(v) => updateOpenField({ where_left_off: v || null })}
                       placeholder="What's the next move?"
+                    />
+                  </div>
+
+                  {/* Editable event ID */}
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Event ID</Label>
+                    <TextField
+                      value={open.dixon_tournament_id ?? ""}
+                      onSave={(v) => updateOpenField({ dixon_tournament_id: v || null })}
+                      placeholder="e.g. Dixon tournament ID"
                     />
                   </div>
 

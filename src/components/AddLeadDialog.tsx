@@ -18,6 +18,7 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { LEAD_SOURCES } from "@/lib/leadSource";
+import { formatPhone } from "@/lib/phone";
 
 export function AddLeadDialog({
   trigger,
@@ -50,6 +51,7 @@ export function AddLeadDialog({
   const [eventDate, setEventDate] = useState(defaultDate ?? "");
   const [playerCount, setPlayerCount] = useState("");
   const [leadSource, setLeadSource] = useState<string>("");
+  const [eventId, setEventId] = useState("");
   const [notes, setNotes] = useState("");
 
   // Sync defaultDate when dialog opens
@@ -59,22 +61,26 @@ export function AddLeadDialog({
 
   const reset = () => {
     setOrgName(""); setContactName(""); setContactEmail(""); setContactPhone("");
-    setEventName(""); setCourse(""); setEventDate(""); setPlayerCount(""); setLeadSource(""); setNotes("");
+    setEventName(""); setCourse(""); setEventDate(""); setPlayerCount(""); setLeadSource(""); setEventId(""); setNotes("");
   };
 
   const submit = async () => {
     if (!user) return;
-    if (!eventName.trim() || !orgName.trim()) {
-      toast.error("Organization and Event name are required");
+    if (!eventName.trim()) {
+      toast.error("Event name is required");
       return;
     }
     setSaving(true);
     try {
-      const { data: org, error: oErr } = await supabase
-        .from("organizations")
-        .insert({ user_id: user.id, name: orgName.trim() })
-        .select().single();
-      if (oErr) throw oErr;
+      let orgId: string | null = null;
+      if (orgName.trim()) {
+        const { data: org, error: oErr } = await supabase
+          .from("organizations")
+          .insert({ user_id: user.id, name: orgName.trim() })
+          .select().single();
+        if (oErr) throw oErr;
+        orgId = org.id;
+      }
 
       let contactId: string | null = null;
       if (contactName.trim()) {
@@ -82,7 +88,7 @@ export function AddLeadDialog({
           .from("contacts")
           .insert({
             user_id: user.id,
-            organization_id: org.id,
+            organization_id: orgId,
             name: contactName.trim(),
             email: contactEmail.trim() || null,
             phone: contactPhone.trim() || null,
@@ -96,13 +102,14 @@ export function AddLeadDialog({
         .from("events")
         .insert({
           user_id: user.id,
-          organization_id: org.id,
+          organization_id: orgId,
           primary_contact_id: contactId,
           event_name: eventName.trim(),
           course: course.trim() || null,
           event_date: eventDate || null,
           player_count: playerCount.trim() ? Number(playerCount) : null,
           lead_source: leadSource || null,
+          dixon_tournament_id: eventId.trim() || null,
           notes: notes.trim() || null,
           stage: "new_lead",
         })
@@ -139,7 +146,12 @@ export function AddLeadDialog({
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-1.5">
-            <Label htmlFor="org">Organization *</Label>
+            <Label htmlFor="event">Event name *</Label>
+            <Input id="event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="org">Organization</Label>
             <Input id="org" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="St. Vincent's Charity Foundation" />
           </div>
 
@@ -150,17 +162,12 @@ export function AddLeadDialog({
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(555) 010-1000" />
+              <Input id="phone" type="tel" inputMode="tel" value={contactPhone} onChange={(e) => setContactPhone(formatPhone(e.target.value))} placeholder="(555) 010-1000" />
             </div>
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="contact@org.com" />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="event">Event name *</Label>
-            <Input id="event" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="Annual Scholarship Classic" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -188,6 +195,11 @@ export function AddLeadDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="eventid">Event ID</Label>
+            <Input id="eventid" value={eventId} onChange={(e) => setEventId(e.target.value)} placeholder="e.g. Dixon tournament ID" />
           </div>
 
           <div className="grid gap-1.5">
