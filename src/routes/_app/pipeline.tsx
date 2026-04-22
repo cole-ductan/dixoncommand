@@ -282,6 +282,16 @@ function PipelinePage() {
                     />
                   </div>
 
+                  {/* Editable event ID */}
+                  <div className="grid gap-1.5">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Event ID</Label>
+                    <TextField
+                      value={open.dixon_tournament_id ?? ""}
+                      onSave={(v) => updateOpenField({ dixon_tournament_id: v || null })}
+                      placeholder="e.g. Dixon tournament ID"
+                    />
+                  </div>
+
                   {/* Editable notes */}
                   <div className="grid gap-1.5">
                     <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notes</Label>
