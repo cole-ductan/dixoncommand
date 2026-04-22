@@ -831,6 +831,69 @@ function CheckRow({ label, checked, onChange }: { label: string; checked: boolea
   );
 }
 
+function ContactCard({
+  contact,
+  onSave,
+  onRemove,
+}: {
+  contact: Contact;
+  onSave: (patch: Record<string, any>) => void | Promise<void>;
+  onRemove: () => void | Promise<void>;
+}) {
+  const [name, setName] = useState(contact.name ?? "");
+  const [phone, setPhone] = useState(contact.phone ?? "");
+  const [email, setEmail] = useState(contact.email ?? "");
+  useEffect(() => { setName(contact.name ?? ""); }, [contact.name]);
+  useEffect(() => { setPhone(contact.phone ?? ""); }, [contact.phone]);
+  useEffect(() => { setEmail(contact.email ?? ""); }, [contact.email]);
+
+  return (
+    <div className="rounded-lg border bg-card p-3 space-y-2">
+      <div className="flex items-start gap-2">
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => name !== (contact.name ?? "") && onSave({ name: name.trim() || "New contact" })}
+          placeholder="Contact name"
+          className="h-8 text-sm font-medium flex-1"
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+          onClick={() => onRemove()}
+          title="Remove contact"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Input
+          value={phone}
+          type="tel"
+          inputMode="tel"
+          onChange={(e) => setPhone(formatPhone(e.target.value))}
+          onBlur={() => phone !== (contact.phone ?? "") && onSave({ phone: phone || null })}
+          placeholder="(555) 010-1000"
+          className="h-7 text-xs"
+        />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Input
+          value={email}
+          type="email"
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => email !== (contact.email ?? "") && onSave({ email: email.trim() || null })}
+          placeholder="contact@org.com"
+          className="h-7 text-xs"
+        />
+      </div>
+    </div>
+  );
+}
+
 function Field({
   label, value, onSave, type = "text", prefix,
 }: {
