@@ -1233,15 +1233,24 @@ function SectionCard({
   title: string;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(true);
   return (
     <section className="rounded-xl border bg-card overflow-hidden">
-      <header className="flex items-center gap-2 border-b bg-secondary/30 px-3 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 border-b bg-secondary/30 px-3 py-2 text-left hover:bg-secondary/50 transition-colors"
+        aria-expanded={open}
+      >
         <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-[11px] font-bold text-primary-foreground">
           {letter}
         </span>
-        <h3 className="font-display text-sm font-semibold">{title}</h3>
-      </header>
-      <div className="p-3 space-y-3">{children}</div>
+        <h3 className="font-display text-sm font-semibold flex-1">{title}</h3>
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "" : "-rotate-90"}`}
+        />
+      </button>
+      {open && <div className="p-3 space-y-3">{children}</div>}
     </section>
   );
 }
