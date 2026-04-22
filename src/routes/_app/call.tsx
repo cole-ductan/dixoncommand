@@ -29,6 +29,8 @@ import { NextActionPicker } from "@/components/NextActionPicker";
 import { openGCal } from "@/lib/gcal";
 import { ResizablePanels3 } from "@/components/ResizablePanels3";
 import { ResizablePanels2 } from "@/components/ResizablePanels2";
+import { formatPhone } from "@/lib/phone";
+import { Plus, Trash2 } from "lucide-react";
 
 const callSearchSchema = z.object({
   eventId: z.string().optional(),
